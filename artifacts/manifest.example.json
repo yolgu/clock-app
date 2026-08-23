@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "product": "Clock Rhythm",
+  "generatedAtUtc": "2026-08-23T00:00:00.0000000Z",
+  "sourceSnapshotSha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "artifacts": [
+    {
+      "path": "android/clock-rhythm-beta-0.1.0+1.apk",
+      "platform": "android",
+      "type": "apk",
+      "flavor": "beta",
+      "versionName": "0.1.0",
+      "buildNumber": 1,
+      "identity": "dev.wndls.clockrhythm.beta",
+      "architectures": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86_64"
+      ],
+      "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "sizeBytes": 12345678,
+      "signing": {
+        "status": "development",
+        "certificateSha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "inspection": {
+        "minSdk": 24,
+        "targetSdk": 36,
+        "requiredFiles": []
+      }
+    }
+  ]
+}

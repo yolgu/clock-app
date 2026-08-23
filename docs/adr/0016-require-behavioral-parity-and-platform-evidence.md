@@ -1,0 +1,9 @@
+# Require behavioral parity and platform evidence
+
+Porting tracks every behavior protected by the Neutralino application's 182 executable test cases without requiring a line-for-line or test-count match. Dart tests add the deliberately improved rules, including Gregorian date validation, automatic Stop for Today rollover, missed-event reconciliation, permission loss, process recovery, and wall-clock or time-zone changes.
+
+Verification is layered: pure domain and application tests use deterministic clocks and port fakes; Riverpod ViewModels and widgets cover user flows and restoration; Drift uses real-database integration tests; platform adapters satisfy shared contract suites and targeted native integration tests. Golden coverage samples both compact and wide layouts, Korean and English, and representative high-risk themes, while token tests validate all eleven theme definitions. Accessibility guideline tests cover labels, target size, contrast, focus, and text scaling.
+
+The supported matrix includes Windows 10 and 11 x64 for window, tray, automatic startup, Custom Notification Sound, backup, installation, and update behavior. Android emulator coverage spans API 24, 31, 33, and 36, and a physical device must validate notification and exact-alarm permission flows, process removal, reboot, Doze, and wall-clock and time-zone changes. Missing physical-platform evidence keeps the product in beta.
+
+Formatting, static analysis, generated-file consistency, architecture dependency checks, all automated tests, and Windows and Android release builds are mandatory gates. No arbitrary global coverage percentage substitutes for the behavioral checklist. Version `1.0.0` additionally requires an actual Neutralino schema-version-1 export/import round trip and installed update verification on both supported platforms.

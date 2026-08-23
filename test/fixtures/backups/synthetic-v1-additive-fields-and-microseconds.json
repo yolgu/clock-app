@@ -1,0 +1,47 @@
+{
+  "appName": "Clock Rhythm",
+  "schemaVersion": 1,
+  "exportedAt": "2026-06-02T10:00:00.000Z",
+  "futureEnvelopeField": "discard me",
+  "preferences": {
+    "focusMinutes": 40,
+    "restMinutes": 12,
+    "dailyStart": "22:00",
+    "dailyEnd": "02:00",
+    "autoStartEnabled": true,
+    "notificationSound": {
+      "mode": "custom",
+      "customFileName": "bell.mp3",
+      "customSource": "/user-sounds/notification.mp3",
+      "mutedFrom": null,
+      "volume": 0.5
+    },
+    "language": "en",
+    "theme": "nord",
+    "initialSetupCompleted": true,
+    "futurePreference": 7
+  },
+  "todos": [
+    {
+      "id": "todo-1",
+      "title": "Portable task",
+      "date": "2026-06-02",
+      "time": "14:30",
+      "completed": false,
+      "displayOrder": 4,
+      "createdAt": "2026-06-02T09:00:00.123456Z",
+      "updatedAt": "2026-06-02T09:10:00.999999Z",
+      "googleTaskId": "retired"
+    },
+    {
+      "id": "todo-2",
+      "title": "Completed task",
+      "date": "2026-06-03",
+      "time": null,
+      "completed": true,
+      "displayOrder": 0,
+      "createdAt": "2026-06-03T01:00:00.000Z",
+      "updatedAt": "2026-06-03T02:00:00.000Z"
+    }
+  ]
+}

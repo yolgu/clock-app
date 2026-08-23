@@ -1,0 +1,24 @@
+{
+  "appName": "Clock Rhythm",
+  "schemaVersion": 1,
+  "exportedAt": "2026-06-02T10:00:00.000Z",
+  "preferences": {
+    "focusMinutes": 50,
+    "restMinutes": 10,
+    "dailyStart": "05:00",
+    "dailyEnd": "18:00",
+    "autoStartEnabled": false
+  },
+  "todos": [
+    {
+      "id": "invalid-date",
+      "title": "Never disclose in error",
+      "date": "2026-02-30",
+      "time": null,
+      "completed": false,
+      "displayOrder": 0,
+      "createdAt": "2026-06-02T09:00:00.000Z",
+      "updatedAt": "2026-06-02T09:00:00.000Z"
+    }
+  ]
+}

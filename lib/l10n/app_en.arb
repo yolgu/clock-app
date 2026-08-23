@@ -1,0 +1,507 @@
+{
+  "@@locale": "en",
+  "appTitle": "Clock Rhythm",
+  "navigationSemanticsLabel": "App destinations",
+  "navigationClock": "Clock",
+  "navigationCalendar": "Calendar",
+  "navigationData": "Data",
+  "navigationTheme": "Theme",
+  "actionClose": "Close",
+  "actionCancel": "Cancel",
+  "actionRetry": "Retry",
+  "actionOpenSettings": "Open settings",
+  "actionDiscard": "Discard",
+  "actionSave": "Save",
+  "actionConfirm": "Confirm",
+  "actionReset": "Reset",
+  "actionImportPortableBackup": "Import Portable Backup",
+
+  "languageLabel": "Language",
+  "languageKoreanCode": "KOR",
+  "languageEnglishCode": "EN",
+  "languageKoreanName": "한국어",
+  "languageEnglishName": "English",
+  "messageLanguageChanged": "Language changed.",
+
+  "rhythmStatusTitle": "Status",
+  "rhythmStatusIdle": "Idle",
+  "rhythmStatusRunning": "Running",
+  "rhythmStatusPaused": "Paused",
+  "rhythmStatusStoppedForToday": "Done today",
+  "rhythmSettingsTitle": "Focus window settings",
+  "rhythmSettingsDisclosureTitle": "Focus window and notification settings",
+  "rhythmSettingsDisclosureExpand": "Expand focus window and notification settings",
+  "rhythmSettingsDisclosureCollapse": "Collapse focus window and notification settings",
+  "rhythmSettingsFocusMinutes": "Focus Interval",
+  "rhythmSettingsRestMinutes": "Rest Interval",
+  "rhythmSettingsDailyStart": "Focus window start",
+  "rhythmSettingsDailyEnd": "Focus window end",
+  "rhythmSettingsAutoStart": "Start Clock Rhythm automatically",
+  "rhythmSettingsSave": "Save settings",
+  "rhythmSettingsDiscard": "Discard changes",
+  "rhythmSettingsUnsaved": "Unsaved changes",
+  "rhythmSettingsDraftResetFailed": "Settings were saved, but the temporary draft could not be reset.",
+  "rhythmSettingsDecrease": "Decrease {label}",
+  "@rhythmSettingsDecrease": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "rhythmSettingsIncrease": "Increase {label}",
+  "@rhythmSettingsIncrease": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "rhythmSettingsMinuteMeta": "min · {min}-{max}",
+  "@rhythmSettingsMinuteMeta": {
+    "placeholders": {
+      "min": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
+  "rhythmSettingsMinuteRange": "Enter {min}-{max} min.",
+  "@rhythmSettingsMinuteRange": {
+    "placeholders": {
+      "min": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
+  "rhythmSettingsNextEvent": "Next notification: {time}",
+  "@rhythmSettingsNextEvent": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "rhythmSettingsNextEventUnavailable": "Check the time settings.",
+  "rhythmSettingsOutsideDailyRhythm": "The current time is outside the focus window.",
+  "rhythmSettingsDeepIdleWarning": "Intervals shorter than {minimumMinutes} minutes may be delayed or skipped while Android is in deep idle.",
+  "@rhythmSettingsDeepIdleWarning": {
+    "placeholders": {
+      "minimumMinutes": {"type": "int"}
+    }
+  },
+  "rhythmSettingsSummary": "{focus} min focus · {rest} min rest · {dailyStart}-{dailyEnd} · {sound}",
+  "@rhythmSettingsSummary": {
+    "placeholders": {
+      "focus": {"type": "int"},
+      "rest": {"type": "int"},
+      "dailyStart": {"type": "String"},
+      "dailyEnd": {"type": "String"},
+      "sound": {"type": "String"}
+    }
+  },
+  "rhythmSettingsSummaryDirty": "Save needed",
+  "rhythmSettingsSummaryInvalid": "Time setting error",
+  "rhythmSettingsSummaryMuted": "Muted",
+  "rhythmSettingsSummaryZeroVolume": "Volume 0%",
+  "rhythmSettingsSummaryOutsideDailyRhythm": "Outside focus window",
+  "rhythmControlStart": "Start",
+  "rhythmControlPause": "Pause",
+  "rhythmControlResume": "Resume",
+  "rhythmControlStopForToday": "Stop for Today",
+  "legacyCoexistenceWarningTitle": "Before starting the Flutter beta",
+  "legacyCoexistenceWarningDescription": "Pause the current Rhythm and quit the Neutralino Clock Rhythm app before starting here. Running both apps can send duplicate notifications.",
+  "legacyCoexistenceWarningConfirm": "I paused and quit it",
+  "messagePreferencesSaved": "Settings saved.",
+  "messagePreferencesFailed": "Settings could not be saved.",
+  "messageRhythmRunning": "Focus window is running.",
+  "messageRhythmPaused": "Focus window paused.",
+  "messageRhythmResumed": "Focus window resumed.",
+  "messageRhythmStoppedForToday": "The current focus window ended.",
+  "autoStartStatusEnabled": "Automatic startup is enabled.",
+  "autoStartStatusDisabled": "Automatic startup is disabled.",
+  "autoStartStatusNeedsAction": "Automatic startup needs your attention.",
+  "autoStartStatusError": "Automatic startup could not be checked.",
+  "autoStartRepair": "Repair automatic startup",
+
+  "soundEyebrow": "Sound",
+  "soundTitle": "Notification sound",
+  "soundDefaultLabel": "Default",
+  "soundCustomFallback": "Custom MP3",
+  "soundMutedLabel": "Muted",
+  "soundChooseMp3": "Choose MP3",
+  "soundUseDefault": "Use default",
+  "soundMute": "Mute",
+  "soundUnmute": "Turn sound on",
+  "soundPreview": "Preview",
+  "soundStopPreview": "Stop preview",
+  "soundVolume": "Sound volume",
+  "soundVolumeLabel": "App notification volume",
+  "soundZeroVolumeWarning": "Volume is 0%. Notifications remain visible.",
+  "soundCustomRequirements": "Choose one MP3 file no larger than {maxMebibytes} MiB.",
+  "@soundCustomRequirements": {
+    "placeholders": {
+      "maxMebibytes": {"type": "int"}
+    }
+  },
+  "soundRepair": "Repair sound",
+  "messageCustomSoundChanged": "Notification sound changed.",
+  "messageSoundMuted": "Sound muted. Operating-system notifications stay visible.",
+  "messageSoundUnmuted": "Sound turned on.",
+  "messageSoundPreviewStarted": "Previewing notification sound.",
+  "messageSoundPreviewStopped": "Sound preview stopped.",
+  "messageDefaultSoundRestored": "Default sound restored.",
+  "messageVolumeChanged": "Notification volume set to {volume}%.",
+  "@messageVolumeChanged": {
+    "placeholders": {
+      "volume": {"type": "int"}
+    }
+  },
+
+  "todoTodayEyebrow": "Today",
+  "todoTodayTitle": "Today",
+  "todoTodayInputLabel": "Today Todo input",
+  "todoTodayPlaceholder": "Write a Todo",
+  "todoActionAddTime": "Add time",
+  "todoActionAdd": "Add",
+  "todoActionEdit": "Edit",
+  "todoActionDelete": "Delete",
+  "todoActionSave": "Save",
+  "todoActionCancel": "Cancel",
+  "todoActionComplete": "Complete {title}",
+  "@todoActionComplete": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "todoActionReopen": "Reopen {title}",
+  "@todoActionReopen": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "todoActionReorder": "Reorder {title}",
+  "@todoActionReorder": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "todoListEmpty": "No Todos yet.",
+  "todoListEditTitle": "Edit Todo title",
+  "todoListEditDate": "Edit Todo date",
+  "todoListEditTime": "Edit Todo time",
+  "todoGroupIncomplete": "Incomplete",
+  "todoGroupCompleted": "Completed",
+  "todoValidationTitleRequired": "Enter a Todo.",
+  "todoValidationTitleTooLong": "Todos must be {max} characters or fewer.",
+  "@todoValidationTitleTooLong": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "todoValidationTitleCounter": "{count}/{max}",
+  "@todoValidationTitleCounter": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
+  "todoCount": "{count, plural, =0{No Todos} =1{1 Todo} other{{count} Todos}}",
+  "@todoCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "todoCompletedCount": "{count, plural, =0{No completed Todos} =1{1 completed Todo} other{{count} completed Todos}}",
+  "@todoCompletedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "messageTodoAdded": "Todo added.",
+  "messageTodoUpdated": "Todo updated.",
+  "messageTodoCompleted": "Todo completed.",
+  "messageTodoReopened": "Todo reopened.",
+  "messageTodoDeleted": "Todo deleted.",
+  "messageTodoActionFailed": "The Todo action could not be completed.",
+
+  "timePickerPlaceholder": "Select time",
+  "timePickerDirectLabel": "Direct input",
+  "timePickerDirectInput": "Direct input for {label}",
+  "@timePickerDirectInput": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "timePickerEditing": "Editing",
+  "timePickerHourGroup": "Select hour",
+  "timePickerMinuteGroup": "Select minute",
+  "timePickerHourOption": "{hour}:00",
+  "@timePickerHourOption": {
+    "placeholders": {
+      "hour": {"type": "String"}
+    }
+  },
+  "timePickerMinuteOption": "{minute} min",
+  "@timePickerMinuteOption": {
+    "placeholders": {
+      "minute": {"type": "String"}
+    }
+  },
+  "timePickerClear": "Clear",
+  "timePickerClose": "Close",
+  "timePickerInvalid": "Enter a time from 00:00 to 23:59 in HH:mm format.",
+
+  "calendarEyebrow": "Calendar",
+  "calendarTitle": "Todo Calendar",
+  "calendarMonthEyebrow": "Month",
+  "calendarSelectedEyebrow": "Selected date",
+  "calendarPreviousMonth": "Previous month",
+  "calendarNextMonth": "Next month",
+  "calendarToday": "Today",
+  "calendarGridLabel": "Todo calendar for {month}",
+  "@calendarGridLabel": {
+    "placeholders": {
+      "month": {"type": "String"}
+    }
+  },
+  "calendarSelectedDateLabel": "Selected date: {date}",
+  "@calendarSelectedDateLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "calendarNoTodo": "No Todos",
+  "calendarWeekdaySunday": "Sun",
+  "calendarWeekdayMonday": "Mon",
+  "calendarWeekdayTuesday": "Tue",
+  "calendarWeekdayWednesday": "Wed",
+  "calendarWeekdayThursday": "Thu",
+  "calendarWeekdayFriday": "Fri",
+  "calendarWeekdaySaturday": "Sat",
+  "calendarDayTodoCount": "{count, plural, =0{No Todos} =1{1 Todo} other{{count} Todos}}",
+  "@calendarDayTodoCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "backupEyebrow": "Data",
+  "backupTitle": "Data management",
+  "backupDescription": "Export Preferences and Todos to a Portable Backup, or replace local data from one.",
+  "backupExport": "Export",
+  "backupImport": "Import",
+  "backupPreviewTitle": "Portable Backup preview",
+  "backupImportConfirmTitle": "Import Portable Backup",
+  "backupImportConfirmDescription": "Current Preferences and Todos will be fully replaced by this Portable Backup.",
+  "backupConfirmImport": "Replace all local data",
+  "backupCancel": "Cancel",
+  "backupPlainTextWarning": "Portable Backup is readable plain JSON and has no password protection.",
+  "backupRhythmStopWarning": "Confirming import stops current focus/rest delivery even if data replacement later fails.",
+  "backupSummaryTodos": "{count, plural, =0{No Todos} =1{1 Todo} other{{count} Todos}}",
+  "@backupSummaryTodos": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "backupSummaryCompletedTodos": "{count, plural, =0{No completed Todos} =1{1 completed Todo} other{{count} completed Todos}}",
+  "@backupSummaryCompletedTodos": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "backupSummaryTerms": "Focus {focus} min / Rest {rest} min",
+  "@backupSummaryTerms": {
+    "placeholders": {
+      "focus": {"type": "int"},
+      "rest": {"type": "int"}
+    }
+  },
+  "backupSummaryWindow": "Focus window: {dailyStart}-{dailyEnd}",
+  "@backupSummaryWindow": {
+    "placeholders": {
+      "dailyStart": {"type": "String"},
+      "dailyEnd": {"type": "String"}
+    }
+  },
+  "backupSummaryLanguage": "Language: {language}",
+  "@backupSummaryLanguage": {
+    "placeholders": {
+      "language": {"type": "String"}
+    }
+  },
+  "backupSummaryTheme": "Theme: {theme}",
+  "@backupSummaryTheme": {
+    "placeholders": {
+      "theme": {"type": "String"}
+    }
+  },
+  "backupSummaryAutoStartEnabled": "Windows automatic startup: enabled",
+  "backupSummaryAutoStartDisabled": "Windows automatic startup: disabled",
+  "backupSummaryExportedAt": "Exported: {exportedAt}",
+  "@backupSummaryExportedAt": {
+    "placeholders": {
+      "exportedAt": {"type": "String"}
+    }
+  },
+  "backupSummaryDateRange": "Todo dates: {startDate} – {endDate}",
+  "@backupSummaryDateRange": {
+    "placeholders": {
+      "startDate": {"type": "String"},
+      "endDate": {"type": "String"}
+    }
+  },
+  "backupSummaryNoDateRange": "Todo dates: none",
+  "backupSummaryCustomSoundSanitized": "Custom Notification Sound will be replaced with the bundled default.",
+  "messageBackupExported": "Portable Backup exported.",
+  "messageBackupImported": "Portable Backup imported and all local data was replaced.",
+
+  "databaseRecoveryTitle": "Database recovery",
+  "databaseRecoveryDescription": "Clock Rhythm could not open the database. The original database has been preserved.",
+  "databaseRecoveryRetry": "Retry opening database",
+  "databaseRecoveryImport": "Import Portable Backup",
+  "databaseRecoveryReset": "Reset database",
+  "databaseRecoveryResetTitle": "Reset local database",
+  "databaseRecoveryResetDescription": "A recovery copy will be created before a new empty database replaces the current one. This cannot be undone in Clock Rhythm.",
+  "databaseRecoveryConfirmReset": "Create recovery copy and reset",
+
+  "permissionPanelTitle": "Focus/rest delivery permissions",
+  "permissionNotificationTitle": "Notifications",
+  "permissionExactAlarmTitle": "Exact alarms",
+  "permissionGranted": "Granted",
+  "permissionRequired": "Required",
+  "permissionOpenNotificationSettings": "Open notification settings",
+  "permissionOpenExactAlarmSettings": "Open exact-alarm settings",
+  "permissionDeliveryRecoveryTitle": "Focus/rest delivery needs attention",
+  "permissionDeliveryRecoveryDescription": "Delivery stopped after a permission or system-state change. Review settings, then start again.",
+
+  "themeEyebrow": "Theme",
+  "themeTitle": "Theme",
+  "themeDescription": "Keep the design structure and change the color palette.",
+  "themeCurrentName": "Current",
+  "themeTokyoNightName": "Tokyo Night",
+  "themeOneDarkProName": "One Dark Pro",
+  "themeCatppuccinMochaName": "Catppuccin Mocha",
+  "themeNordName": "Nord",
+  "themeDraculaName": "Dracula",
+  "themeGruvboxName": "Gruvbox",
+  "themeNeonDuskName": "Neon Dusk",
+  "themeNightOwlName": "Night Owl",
+  "themeSynthwave84Name": "Synthwave 84",
+  "themeAyuMirageDarkName": "Ayu Mirage Dark",
+  "themeSelected": "Selected",
+  "themeSelect": "Select theme",
+  "messageThemeChanged": "Theme changed.",
+
+  "routeErrorTitle": "This destination cannot be opened",
+  "routeBackToClock": "Back to Clock",
+
+  "trayOpen": "Open Clock Rhythm",
+  "trayPause": "Pause",
+  "trayResume": "Resume",
+  "trayStopForToday": "Stop for Today",
+  "trayQuit": "Quit Clock Rhythm",
+
+  "announcementRhythmRunning": "Focus window started.",
+  "announcementRhythmPaused": "Focus window paused.",
+  "announcementRhythmResumed": "Focus window resumed.",
+  "announcementRhythmStoppedForToday": "The current focus window ended.",
+  "announcementPreferencesSaved": "Settings saved.",
+  "announcementLanguageChanged": "Language changed.",
+  "announcementThemeChanged": "Theme changed.",
+  "announcementTodoAdded": "Todo added.",
+  "announcementTodoUpdated": "Todo updated.",
+  "announcementTodoCompleted": "Todo completed.",
+  "announcementTodoReopened": "Todo reopened.",
+  "announcementTodoDeleted": "Todo deleted.",
+  "announcementBackupExported": "Portable Backup exported.",
+  "announcementBackupImported": "Portable Backup imported. Local data was replaced.",
+  "announcementError": "An error occurred. Review the message on screen.",
+  "accessibilityDigitalClockLabel": "Current time: {time}",
+  "@accessibilityDigitalClockLabel": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "accessibilitySelected": "Selected",
+  "accessibilityCompleted": "Completed",
+  "accessibilityIncomplete": "Incomplete",
+  "accessibilityError": "Error",
+
+  "notificationFocusEndedTitle": "Time for a rest",
+  "notificationFocusEndedBody": "The Focus Interval has ended.",
+  "notificationRestEndedTitle": "Time to focus again",
+  "notificationRestEndedBody": "The Rest Interval has ended.",
+
+  "failureUnknown": "An unexpected error occurred.",
+  "failureRouteNotFound": "The requested destination does not exist.",
+  "failureRouteInvalidCalendarDate": "The calendar date in this link is invalid.",
+  "failurePreferencesSave": "Settings could not be saved. Your unsaved changes are still available.",
+  "failureTodoLimitReached": "This installation has reached its Todo limit.",
+  "failureTodoAction": "The Todo action could not be completed.",
+  "failureCustomSoundInvalidFile": "Choose a valid MP3 file.",
+  "failureCustomSoundTooLarge": "The selected MP3 file is too large.",
+  "failureCustomSoundDecode": "The selected MP3 file could not be decoded.",
+  "failureCustomSoundPlayback": "The custom sound could not be played. The bundled sound was used for this event.",
+  "failureAutoStartReconciliation": "Windows automatic startup could not be updated. Review the repair action.",
+  "failureBackupFileRead": "The Portable Backup file could not be read.",
+  "failureBackupFileWrite": "The Portable Backup file could not be written.",
+  "failureBackupFileTooLarge": "The Portable Backup file is too large.",
+  "failureBackupInvalidJson": "The selected file is not valid JSON.",
+  "failureBackupAppNameMismatch": "This file is not a Clock Rhythm Portable Backup.",
+  "failureBackupUnsupportedSchemaVersion": "This Portable Backup version is not supported.",
+  "failureBackupInvalidExportedAt": "The Portable Backup export time is invalid.",
+  "failureBackupMissingRequiredData": "The Portable Backup is missing required data.",
+  "failureBackupInvalidPreferences": "The Portable Backup contains invalid Preferences.",
+  "failureBackupTooManyTodos": "The Portable Backup contains too many Todos.",
+  "failureBackupReplacement": "Local data could not be replaced. Existing durable data was preserved, and focus/rest delivery remains Idle.",
+  "failureBackupExport": "The Portable Backup could not be exported.",
+  "failureDatabaseOpen": "The database could not be opened. The original database was preserved.",
+  "failureDatabaseMigration": "The database could not be updated. The original database was preserved.",
+  "failureDatabaseCorrupted": "The database appears to be damaged. The original database was preserved.",
+  "failureDatabaseRecoveryCopy": "A recovery copy could not be created, so the database was not reset.",
+  "failureNotificationPermissionRequired": "Notification permission is required to start focus/rest delivery.",
+  "failureExactAlarmPermissionRequired": "Exact-alarm access is required to start focus/rest delivery.",
+  "failureNotificationAndExactAlarmPermissionRequired": "Notification permission and exact-alarm access are required to start focus/rest delivery.",
+  "failureDeliveryPermissionLost": "Focus/rest delivery stopped because a required permission is no longer available.",
+  "failureDeliveryRecoveryRequired": "Focus/rest delivery needs recovery. Review settings and start again.",
+  "failureBackupTodoIdInvalid": "Todo {index} in the backup has an invalid ID.",
+  "@failureBackupTodoIdInvalid": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "failureBackupTodoIdDuplicate": "Todo {index} in the backup has a duplicate ID.",
+  "@failureBackupTodoIdDuplicate": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "failureBackupTodoTitleInvalid": "Todo {index} in the backup has an invalid title.",
+  "@failureBackupTodoTitleInvalid": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "failureBackupTodoDateInvalid": "Todo {index} in the backup has an invalid Gregorian date.",
+  "@failureBackupTodoDateInvalid": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "failureBackupTodoTimeInvalid": "Todo {index} in the backup does not use a valid HH:mm time.",
+  "@failureBackupTodoTimeInvalid": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "failureBackupTodoCompletionInvalid": "Todo {index} in the backup has an invalid completion value.",
+  "@failureBackupTodoCompletionInvalid": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "failureBackupTodoTimestampsInvalid": "Todo {index} in the backup has invalid timestamps.",
+  "@failureBackupTodoTimestampsInvalid": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "failureBackupTodoDisplayOrderInvalid": "Todo {index} in the backup has an invalid display order.",
+  "@failureBackupTodoDisplayOrderInvalid": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  }
+}

@@ -1,0 +1,3 @@
+# Model Todos as local calendar commitments
+
+Todos retain a Local Calendar Date and optional display-only Todo Time rather than an instant or reminder, so travel and time-zone changes never shift their assigned date. Incomplete and completed Todos remain visible in separate, manually ordered groups; changing a date appends the Todo to the matching target group, deletion is immediate and permanent without confirmation or undo, titles contain 1–160 user-perceived characters, and the calendar remains a Sunday-first six-week grid. This preserves the lightweight planning model and keeps Todo behavior independent from Rhythm Events.

@@ -1,0 +1,3 @@
+# Anchor Rhythm Events to the Daily Rhythm
+
+Rhythm Events are anchored to the configured Daily Rhythm start rather than to the moment the user activates or resumes a session. Activating outside the window arms the next window, pausing does not shift event boundaries, missed events are skipped, and Stop for Today automatically clears at the next Daily Rhythm start—including for a window that crosses midnight; equal start and end times and windows shorter than the first Focus Interval are invalid. This preserves a predictable wall-clock cadence instead of turning each interaction into a new countdown.

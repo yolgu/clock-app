@@ -1,0 +1,41 @@
+{
+  "preferences": {
+    "autoStartEnabled": true,
+    "dailyEnd": "02:00",
+    "dailyStart": "22:00",
+    "focusMinutes": 40,
+    "language": "en",
+    "notificationSound": {
+      "customFileName": null,
+      "customSource": null,
+      "mode": "default",
+      "mutedFrom": null,
+      "volume": 0.5
+    },
+    "restMinutes": 12,
+    "theme": "nord",
+    "initialSetupCompleted": true
+  },
+  "todos": [
+    {
+      "completed": false,
+      "createdAt": "2026-06-02T09:00:00.123Z",
+      "date": "2026-06-02",
+      "displayOrder": 4,
+      "id": "todo-1",
+      "time": "14:30",
+      "title": "Portable task",
+      "updatedAt": "2026-06-02T09:10:00.999Z"
+    },
+    {
+      "completed": true,
+      "createdAt": "2026-06-03T01:00:00.000Z",
+      "date": "2026-06-03",
+      "displayOrder": 0,
+      "id": "todo-2",
+      "time": null,
+      "title": "Completed task",
+      "updatedAt": "2026-06-03T02:00:00.000Z"
+    }
+  ]
+}

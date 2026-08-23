@@ -1,0 +1,33 @@
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Dart and Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+doc/api/
+node_modules/
+
+# FVM keeps SDK binaries outside version control.
+.fvm/
+
+# Android build state and local machine configuration
+android/.gradle/
+android/local.properties
+
+# Signing material must stay outside source control.
+android/key.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem

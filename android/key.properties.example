@@ -1,0 +1,6 @@
+# Production signing is read from environment variables, never from this file.
+# Set all four values in the isolated release environment:
+# CLOCK_RHYTHM_ANDROID_KEYSTORE=C:\external\clock-rhythm-production.jks
+# CLOCK_RHYTHM_ANDROID_KEY_ALIAS=clock-rhythm-production
+# CLOCK_RHYTHM_ANDROID_STORE_PASSWORD=<secret>
+# CLOCK_RHYTHM_ANDROID_KEY_PASSWORD=<secret>

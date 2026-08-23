@@ -1,0 +1,7 @@
+# Use user-granted exact alarms for Android Rhythm Events
+
+Android declares `SCHEDULE_EXACT_ALARM`, not the auto-granted and Play-restricted `USE_EXACT_ALARM`. Starting a Rhythm Session checks both notification permission and exact-alarm special access; if either is absent, the session remains idle and the application explains the requirement and links to the relevant system setting. A later grant never starts a session without another explicit Start action.
+
+The shared Dart domain remains the source of Rhythm Event times. Behind the platform port, a small Kotlin `AlarmManager` adapter registers, cancels, and delivers those occurrences while the Flutter process is absent. The first release does not keep a foreground service or permanent notification alive. A delivered notification opens `/clock` when tapped and has no inline Pause or Stop for Today actions.
+
+Clock Rhythm preserves the existing Focus Interval range of 1–180 minutes and Rest Interval range of 1–60 minutes. Android warns when either value is shorter than the operating system's nine-minute allow-while-idle frequency limit; delivery may be delayed in deep idle and missed boundaries are skipped instead of replayed. The application respects Do Not Disturb, user-modified notification channels, and battery policy, and does not request full-screen presentation or exemption from battery optimization. When an operating-system setting prevents delivery, the application reports the condition and offers a settings link rather than overriding it.

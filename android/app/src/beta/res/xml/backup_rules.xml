@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <include
+        domain="file"
+        path="clock_rhythm_beta.sqlite"
+        requireFlags="clientSideEncryption" />
+    <include
+        domain="file"
+        path="clock_rhythm_beta.sqlite-journal"
+        requireFlags="clientSideEncryption" />
+    <include
+        domain="file"
+        path="clock_rhythm_beta.sqlite"
+        requireFlags="deviceToDeviceTransfer" />
+    <include
+        domain="file"
+        path="clock_rhythm_beta.sqlite-journal"
+        requireFlags="deviceToDeviceTransfer" />
+</full-backup-content>

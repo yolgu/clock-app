@@ -1,0 +1,63 @@
+name: Windows quality gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-and-build:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Install pinned Flutter bootstrap SDK
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          flutter-version: 3.44.7
+          channel: stable
+
+      - name: Restore FVM and pub caches
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: |
+            ~/AppData/Local/Pub/Cache
+            .fvm/cache
+          key: windows-flutter-3.44.7-${{ hashFiles('pubspec.lock') }}
+
+      - name: Configure FVM 4.1.2
+        shell: pwsh
+        run: |
+          dart pub global activate fvm 4.1.2
+          "$env:LOCALAPPDATA\Pub\Cache\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          & "$env:LOCALAPPDATA\Pub\Cache\bin\fvm.bat" config --cache-path "$env:GITHUB_WORKSPACE\.fvm\cache"
+          & "$env:LOCALAPPDATA\Pub\Cache\bin\fvm.bat" install 3.44.7
+          & "$env:LOCALAPPDATA\Pub\Cache\bin\fvm.bat" use 3.44.7 --force --skip-pub-get
+
+      - name: Verify source
+        shell: pwsh
+        run: ./tool/verify.ps1 -Platform Windows
+
+      - name: Package beta Windows ZIP
+        shell: pwsh
+        run: ./tool/package_windows.ps1 -Flavor Beta -Artifact Zip
+
+      - name: Upload verified Windows package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: clock-rhythm-windows-beta
+          path: |
+            artifacts/windows/*.zip
+            artifacts/manifest.json
+            artifacts/SHA256SUMS.txt
+          if-no-files-found: error

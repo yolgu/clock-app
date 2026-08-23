@@ -1,0 +1,22 @@
+{
+  "appName": "Clock Rhythm",
+  "schemaVersion": 1,
+  "exportedAt": "2025-01-02T03:04:05.000Z",
+  "preferences": {
+    "focusMinutes": 45,
+    "restMinutes": 15,
+    "dailyStart": "06:00",
+    "dailyEnd": "20:00",
+    "autoStartEnabled": false
+  },
+  "todos": [
+    {
+      "id": "legacy",
+      "title": "Legacy Todo",
+      "date": "2025-01-02",
+      "completed": false,
+      "createdAt": "2025-01-02T03:04:05.000Z",
+      "updatedAt": "2025-01-02T03:04:05.000Z"
+    }
+  ]
+}

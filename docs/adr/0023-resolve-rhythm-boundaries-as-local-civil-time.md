@@ -1,0 +1,3 @@
+# Resolve Rhythm boundaries as local civil time
+
+Rhythm Schedule boundaries are reconstructed from the Daily Rhythm window start date and cumulative nominal wall-clock minutes, never by adding elapsed time to the prior event. A boundary whose local civil time does not exist during a daylight-saving gap is treated as missed, while a repeated-time fold resolves to the single local occurrence selected by the Dart runtime. Reconciliation always selects the first strictly future boundary after wall-clock or time-zone changes, and Rhythm Session delivery uses a monotonic occurrence-instant watermark plus event kind to reject duplicates and stale retries. Domain and Application inputs reject UTC `DateTime` values so platform adapters must provide current local time explicitly.
