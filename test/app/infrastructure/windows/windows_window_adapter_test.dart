@@ -36,6 +36,7 @@ void main() {
           ),
         );
         final WindowsWindowAdapter adapter = WindowsWindowAdapter(
+          expectedApplicationIdentity: 'dev.wndls.clockrhythm',
           windowPlugin: plugin,
           lifecycleHost: host,
           stateStore: store,
@@ -60,6 +61,7 @@ void main() {
       () async {
         final FakeWindowsLifecycleHost host = FakeWindowsLifecycleHost();
         final WindowsWindowAdapter adapter = WindowsWindowAdapter(
+          expectedApplicationIdentity: 'dev.wndls.clockrhythm',
           windowPlugin: FakeWindowsWindowPlugin(),
           lifecycleHost: host,
           stateStore: FakeWindowsWindowStateStore(),
@@ -80,6 +82,7 @@ void main() {
         final FakeWindowsLifecycleHost host = FakeWindowsLifecycleHost();
         final FakeWindowsWindowStateStore store = FakeWindowsWindowStateStore();
         final WindowsWindowAdapter adapter = WindowsWindowAdapter(
+          expectedApplicationIdentity: 'dev.wndls.clockrhythm',
           windowPlugin: plugin,
           lifecycleHost: host,
           stateStore: store,
@@ -114,6 +117,7 @@ void main() {
         final FakeWindowsLifecycleHost host = FakeWindowsLifecycleHost();
         final FakeWindowsWindowStateStore store = FakeWindowsWindowStateStore();
         final WindowsWindowAdapter adapter = WindowsWindowAdapter(
+          expectedApplicationIdentity: 'dev.wndls.clockrhythm',
           windowPlugin: plugin,
           lifecycleHost: host,
           stateStore: store,
@@ -151,6 +155,7 @@ void main() {
     test('removes plugin callbacks during idempotent disposal', () async {
       final FakeWindowsWindowPlugin plugin = FakeWindowsWindowPlugin();
       final WindowsWindowAdapter adapter = WindowsWindowAdapter(
+        expectedApplicationIdentity: 'dev.wndls.clockrhythm',
         windowPlugin: plugin,
         lifecycleHost: FakeWindowsLifecycleHost(),
         stateStore: FakeWindowsWindowStateStore(),
@@ -171,6 +176,7 @@ void main() {
         final FakeWindowsWindowStateStore store = FakeWindowsWindowStateStore()
           ..saveFailure = StateError('device state unavailable');
         final WindowsWindowAdapter adapter = WindowsWindowAdapter(
+          expectedApplicationIdentity: 'dev.wndls.clockrhythm',
           windowPlugin: plugin,
           lifecycleHost: host,
           stateStore: store,
@@ -193,6 +199,7 @@ void main() {
         final FakeWindowsWindowStateStore store = FakeWindowsWindowStateStore()
           ..loadFailure = StateError('device state unreadable');
         final WindowsWindowAdapter adapter = WindowsWindowAdapter(
+          expectedApplicationIdentity: 'dev.wndls.clockrhythm',
           windowPlugin: FakeWindowsWindowPlugin(),
           lifecycleHost: host,
           stateStore: store,
@@ -202,6 +209,33 @@ void main() {
 
         expect(host.captureRequests, 1);
         expect(adapter.latestStateFailure, isA<StateError>());
+      },
+    );
+
+    test(
+      'rejects a native identity that differs from the Dart flavor',
+      () async {
+        final FakeWindowsWindowStateStore store = FakeWindowsWindowStateStore();
+        final WindowsWindowAdapter adapter = WindowsWindowAdapter(
+          expectedApplicationIdentity: 'dev.wndls.clockrhythm',
+          windowPlugin: FakeWindowsWindowPlugin(),
+          lifecycleHost: FakeWindowsLifecycleHost(
+            applicationIdentity: 'dev.wndls.clockrhythm.beta',
+          ),
+          stateStore: store,
+        );
+
+        await expectLater(
+          adapter.initialize(),
+          throwsA(
+            isA<StateError>().having(
+              (StateError error) => error.message,
+              'message',
+              contains('does not match the Dart flavor'),
+            ),
+          ),
+        );
+        expect(store.identityReads, isEmpty);
       },
     );
   });
@@ -316,6 +350,11 @@ final class FakeWindowsWindowPlugin implements WindowsWindowPlugin {
 }
 
 final class FakeWindowsLifecycleHost implements WindowsLifecycleHost {
+  FakeWindowsLifecycleHost({
+    this.applicationIdentity = 'dev.wndls.clockrhythm',
+  });
+
+  final String applicationIdentity;
   WindowsWindowPlacement capturedPlacement = const WindowsWindowPlacement(
     bounds: WindowsWindowBounds(left: 10, top: 10, width: 920, height: 680),
     dpi: 96,
@@ -341,8 +380,8 @@ final class FakeWindowsLifecycleHost implements WindowsLifecycleHost {
 
   @override
   Future<WindowsLifecycleConfiguration> loadConfiguration() async {
-    return const WindowsLifecycleConfiguration(
-      applicationIdentity: 'dev.wndls.clockrhythm',
+    return WindowsLifecycleConfiguration(
+      applicationIdentity: applicationIdentity,
       startsHidden: false,
     );
   }

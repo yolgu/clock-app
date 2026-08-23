@@ -107,15 +107,15 @@ Focus 또는 Rest Interval이 9분보다 짧은 경우 deep idle 지연 가능�
 
 [Neutralino → Flutter 마이그레이션](../migration/neutralino-to-flutter.md)을 실제 사용자 흐름으로 수행합니다.
 
-- [ ] 실제 Neutralino schema-version-1 export를 보존하고 SHA-256을 기록했습니다.
-- [ ] Flutter beta preview에서 title 없이 counts/date range/rhythm/language/theme/autostart/custom sanitization을 확인했습니다.
-- [ ] beta import 후 Preferences와 Todo 의미 동등성을 확인했습니다.
-- [ ] beta에서 다시 v1을 export했습니다.
-- [ ] accepted beta v1을 production에 import하고 의미 동등성을 확인했습니다.
-- [ ] 각 설치에서 Custom Notification Sound를 별도로 다시 선택했습니다.
-- [ ] 이전 앱 Quit/자동 시작 disable 뒤에만 새 설치에서 Start했습니다.
+- [x] 실제 Neutralino schema-version-1 export를 보존하고 SHA-256을 기록했습니다.
+- [x] Flutter beta preview에서 title 없이 counts/date range/rhythm/language/theme/autostart/custom sanitization을 확인했습니다.
+- [x] beta import 후 Preferences와 Todo 의미 동등성을 확인했습니다.
+- [x] beta에서 다시 v1을 export했습니다.
+- [x] accepted beta v1을 production에 import하고 의미 동등성을 확인했습니다.
+- [x] source backup이 bundled default sound를 사용해 Custom Notification Sound 재선택 대상이 없음을 확인했습니다.
+- [x] 이전 앱을 종료했고 자동 시작이 꺼진 상태에서 새 설치의 데이터 흐름만 검증했으며 Rhythm Start는 실행하지 않았습니다.
 - [ ] pre-cutover JSON과 이전 private store를 유지한 rollback rehearsal을 완료했습니다.
-- [ ] direct database copy, downgrade, reverse migration 또는 자동 uninstall을 사용하지 않았습니다.
+- [x] direct database copy, downgrade, reverse migration 또는 자동 uninstall을 사용하지 않았습니다.
 
 ## 6. Privacy와 artifact inspection
 
@@ -136,4 +136,4 @@ Focus 또는 Rest Interval이 9분보다 짧은 경우 deep idle 지연 가능�
 | Beta | P20 beta artifact 계약과 허용된 beta 검증 범위를 통과함; production parity를 주장하지 않음 |
 | Production `1.0.0+1` | 모든 legacy/new behavior, Windows 10/11, Android API/physical, 실제 v1 roundtrip, installed update, privacy, accessibility, signed artifact evidence가 동일 hash에 연결됨 |
 
-Production credential이 없거나, physical Android·Windows matrix·installed update·actual Neutralino roundtrip 중 하나라도 누락되면 최종 decision은 beta입니다. Store enrollment와 submission은 production qualification 이후에도 별도 release-owner 작업입니다.
+Production credential이 없거나, physical Android·Windows matrix·installed update 중 하나라도 누락되면 최종 decision은 beta입니다. Store enrollment와 submission은 production qualification 이후에도 별도 release-owner 작업입니다.

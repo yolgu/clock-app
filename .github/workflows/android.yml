@@ -70,4 +70,6 @@ jobs:
             artifacts/android/*.apk
             artifacts/manifest.json
             artifacts/SHA256SUMS.txt
+            ASSET_NOTICE.md
+            THIRD_PARTY_NOTICES.md
           if-no-files-found: error

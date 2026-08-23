@@ -42,14 +42,11 @@ fvm flutter test integration_test/app_e2e_test.dart `
 
 ## 2026-08-23 execution record
 
-| Field | API 36 final run | API 24 compatibility run |
-| --- | --- | --- |
-| AVD | `clock_rhythm_api36` | `clock_rhythm_api24` |
-| Model | `sdk_gphone64_x86_64` | `Android SDK built for x86_64` |
-| Build fingerprint | `google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys` | `Android/sdk_google_phone_x86_64/generic_x86_64:7.0/NYC/6696031:userdebug/dev-keys` |
-| Source snapshot | `1cea44f26ce5cfb68e51ae2b18d2b9ae555f09fc78d84a0b64e72adde5487f42` | `b2c3a02ea6191dd5ffc5cf0de0f666d66a134c89e92da624b728abe338cf0604` |
-| E2E test SHA-256 | `ad1f165b38954657d931de76523031622af9d2ea64dbf2e423a5c71aef9bcd06` | `ad1f165b38954657d931de76523031622af9d2ea64dbf2e423a5c71aef9bcd06` |
-| Debug APK SHA-256 | `21061dae35370275234a37482f22719e2c203ec610067aa843587fdfdf37dc0e` | `7816651f3e51ff4d7ea0e206b865d0dfca7e97ca5e7a4496ff231d8a33f40bed` |
-| Result | Passed | Passed |
+| API | AVD | Model | Build fingerprint | Source snapshot | Debug APK SHA-256 | Result |
+| --- | --- | --- | --- | --- | --- | --- |
+| 24 | `clock_rhythm_api24` | `Android SDK built for x86_64` | `Android/sdk_google_phone_x86_64/generic_x86_64:7.0/NYC/6696031:userdebug/dev-keys` | `b2c3a02ea6191dd5ffc5cf0de0f666d66a134c89e92da624b728abe338cf0604` | `7816651f3e51ff4d7ea0e206b865d0dfca7e97ca5e7a4496ff231d8a33f40bed` | Passed |
+| 31 | `clock_rhythm_api31` | `sdk_gphone64_x86_64` | `google/sdk_gphone64_x86_64/emulator64_x86_64_arm64:12/SE1A.220826.008/10564458:userdebug/dev-keys` | Not separately recorded; debug-only run | `b6668ae49196764b5bef10b03f8d81600a9c5e3fee7a2384d0188f304f14de77` | Passed |
+| 33 | `clock_rhythm_api33` | `sdk_gphone64_x86_64` | `google/sdk_gphone64_x86_64/emu64x:13/TE1A.240213.009/12342917:userdebug/dev-keys` | Not separately recorded; debug-only run | `b9599b838500e29b272b922fa9a25d399e727e4e4538cce7fe9337c061886650` | Passed |
+| 36 | `clock_rhythm_api36` | `sdk_gphone64_x86_64` | `google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys` | `1cea44f26ce5cfb68e51ae2b18d2b9ae555f09fc78d84a0b64e72adde5487f42` | `21061dae35370275234a37482f22719e2c203ec610067aa843587fdfdf37dc0e` | Passed |
 
-API 36에서는 안정화된 test를 clean state에서 연속 두 번 통과시킨 뒤, final source snapshot으로 한 번 더 통과했습니다. API 24에서도 같은 E2E test SHA가 통과했습니다. Debug APK는 실행별 재빌드 산출물이므로 release matrix artifact로 재사용하지 않습니다.
+Every run used E2E test SHA-256 `ad1f165b38954657d931de76523031622af9d2ea64dbf2e423a5c71aef9bcd06`. API 36 passed twice in succession from clean state before the final recorded run; API 24, 31, and 33 passed the same journey from clean state once. API 31 and 33 did not record a source snapshot at execution time, so this document does not retroactively assign the later release snapshot to them. Debug APKs are rebuilt per run and are not release-matrix artifacts.

@@ -18,4 +18,4 @@ Each completed cell must name the API level, device/emulator model, build finger
 
 The artifact-bound `InstallSmoke` harness produced API 24 and API 36 records under `artifacts/evidence/android/` on 2026-08-23. Both records deliberately remain `OperatorAssessmentRequired`; they prove installation, launch, package metadata collection, and evidence redaction only, so no matrix cell is marked Passed.
 
-The source-to-emulator debug E2E in `integration_test/app_e2e_test.dart` also passed on dedicated API 24 and API 36 AVDs. It proves actual Android composition, Drift Todo create/re-read, Calendar navigation and Flutter Back behavior, but is not an installed release-artifact, permission, lifecycle, update, or physical-device result. Matrix cells therefore remain Pending.
+The source-to-emulator debug E2E in `integration_test/app_e2e_test.dart` passed on dedicated API 24, 31, 33, and 36 AVDs. It proves actual Android composition, Drift Todo create/re-read, Calendar navigation, and Flutter Back behavior, but is not an installed release-artifact, permission, lifecycle, update, or physical-device result. Matrix cells therefore remain Pending.

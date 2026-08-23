@@ -372,6 +372,61 @@ void main() {
       );
     },
   );
+
+  test('Windows lifecycle builds keep native and Dart flavors aligned', () {
+    final String cmake = File(
+      'windows/runner/CMakeLists.txt',
+    ).readAsStringSync();
+    final String lifecycleHarness = File(
+      'tool/test_windows_lifecycle.ps1',
+    ).readAsStringSync();
+    final String buildWrapper = File(
+      'tool/build_windows.ps1',
+    ).readAsStringSync();
+    final String packageWrapper = File(
+      'tool/package_windows.ps1',
+    ).readAsStringSync();
+
+    expect(cmake, contains('set(_clock_rhythm_flavor "beta")'));
+    expect(lifecycleHarness, contains('function Invoke-FlavoredFlutterBuild'));
+    expect(
+      lifecycleHarness,
+      contains('"--dart-define=CLOCK_RHYTHM_FLAVOR=\$Flavor"'),
+    );
+    expect(buildWrapper, contains('-Flavor \$flavorId'));
+    expect(packageWrapper, contains('-Flavor \$release.FlavorId'));
+    expect(packageWrapper, contains('-VerifyFlavorIsolation'));
+    expect(packageWrapper, contains('-VerifyReadinessRegression'));
+  });
+
+  test('distribution bundles include portable asset and theme notices', () {
+    final String assetNotice = File('ASSET_NOTICE.md').readAsStringSync();
+    final String windowsPackage = File(
+      'tool/package_windows.ps1',
+    ).readAsStringSync();
+    final String artifactVerifier = File(
+      'tool/verify_artifact.ps1',
+    ).readAsStringSync();
+    final String sourceSnapshot = File(
+      'tool/source_snapshot.ps1',
+    ).readAsStringSync();
+
+    expect(assetNotice, isNot(contains(r'C:\Users\')));
+    for (final String notice in <String>[
+      'ASSET_NOTICE.md',
+      'THIRD_PARTY_NOTICES.md',
+    ]) {
+      expect(windowsPackage, contains(notice));
+      expect(artifactVerifier, contains("'$notice'"));
+      expect(sourceSnapshot, contains("'$notice'"));
+      for (final String workflowPath in <String>[
+        '.github/workflows/windows.yml',
+        '.github/workflows/android.yml',
+      ]) {
+        expect(File(workflowPath).readAsStringSync(), contains(notice));
+      }
+    }
+  });
 }
 
 String get _powerShellExecutable => 'pwsh';

@@ -13,8 +13,15 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 . (Join-Path $PSScriptRoot 'source_snapshot.ps1')
+[string]$repositoryRoot = [System.IO.Path]::GetFullPath(
+    (Join-Path $PSScriptRoot '..')
+)
 [string]$sourceSnapshotSha256 = Get-ClockRhythmSourceSnapshotSha256 `
-    -RepositoryRoot ([System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..')))
+    -RepositoryRoot $repositoryRoot
+[string[]]$distributionNotices = @(
+    'ASSET_NOTICE.md',
+    'THIRD_PARTY_NOTICES.md'
+)
 
 $release = if ($Flavor -eq 'Beta') {
     [ordered]@{
@@ -376,9 +383,16 @@ if (-not $SkipPreflight) {
     }
 }
 $fvmExecutable = Resolve-FvmExecutable
+$nativeHarness = Join-Path $PSScriptRoot 'test_windows_lifecycle.ps1'
 
 Write-Output 'Resolving the locked dependency graph.'
 & $fvmExecutable flutter pub get --enforce-lockfile
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+
+& $nativeHarness -Flavor $release.FlavorId `
+    -VerifyFlavorIsolation -VerifyReadinessRegression
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
@@ -406,9 +420,9 @@ $releaseDirectory = [System.IO.Path]::GetFullPath(
 if (-not (Test-Path -LiteralPath $releaseDirectory -PathType Container)) {
     throw "Expected Windows release bundle is missing: $releaseDirectory"
 }
-$nativeHarness = Join-Path $PSScriptRoot 'test_windows_lifecycle.ps1'
 & $nativeHarness `
     -ExecutablePath (Join-Path $releaseDirectory 'clock_rhythm.exe') `
+    -Flavor $release.FlavorId `
     -SkipFlutterBuild
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
@@ -429,6 +443,13 @@ $bundleDirectory = Join-Path $stagingDirectory 'bundle'
 
 try {
     Copy-WindowsBundle -Source $releaseDirectory -Destination $bundleDirectory
+    foreach ($notice in $distributionNotices) {
+        [string]$noticeSource = Join-Path $repositoryRoot $notice
+        if (-not (Test-Path -LiteralPath $noticeSource -PathType Leaf)) {
+            throw "Required distribution notice is missing: $notice"
+        }
+        Copy-Item -LiteralPath $noticeSource -Destination $bundleDirectory
+    }
     $stagedArtifacts = [System.Collections.Generic.List[object]]::new()
     if ($Artifact -in @('Zip', 'All')) {
         $stagedArtifacts.Add(

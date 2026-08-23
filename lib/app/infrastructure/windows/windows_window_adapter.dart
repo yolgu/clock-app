@@ -56,6 +56,7 @@ abstract interface class WindowsWindowPlugin {
 final class WindowsWindowAdapter
     implements WindowPort, WindowsWindowEventHandler {
   WindowsWindowAdapter({
+    required this.expectedApplicationIdentity,
     WindowsWindowPlugin? windowPlugin,
     WindowsLifecycleHost? lifecycleHost,
     WindowsWindowStateStore? stateStore,
@@ -68,6 +69,7 @@ final class WindowsWindowAdapter
   static const double minimumWidth = 720;
   static const double minimumHeight = 560;
 
+  final String expectedApplicationIdentity;
   final WindowsWindowPlugin _windowPlugin;
   final WindowsLifecycleHost _lifecycleHost;
   final WindowsWindowStateStore _stateStore;
@@ -96,6 +98,13 @@ final class WindowsWindowAdapter
     await _windowPlugin.initialize();
     final WindowsLifecycleConfiguration configuration = await _lifecycleHost
         .loadConfiguration();
+    if (configuration.applicationIdentity != expectedApplicationIdentity) {
+      throw StateError(
+        'Windows native identity ${configuration.applicationIdentity} '
+        'does not match the Dart flavor identity '
+        '$expectedApplicationIdentity.',
+      );
+    }
     _applicationIdentity = configuration.applicationIdentity;
     await _windowPlugin.setMinimumSize(
       width: minimumWidth,

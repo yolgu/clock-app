@@ -167,12 +167,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey<String>('auto-start-control')), findsOne);
-    expect(find.byKey(const ValueKey<String>('choose-custom-sound')), findsOne);
-    expect(find.byKey(const ValueKey<String>('sound-volume')), findsOne);
     expect(
       find.byKey(const ValueKey<String>('permission-status-panel')),
       findsNothing,
     );
+
+    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey<String>('choose-custom-sound')), findsOne);
+    expect(find.byKey(const ValueKey<String>('sound-volume')), findsOne);
   });
 
   testWidgets(
@@ -224,6 +228,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+
     final Finder preview = find.byKey(
       const ValueKey<String>('sound-preview-control'),
     );
@@ -256,22 +263,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final Finder preferencesViewport = find.byType(ListView);
+      final ListView preferencesViewport = tester.widget<ListView>(
+        find.byType(ListView),
+      );
+      final SliverChildListDelegate childrenDelegate =
+          preferencesViewport.childrenDelegate as SliverChildListDelegate;
       expect(
-        find.descendant(
-          of: preferencesViewport,
-          matching: find.byKey(const ValueKey<String>('rhythm-settings-panel')),
-        ),
-        findsOneWidget,
+        childrenDelegate.children.whereType<RhythmSettingsPanel>(),
+        hasLength(1),
       );
       expect(
-        find.descendant(
-          of: preferencesViewport,
-          matching: find.byKey(
-            const ValueKey<String>('notification-sound-panel'),
-          ),
-        ),
-        findsOneWidget,
+        childrenDelegate.children.whereType<NotificationSoundPanel>(),
+        hasLength(1),
       );
     },
   );

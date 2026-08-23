@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
   [string]$ExecutablePath = '',
+  [ValidateSet('beta', 'production')]
+  [string]$Flavor = 'beta',
   [switch]$SkipFlutterBuild,
   [switch]$VerifyFlavorIsolation,
   [switch]$VerifyReadinessRegression
@@ -126,6 +128,37 @@ function Invoke-CheckedCommand {
   if ($LASTEXITCODE -ne 0) {
     throw "Command failed with exit code $LASTEXITCODE`: $FilePath"
   }
+}
+
+function Invoke-FlavoredFlutterBuild {
+  [OutputType([void])]
+  param(
+    [Parameter(Mandatory = $true)]
+    [ValidateSet('beta', 'production')]
+    [string]$Flavor
+  )
+
+  $previousFlavor = [Environment]::GetEnvironmentVariable(
+    'CLOCK_RHYTHM_WINDOWS_FLAVOR',
+    'Process'
+  )
+  try {
+    $env:CLOCK_RHYTHM_WINDOWS_FLAVOR = $Flavor
+    Invoke-CheckedCommand -FilePath 'fvm' -Arguments @(
+      'flutter',
+      'build',
+      'windows',
+      '--debug',
+      "--dart-define=CLOCK_RHYTHM_FLAVOR=$Flavor"
+    )
+  } finally {
+    [Environment]::SetEnvironmentVariable(
+      'CLOCK_RHYTHM_WINDOWS_FLAVOR',
+      $previousFlavor,
+      'Process'
+    )
+  }
+  Assert-CMakeFlavorCache -Flavor $Flavor
 }
 
 function Wait-Condition {
@@ -316,27 +349,14 @@ function Invoke-FlavorIsolationMatrix {
 
   $flavorProcesses = `
     [System.Collections.Generic.List[System.Diagnostics.Process]]::new()
-  $previousFlavor = [Environment]::GetEnvironmentVariable(
-    'CLOCK_RHYTHM_WINDOWS_FLAVOR',
-    'Process'
-  )
-
   try {
     New-Item -ItemType Directory -Path $matrixPath | Out-Null
-    $env:CLOCK_RHYTHM_WINDOWS_FLAVOR = 'beta'
-    Invoke-CheckedCommand -FilePath 'fvm' -Arguments @(
-      'flutter', 'build', 'windows', '--debug'
-    )
-    Assert-CMakeFlavorCache -Flavor beta
+    Invoke-FlavoredFlutterBuild -Flavor beta
     $betaDirectory = Join-Path $matrixPath 'beta'
     Copy-Item -LiteralPath (Join-Path $buildPath 'runner\Debug') `
       -Destination $betaDirectory -Recurse
 
-    Remove-Item Env:\CLOCK_RHYTHM_WINDOWS_FLAVOR -ErrorAction SilentlyContinue
-    Invoke-CheckedCommand -FilePath 'fvm' -Arguments @(
-      'flutter', 'build', 'windows', '--debug'
-    )
-    Assert-CMakeFlavorCache -Flavor production
+    Invoke-FlavoredFlutterBuild -Flavor production
     $productionDirectory = Join-Path $matrixPath 'production'
     Copy-Item -LiteralPath (Join-Path $buildPath 'runner\Debug') `
       -Destination $productionDirectory -Recurse
@@ -396,11 +416,6 @@ function Invoke-FlavorIsolationMatrix {
       }
       $process.Dispose()
     }
-    [Environment]::SetEnvironmentVariable(
-      'CLOCK_RHYTHM_WINDOWS_FLAVOR',
-      $previousFlavor,
-      'Process'
-    )
     if (Test-Path -LiteralPath $matrixPath) {
       $verifiedMatrixPath = [System.IO.Path]::GetFullPath($matrixPath)
       if (-not $verifiedMatrixPath.StartsWith(
@@ -435,18 +450,10 @@ function Invoke-ReadinessRegressionProbe {
     'CLOCK_RHYTHM_TEST_FORCE_VISIBLE_HIDDEN_START',
     'Process'
   )
-  $previousFlavor = [Environment]::GetEnvironmentVariable(
-    'CLOCK_RHYTHM_WINDOWS_FLAVOR',
-    'Process'
-  )
-
   try {
     New-Item -ItemType Directory -Path $regressionPath | Out-Null
-    $env:CLOCK_RHYTHM_WINDOWS_FLAVOR = 'production'
     $env:CLOCK_RHYTHM_TEST_FORCE_VISIBLE_HIDDEN_START = '1'
-    Invoke-CheckedCommand -FilePath 'fvm' -Arguments @(
-      'flutter', 'build', 'windows', '--debug'
-    )
+    Invoke-FlavoredFlutterBuild -Flavor production
     $regressionDirectory = Join-Path $regressionPath 'injected'
     Copy-Item -LiteralPath (Join-Path $buildPath 'runner\Debug') `
       -Destination $regressionDirectory -Recurse
@@ -509,19 +516,11 @@ function Invoke-ReadinessRegressionProbe {
         $null,
         'Process'
       )
-      $env:CLOCK_RHYTHM_WINDOWS_FLAVOR = 'production'
-      Invoke-CheckedCommand -FilePath 'fvm' -Arguments @(
-        'flutter', 'build', 'windows', '--debug'
-      )
+      Invoke-FlavoredFlutterBuild -Flavor production
     } finally {
       [Environment]::SetEnvironmentVariable(
         'CLOCK_RHYTHM_TEST_FORCE_VISIBLE_HIDDEN_START',
         $previousInjection,
-        'Process'
-      )
-      [Environment]::SetEnvironmentVariable(
-        'CLOCK_RHYTHM_WINDOWS_FLAVOR',
-        $previousFlavor,
         'Process'
       )
     }
@@ -531,14 +530,13 @@ function Invoke-ReadinessRegressionProbe {
 Push-Location $workspacePath
 try {
   if (-not $SkipFlutterBuild) {
-    Invoke-CheckedCommand -FilePath 'fvm' -Arguments @(
-      'flutter', 'build', 'windows', '--debug'
-    )
+    Invoke-FlavoredFlutterBuild -Flavor $Flavor
   }
   $cmakeCachePath = Join-Path $buildPath 'CMakeCache.txt'
   if (-not (Test-Path -LiteralPath $cmakeCachePath -PathType Leaf)) {
     throw "CMake cache not found after Flutter build: $cmakeCachePath"
   }
+  Assert-CMakeFlavorCache -Flavor $Flavor
   $cmakeCommandLine = Get-Content -LiteralPath $cmakeCachePath |
     Where-Object { $_ -like 'CMAKE_COMMAND:INTERNAL=*' } |
     Select-Object -First 1

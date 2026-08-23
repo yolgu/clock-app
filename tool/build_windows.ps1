@@ -64,7 +64,8 @@ if (-not (Test-Path -LiteralPath $nativeHarness -PathType Leaf)) {
 }
 $releaseExecutable = Join-Path (Get-Location) `
     'build\windows\x64\runner\Release\clock_rhythm.exe'
-& $nativeHarness -ExecutablePath $releaseExecutable -SkipFlutterBuild
+& $nativeHarness -ExecutablePath $releaseExecutable -Flavor $flavorId `
+    -SkipFlutterBuild
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }

@@ -28,7 +28,11 @@ final class WindowsPlatformServicesFactory implements AppPlatformBootstrap {
     WindowsWindowAdapter? window,
     WindowsAutoStartAdapter? autoStart,
     PlatformPreferencesRepairRegistry? repairState,
-  }) : _window = window ?? WindowsWindowAdapter(),
+  }) : _window =
+           window ??
+           WindowsWindowAdapter(
+             expectedApplicationIdentity: configuration.windowsIdentity,
+           ),
        _autoStart = autoStart ?? WindowsAutoStartAdapter(),
        _repairState = repairState ?? PlatformPreferencesRepairRegistry();
 

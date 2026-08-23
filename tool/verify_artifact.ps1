@@ -511,7 +511,9 @@ function Inspect-WindowsArchive {
         'data/app.so',
         'data/icudtl.dat',
         'data/flutter_assets/AssetManifest.bin',
-        'data/flutter_assets/assets/audio/CHIME14.mp3'
+        'data/flutter_assets/assets/audio/CHIME14.mp3',
+        'ASSET_NOTICE.md',
+        'THIRD_PARTY_NOTICES.md'
     )
     $requiredFiles = if ($IsMsix) {
         @($requiredRuntimeFiles + @('AppxManifest.xml', 'AppxBlockMap.xml', '[Content_Types].xml'))

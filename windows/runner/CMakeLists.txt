@@ -71,7 +71,7 @@ if(NOT _clock_rhythm_environment_flavor STREQUAL "")
 elseif(NOT _clock_rhythm_dart_flavor STREQUAL "")
   set(_clock_rhythm_flavor "${_clock_rhythm_dart_flavor}")
 else()
-  set(_clock_rhythm_flavor "production")
+  set(_clock_rhythm_flavor "beta")
 endif()
 
 if(_clock_rhythm_flavor STREQUAL "beta")

@@ -2,7 +2,7 @@
 
 Clock Rhythm은 집중과 휴식의 반복 주기인 Daily Rhythm과 날짜별 Todo를 함께 관리하는 로컬 우선 생산성 앱입니다. Windows 10/11 x64와 Android 7.0(API 24) 이상을 대상으로 하며, 계정·동기화·분석·원격 오류 수집 기능을 포함하지 않습니다.
 
-> 현재 저장소는 beta 검증 단계입니다. Android 실기기 수명주기, Windows 10/11 설치·업데이트, 실제 Neutralino v1 왕복, production signing 증거가 모두 갖춰지기 전에는 `1.0.0+1` production-ready로 간주하지 않습니다. 진행 상태는 [실행 ledger](docs/plans/2026-08-22-clock-rhythm-flutter-port/execution-ledger.md)에서 확인합니다.
+> 현재 저장소는 beta 검증 단계입니다. 실제 Neutralino v1 → Flutter beta → Flutter production 왕복은 통과했지만, Android 실기기 수명주기, Windows 10 및 clean-user 설치·업데이트, 수동 접근성, production signing 증거가 모두 갖춰지기 전에는 `1.0.0+1` production-ready로 간주하지 않습니다. 진행 상태는 [실행 ledger](docs/plans/2026-08-22-clock-rhythm-flutter-port/execution-ledger.md)에서 확인합니다.
 
 ## 지원 범위
 

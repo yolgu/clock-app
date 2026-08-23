@@ -14,6 +14,8 @@ function Get-ClockRhythmSourceSnapshotSha256 {
     ) + [System.IO.Path]::DirectorySeparatorChar
     [string[]]$sourceRoots = @(
         '.fvmrc',
+        'ASSET_NOTICE.md',
+        'THIRD_PARTY_NOTICES.md',
         'analysis_options.yaml',
         'l10n.yaml',
         'pubspec.lock',

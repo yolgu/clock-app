@@ -60,4 +60,6 @@ jobs:
             artifacts/windows/*.zip
             artifacts/manifest.json
             artifacts/SHA256SUMS.txt
+            ASSET_NOTICE.md
+            THIRD_PARTY_NOTICES.md
           if-no-files-found: error
