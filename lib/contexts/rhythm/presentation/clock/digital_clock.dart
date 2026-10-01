@@ -9,16 +9,23 @@ final class DigitalClock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String time = _format(now);
+    final List<String> parts = _parts(now);
+    final TextStyle? base = Theme.of(context).textTheme.displayMedium;
     return Semantics(
       key: const ValueKey<String>('digital-clock-semantics'),
-      label: AppLocalizations.of(context).accessibilityDigitalClockLabel(time),
+      label: AppLocalizations.of(
+        context,
+      ).accessibilityDigitalClockLabel(parts.join(' : ')),
       liveRegion: false,
       child: ExcludeSemantics(
         child: Text(
-          time,
+          parts.join(':'),
           key: const ValueKey<String>('digital-clock'),
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
+          style: base?.copyWith(
+            fontSize: 52,
+            height: 60 / 52,
+            fontWeight: FontWeight.w200,
+            letterSpacing: -1,
             fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
           ),
         ),
@@ -26,10 +33,11 @@ final class DigitalClock extends StatelessWidget {
     );
   }
 
-  String _format(DateTime value) {
-    final String hour = value.hour.toString().padLeft(2, '0');
-    final String minute = value.minute.toString().padLeft(2, '0');
-    final String second = value.second.toString().padLeft(2, '0');
-    return '$hour : $minute : $second';
+  List<String> _parts(DateTime value) {
+    return <int>[
+      value.hour,
+      value.minute,
+      value.second,
+    ].map((int part) => part.toString().padLeft(2, '0')).toList();
   }
 }

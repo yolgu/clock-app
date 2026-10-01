@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../shared/i18n/public.dart';
+import '../../../../shared/ui/public.dart'
+    show ClockRhythmCard, ClockRhythmLayout, ClockRhythmSpace;
 import '../../../../shared/ui/public.dart' show SemanticStatusAnnouncement;
 import '../../application/ports/notification_sound_file_port.dart';
 import '../../application/preferences_command_result.dart';
@@ -38,6 +40,7 @@ final class _NotificationSoundPanelState
 
   Widget _buildPanel(BuildContext context, PreferencesViewState state) {
     final AppLocalizations copy = AppLocalizations.of(context);
+    final ThemeData theme = Theme.of(context);
     final PreferencesPlatformCapabilities capabilities = ref.watch(
       preferencesPlatformCapabilitiesProvider,
     );
@@ -60,25 +63,77 @@ final class _NotificationSoundPanelState
         ? PreferencesRepairNeed.notificationPayload
         : null;
 
-    return Card(
+    return ClockRhythmCard.unpadded(
       key: const ValueKey<String>('notification-sound-panel'),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(
+          ClockRhythmLayout.cardPaddingFor(MediaQuery.sizeOf(context).width),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(copy.soundEyebrow),
-            Text(
-              copy.soundTitle,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(selection, key: const ValueKey<String>('sound-selection')),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            Row(
               children: <Widget>[
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.error,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: SizedBox.square(
+                    dimension: 36,
+                    child: Icon(
+                      sound.mode == NotificationSoundMode.muted
+                          ? Icons.volume_off_rounded
+                          : Icons.volume_up_rounded,
+                      size: 22,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: ClockRhythmSpace.space12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(copy.soundTitle, style: theme.textTheme.titleMedium),
+                      const SizedBox(height: ClockRhythmSpace.space4),
+                      Text(
+                        selection,
+                        key: const ValueKey<String>('sound-selection'),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Divider(
+              height: ClockRhythmSpace.space32,
+              thickness: 0.5,
+              color: theme.colorScheme.outlineVariant,
+            ),
+            Wrap(
+              spacing: ClockRhythmSpace.space8,
+              runSpacing: ClockRhythmSpace.space8,
+              children: <Widget>[
+                SoundPreviewButton(
+                  isPreviewing: state.isSoundPreviewing,
+                  previewLabel: copy.soundPreview,
+                  stopLabel: copy.soundStopPreview,
+                  enabled: !state.isBusy && sound.isAudible && volume > 0,
+                  onPreview: () {
+                    ref
+                        .read(preferencesViewModelProvider.notifier)
+                        .previewSound();
+                  },
+                  onStop: () {
+                    ref
+                        .read(preferencesViewModelProvider.notifier)
+                        .stopSoundPreview();
+                  },
+                ),
                 OutlinedButton(
                   key: const ValueKey<String>('use-default-sound'),
                   onPressed: state.isBusy
@@ -118,67 +173,72 @@ final class _NotificationSoundPanelState
                         : copy.soundMute,
                   ),
                 ),
-                SoundPreviewButton(
-                  isPreviewing: state.isSoundPreviewing,
-                  previewLabel: copy.soundPreview,
-                  stopLabel: copy.soundStopPreview,
-                  enabled: !state.isBusy && sound.isAudible && volume > 0,
-                  onPreview: () {
-                    ref
-                        .read(preferencesViewModelProvider.notifier)
-                        .previewSound();
-                  },
-                  onStop: () {
-                    ref
-                        .read(preferencesViewModelProvider.notifier)
-                        .stopSoundPreview();
-                  },
-                ),
               ],
             ),
             if (capabilities.showsCustomSound)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: ClockRhythmSpace.space12),
                 child: Text(
                   copy.soundCustomRequirements(
                     NotificationSoundFilePort.maximumCustomMp3MiB,
                   ),
+                  style: theme.textTheme.bodySmall,
                 ),
               ),
             if (capabilities.showsVolume) ...<Widget>[
-              const SizedBox(height: 12),
-              Semantics(
-                label: copy.soundVolumeLabel,
-                value: volumeLabel,
-                child: Slider(
-                  key: const ValueKey<String>('sound-volume'),
-                  value: volume,
-                  divisions: 20,
-                  label: volumeLabel,
-                  onChanged: state.isBusy
-                      ? null
-                      : (double next) => setState(() => _volume = next),
-                  onChangeEnd: state.isBusy
-                      ? null
-                      : (double next) async {
-                          await ref
-                              .read(preferencesViewModelProvider.notifier)
-                              .changeVolume(next);
-                          _clearLocalVolume();
-                        },
-                ),
+              const SizedBox(height: ClockRhythmSpace.space16),
+              Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.volume_mute_rounded,
+                    size: 20,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  Expanded(
+                    child: Semantics(
+                      label: copy.soundVolumeLabel,
+                      value: volumeLabel,
+                      child: Slider(
+                        key: const ValueKey<String>('sound-volume'),
+                        value: volume,
+                        divisions: 20,
+                        label: volumeLabel,
+                        onChanged: state.isBusy
+                            ? null
+                            : (double next) => setState(() => _volume = next),
+                        onChangeEnd: state.isBusy
+                            ? null
+                            : (double next) async {
+                                await ref
+                                    .read(preferencesViewModelProvider.notifier)
+                                    .changeVolume(next);
+                                _clearLocalVolume();
+                              },
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.volume_up_rounded,
+                    size: 20,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ],
               ),
               if (volume == 0 && sound.mode != NotificationSoundMode.muted)
                 Text(
                   copy.soundZeroVolumeWarning,
                   key: const ValueKey<String>('zero-volume-warning'),
+                  style: theme.textTheme.bodySmall,
                 ),
             ],
             if (repairNeed != null)
               ListTile(
                 key: const ValueKey<String>('sound-repair-needed'),
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.warning_amber),
+                leading: Icon(
+                  Icons.warning_amber_rounded,
+                  color: theme.colorScheme.error,
+                ),
                 title: Text(copy.failureCustomSoundPlayback),
                 trailing: TextButton(
                   onPressed: state.isBusy

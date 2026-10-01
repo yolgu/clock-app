@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../shared/i18n/public.dart';
+import '../../../shared/ui/public.dart' show ClockRhythmSpace;
 import '../application/backup_failure.dart';
 import '../application/backup_preview.dart';
 import 'backup_failure_copy.dart';
@@ -41,7 +42,7 @@ final class BackupImportPreviewDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(copy.backupImportConfirmDescription),
-                const SizedBox(height: 12),
+                const SizedBox(height: ClockRhythmSpace.space12),
                 Text(copy.backupSummaryTodos(preview.todoCount)),
                 Text(
                   copy.backupSummaryCompletedTodos(preview.completedTodoCount),
@@ -83,7 +84,7 @@ final class BackupImportPreviewDialog extends StatelessWidget {
                     copy.backupSummaryCustomSoundSanitized,
                     key: const ValueKey<String>('custom-sound-sanitized'),
                   ),
-                const SizedBox(height: 12),
+                const SizedBox(height: ClockRhythmSpace.space12),
                 Text(
                   copy.backupPlainTextWarning,
                   key: const ValueKey<String>('backup-plain-text-warning'),
@@ -94,7 +95,9 @@ final class BackupImportPreviewDialog extends StatelessWidget {
                 ),
                 if (failure case final BackupFailure currentFailure)
                   Padding(
-                    padding: const EdgeInsets.only(top: 12),
+                    padding: const EdgeInsets.only(
+                      top: ClockRhythmSpace.space12,
+                    ),
                     child: Text(
                       backupFailureMessage(copy, currentFailure),
                       key: const ValueKey<String>('backup-confirm-failure'),

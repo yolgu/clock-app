@@ -29,8 +29,18 @@ final class AppShortcuts extends StatelessWidget {
         const SingleActivator(LogicalKeyboardKey.digit4, control: true): () {
           onDestinationSelected(MainDestination.theme.index);
         },
+        const SingleActivator(LogicalKeyboardKey.digit5, control: true): () {
+          onDestinationSelected(MainDestination.settings.index);
+        },
       },
-      child: child,
+      // Shortcuts only see key events from focused descendants, so anchor
+      // focus here; Ctrl+1-5 then work right after launch.
+      child: Focus(
+        autofocus: true,
+        skipTraversal: true,
+        debugLabel: 'App shortcuts',
+        child: child,
+      ),
     );
   }
 }

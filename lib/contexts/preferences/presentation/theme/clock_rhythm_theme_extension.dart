@@ -11,6 +11,10 @@ final class ClockRhythmThemeExtension
     required this.focusRing,
     required this.danger,
     required this.sourceText,
+    required this.outlineSubtle,
+    required this.hoverOverlay,
+    required this.pressedOverlay,
+    required this.tint,
   });
 
   final Color surfaceStrong;
@@ -20,6 +24,12 @@ final class ClockRhythmThemeExtension
   final Color focusRing;
   final Color danger;
   final Color sourceText;
+  final Color outlineSubtle;
+  final Color hoverOverlay;
+  final Color pressedOverlay;
+
+  /// The accent tuned for text and glyphs on grouped surfaces.
+  final Color tint;
 
   @override
   ClockRhythmThemeExtension copyWith({
@@ -30,6 +40,10 @@ final class ClockRhythmThemeExtension
     Color? focusRing,
     Color? danger,
     Color? sourceText,
+    Color? outlineSubtle,
+    Color? hoverOverlay,
+    Color? pressedOverlay,
+    Color? tint,
   }) {
     return ClockRhythmThemeExtension(
       surfaceStrong: surfaceStrong ?? this.surfaceStrong,
@@ -39,6 +53,10 @@ final class ClockRhythmThemeExtension
       focusRing: focusRing ?? this.focusRing,
       danger: danger ?? this.danger,
       sourceText: sourceText ?? this.sourceText,
+      outlineSubtle: outlineSubtle ?? this.outlineSubtle,
+      hoverOverlay: hoverOverlay ?? this.hoverOverlay,
+      pressedOverlay: pressedOverlay ?? this.pressedOverlay,
+      tint: tint ?? this.tint,
     );
   }
 
@@ -58,6 +76,10 @@ final class ClockRhythmThemeExtension
       focusRing: Color.lerp(focusRing, other.focusRing, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
       sourceText: Color.lerp(sourceText, other.sourceText, t)!,
+      outlineSubtle: Color.lerp(outlineSubtle, other.outlineSubtle, t)!,
+      hoverOverlay: Color.lerp(hoverOverlay, other.hoverOverlay, t)!,
+      pressedOverlay: Color.lerp(pressedOverlay, other.pressedOverlay, t)!,
+      tint: Color.lerp(tint, other.tint, t)!,
     );
   }
 }

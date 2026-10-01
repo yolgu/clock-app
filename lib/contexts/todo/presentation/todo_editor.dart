@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart'
     show AppLocalizations, ClockTimeFormatter, LocalDateFormatter;
+import '../../../shared/ui/public.dart' show ClockRhythmSpace;
 import '../domain/local_calendar_date.dart';
 import '../domain/todo.dart';
 import '../domain/todo_time.dart';
@@ -109,13 +110,12 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
                 unawaited(_submit());
               }
             : null,
-        icon: Icon(_isEditing ? Icons.check : Icons.add),
+        icon: Icon(_isEditing ? Icons.check_rounded : Icons.add_rounded),
         label: Text(
           _isEditing
               ? localizations.todoActionSave
               : localizations.todoActionAdd,
         ),
-        style: FilledButton.styleFrom(minimumSize: const Size(48, 48)),
       ),
       if (_isEditing)
         OutlinedButton.icon(
@@ -123,7 +123,6 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
           onPressed: commandInFlight ? null : widget.onFinished,
           icon: const Icon(Icons.close),
           label: Text(localizations.todoActionCancel),
-          style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
         ),
     ];
 
@@ -138,11 +137,14 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
         return KeyEventResult.handled;
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            TextField(
+        padding: const EdgeInsets.symmetric(vertical: ClockRhythmSpace.space8),
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final bool inline =
+                !_isEditing &&
+                constraints.maxWidth >= 460 &&
+                MediaQuery.textScalerOf(context).scale(16) <= 20;
+            final Widget field = TextField(
               key: ValueKey<String>(
                 _isEditing ? 'todo-edit-title' : 'todo-create-title',
               ),
@@ -151,7 +153,6 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
               maxLines: 1,
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(
-                border: const OutlineInputBorder(),
                 labelText: titleLabel,
                 hintText: localizations.todoTodayPlaceholder,
                 errorText: _hasInteractedWithTitle ? feedback.error : null,
@@ -166,31 +167,59 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
                   unawaited(_submit());
                 }
               },
-            ),
-            if (feedback.shouldShowCounter)
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    localizations.todoValidationTitleCounter(
-                      feedback.graphemeCount,
-                      TodoTitle.maximumGraphemeLength,
+            );
+            final Widget? counter = feedback.shouldShowCounter
+                ? Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: ClockRhythmSpace.space4,
+                      ),
+                      child: Text(
+                        localizations.todoValidationTitleCounter(
+                          feedback.graphemeCount,
+                          TodoTitle.maximumGraphemeLength,
+                        ),
+                        key: const ValueKey<String>('todo-title-counter'),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ),
-                    key: const ValueKey<String>('todo-title-counter'),
-                    style: Theme.of(context).textTheme.bodySmall,
+                  )
+                : null;
+            if (inline) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Expanded(child: field),
+                      for (final Widget control in controls) ...<Widget>[
+                        const SizedBox(width: ClockRhythmSpace.space8),
+                        SizedBox(height: 48, child: control),
+                      ],
+                    ],
                   ),
+                  ?counter,
+                ],
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                field,
+                ?counter,
+                const SizedBox(height: ClockRhythmSpace.space8),
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: ClockRhythmSpace.space8,
+                  runSpacing: ClockRhythmSpace.space8,
+                  children: controls,
                 ),
-              ),
-            const SizedBox(height: 8),
-            Wrap(
-              alignment: WrapAlignment.end,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: controls,
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -230,7 +259,6 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
             : null,
         icon: const Icon(Icons.calendar_today_outlined),
         label: Text(formattedDate),
-        style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
       ),
     );
   }
@@ -247,7 +275,6 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
             : null,
         icon: const Icon(Icons.schedule_outlined),
         label: Text(localizations.todoActionAddTime),
-        style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
       );
     }
     final String semanticLabel = <String>[
@@ -276,7 +303,6 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
                 : null,
             icon: const Icon(Icons.schedule),
             label: Text(currentTime),
-            style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
           ),
         ),
         IconButton(

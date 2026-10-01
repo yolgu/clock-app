@@ -2,7 +2,8 @@ enum MainDestination {
   clock('/clock'),
   calendar('/calendar'),
   data('/data'),
-  theme('/theme');
+  theme('/theme'),
+  settings('/settings');
 
   const MainDestination(this.location);
 

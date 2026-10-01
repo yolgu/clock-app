@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/i18n/public.dart';
-import '../../../../shared/ui/public.dart' show SemanticStatusAnnouncement;
+import '../../../../shared/ui/public.dart'
+    show
+        ClockRhythmCard,
+        ClockRhythmLayout,
+        ClockRhythmRadius,
+        ClockRhythmSpace,
+        SemanticStatusAnnouncement;
 import '../../../rhythm/public_model.dart';
 import '../../application/preferences_command_result.dart';
 import '../../domain/language_preference.dart';
@@ -97,23 +103,82 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
         ((focusMinutes != null && focusMinutes < 9) ||
             (restMinutes != null && restMinutes < 9));
 
-    return Card(
+    final ThemeData theme = Theme.of(context);
+    final double padding = ClockRhythmLayout.cardPaddingFor(
+      MediaQuery.sizeOf(context).width,
+    );
+    final bool sideBySide =
+        MediaQuery.sizeOf(context).width >=
+            ClockRhythmLayout.compactBreakpoint &&
+        MediaQuery.textScalerOf(context).scale(16) <= 24;
+    final Widget focusField = DurationField(
+      label: copy.rhythmSettingsFocusMinutes,
+      controller: _focus.value,
+      minimum: DurationMinutes.minimum,
+      maximum: DurationMinutes.maximumFocus,
+      errorText: validation.errors.contains(RhythmSettingsFieldError.focus)
+          ? copy.rhythmSettingsMinuteRange(
+              DurationMinutes.minimum,
+              DurationMinutes.maximumFocus,
+            )
+          : null,
+      enabled: !state.isBusy,
+      onChanged: (_) => _markEditedAndValidate(),
+    );
+    final Widget restField = DurationField(
+      label: copy.rhythmSettingsRestMinutes,
+      controller: _rest.value,
+      minimum: DurationMinutes.minimum,
+      maximum: DurationMinutes.maximumRest,
+      errorText: validation.errors.contains(RhythmSettingsFieldError.rest)
+          ? copy.rhythmSettingsMinuteRange(
+              DurationMinutes.minimum,
+              DurationMinutes.maximumRest,
+            )
+          : null,
+      enabled: !state.isBusy,
+      onChanged: (_) => _markEditedAndValidate(),
+    );
+    final Widget hairline = Divider(
+      height: ClockRhythmSpace.space32,
+      thickness: 0.5,
+      color: theme.colorScheme.outlineVariant,
+    );
+
+    return ClockRhythmCard.unpadded(
       key: const ValueKey<String>('rhythm-settings-panel'),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(padding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: SizedBox.square(
+                    dimension: 36,
+                    child: Icon(
+                      Icons.timer_outlined,
+                      size: 22,
+                      color: theme.colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: ClockRhythmSpace.space12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
                         copy.rhythmSettingsDisclosureTitle,
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: theme.textTheme.titleMedium,
                       ),
+                      const SizedBox(height: ClockRhythmSpace.space4),
                       RhythmSettingsSummary(
                         state: state,
                         hasInvalidInput: hasInvalidInput,
@@ -132,46 +197,32 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                       setState(() => _expanded.value = !_expanded.value);
                     },
                     icon: Icon(
-                      showsBody ? Icons.expand_less : Icons.expand_more,
+                      showsBody
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
                     ),
                   ),
               ],
             ),
             if (showsBody) ...<Widget>[
-              const SizedBox(height: 16),
-              DurationField(
-                label: copy.rhythmSettingsFocusMinutes,
-                controller: _focus.value,
-                minimum: DurationMinutes.minimum,
-                maximum: DurationMinutes.maximumFocus,
-                errorText:
-                    validation.errors.contains(RhythmSettingsFieldError.focus)
-                    ? copy.rhythmSettingsMinuteRange(
-                        DurationMinutes.minimum,
-                        DurationMinutes.maximumFocus,
-                      )
-                    : null,
-                enabled: !state.isBusy,
-                onChanged: (_) => _markEditedAndValidate(),
-              ),
-              const SizedBox(height: 8),
-              DurationField(
-                label: copy.rhythmSettingsRestMinutes,
-                controller: _rest.value,
-                minimum: DurationMinutes.minimum,
-                maximum: DurationMinutes.maximumRest,
-                errorText:
-                    validation.errors.contains(RhythmSettingsFieldError.rest)
-                    ? copy.rhythmSettingsMinuteRange(
-                        DurationMinutes.minimum,
-                        DurationMinutes.maximumRest,
-                      )
-                    : null,
-                enabled: !state.isBusy,
-                onChanged: (_) => _markEditedAndValidate(),
-              ),
-              const SizedBox(height: 8),
+              hairline,
+              if (sideBySide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Expanded(child: focusField),
+                    const SizedBox(width: ClockRhythmSpace.space16),
+                    Expanded(child: restField),
+                  ],
+                )
+              else ...<Widget>[
+                focusField,
+                const SizedBox(height: ClockRhythmSpace.space12),
+                restField,
+              ],
+              const SizedBox(height: ClockRhythmSpace.space16),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Expanded(
                     child: ClockTimeField(
@@ -188,7 +239,7 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                       onChanged: (_) => _markEditedAndValidate(),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: ClockRhythmSpace.space16),
                   Expanded(
                     child: ClockTimeField(
                       label: copy.rhythmSettingsDailyEnd,
@@ -210,15 +261,14 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                 RhythmSettingsFieldError.dailyWindow,
               ))
                 Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: ClockRhythmSpace.space8),
                   child: Text(
                     copy.rhythmSettingsNextEventUnavailable,
                     key: const ValueKey<String>('daily-window-error'),
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                    style: TextStyle(color: theme.colorScheme.error),
                   ),
                 ),
+              hairline,
               if (capabilities.showsAutoStart)
                 SwitchListTile(
                   key: const ValueKey<String>('auto-start-control'),
@@ -236,12 +286,20 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                 ListTile(
                   key: const ValueKey<String>('deep-idle-warning'),
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.warning_amber),
+                  leading: Icon(
+                    Icons.warning_amber_rounded,
+                    color: theme.colorScheme.error,
+                  ),
                   title: Text(copy.rhythmSettingsDeepIdleWarning(9)),
                 ),
+              if (capabilities.showsAutoStart || showsDeepIdleWarning)
+                const SizedBox(height: ClockRhythmSpace.space12),
               DropdownButtonFormField<LanguagePreference>(
                 key: const ValueKey<String>('language-control'),
+                isExpanded: true,
                 initialValue: state.preferences.language,
+                borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
+                icon: const Icon(Icons.unfold_more_rounded),
                 decoration: InputDecoration(labelText: copy.languageLabel),
                 items: <DropdownMenuItem<LanguagePreference>>[
                   DropdownMenuItem<LanguagePreference>(
@@ -264,11 +322,11 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                         }
                       },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: ClockRhythmSpace.space20),
               Wrap(
                 alignment: WrapAlignment.end,
-                spacing: 8,
-                runSpacing: 8,
+                spacing: ClockRhythmSpace.space8,
+                runSpacing: ClockRhythmSpace.space8,
                 children: <Widget>[
                   TextButton(
                     key: const ValueKey<String>('discard-rhythm-settings'),
@@ -276,13 +334,18 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                         state.isBusy || (!state.isDirty && !hasInvalidInput)
                         ? null
                         : _discard,
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(48, 48),
-                    ),
                     child: Text(copy.rhythmSettingsDiscard),
                   ),
                   FilledButton(
                     key: const ValueKey<String>('save-rhythm-settings'),
+                    style: const ButtonStyle(
+                      padding: WidgetStatePropertyAll<EdgeInsetsGeometry>(
+                        EdgeInsets.symmetric(
+                          horizontal: ClockRhythmSpace.space28,
+                          vertical: ClockRhythmSpace.space12,
+                        ),
+                      ),
+                    ),
                     onPressed:
                         state.isBusy ||
                             hasInvalidInput ||
@@ -294,9 +357,6 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                                 .read(preferencesViewModelProvider.notifier)
                                 .saveRhythm();
                           },
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(48, 48),
-                    ),
                     child: Text(copy.rhythmSettingsSave),
                   ),
                 ],

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:clock_rhythm/contexts/preferences/public_model.dart';
+import 'package:clock_rhythm/contexts/preferences/public_presentation.dart';
 import 'package:clock_rhythm/contexts/todo/public.dart';
 import 'package:clock_rhythm/contexts/todo/public_presentation.dart';
 import 'package:clock_rhythm/shared/i18n/public.dart';
@@ -130,7 +132,12 @@ Widget buildTodoTestApp({
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: theme ?? ThemeData.dark(useMaterial3: true),
+      theme:
+          theme ??
+          ClockRhythmTheme.build(
+            ThemeCatalog.resolve(ThemePreference.current),
+            platform: TargetPlatform.android,
+          ),
       builder: (BuildContext context, Widget? appChild) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaler: textScaler),

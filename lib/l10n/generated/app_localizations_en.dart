@@ -27,6 +27,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navigationTheme => 'Theme';
 
   @override
+  String get navigationSettings => 'Settings';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsDescription =>
+      'Focus window, alerts, sound and language in one place.';
+
+  @override
+  String get clockPageEyebrow => 'Focus rhythm';
+
+  @override
+  String get clockSettingsShortcutHint => 'Change in Settings';
+
+  @override
+  String get dataPageDescription =>
+      'Back up and restore your preferences and Todos.';
+
+  @override
   String get actionClose => 'Close';
 
   @override

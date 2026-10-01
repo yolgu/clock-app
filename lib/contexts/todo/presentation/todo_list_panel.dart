@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart' show AppLocalizations;
+import '../../../shared/ui/public.dart'
+    show ClockRhythmRadius, ClockRhythmSpace;
 import '../domain/completion_group.dart';
 import '../domain/local_calendar_date.dart';
 import '../domain/todo.dart';
@@ -39,8 +41,14 @@ final class _TodoListPanelState extends ConsumerState<TodoListPanel> {
     final AppLocalizations localizations = AppLocalizations.of(context);
     if (widget.todos.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(localizations.todoListEmpty),
+        padding: const EdgeInsets.symmetric(vertical: ClockRhythmSpace.space20),
+        child: Text(
+          localizations.todoListEmpty,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
       );
     }
     final AsyncValue<TodoViewState> asyncState = ref.watch(
@@ -66,7 +74,7 @@ final class _TodoListPanelState extends ConsumerState<TodoListPanel> {
             onFinishEditing: _finishEditing,
           ),
         if (incomplete.isNotEmpty && completed.isNotEmpty)
-          const SizedBox(height: 16),
+          const SizedBox(height: ClockRhythmSpace.space16),
         if (completed.isNotEmpty)
           _TodoGroupList(
             group: CompletionGroup.completed,
@@ -113,6 +121,7 @@ final class _TodoGroupList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations localizations = AppLocalizations.of(context);
+    final ThemeData theme = Theme.of(context);
     final String heading = switch (group) {
       CompletionGroup.incomplete => localizations.todoGroupIncomplete,
       CompletionGroup.completed => localizations.todoGroupCompleted,
@@ -127,16 +136,16 @@ final class _TodoGroupList extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: ClockRhythmSpace.space8),
           child: Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
+            spacing: ClockRhythmSpace.space8,
             children: <Widget>[
               Semantics(
                 header: true,
                 child: Text(
                   heading,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
               ),
               Text(count, style: Theme.of(context).textTheme.bodySmall),
@@ -157,8 +166,13 @@ final class _TodoGroupList extends ConsumerWidget {
           proxyDecorator:
               (Widget child, int index, Animation<double> animation) {
                 return Material(
-                  elevation: 6,
-                  borderRadius: BorderRadius.circular(12),
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  elevation: 8,
+                  shadowColor: Colors.black,
+                  borderRadius: BorderRadius.circular(
+                    ClockRhythmRadius.control,
+                  ),
+                  clipBehavior: Clip.antiAlias,
                   child: child,
                 );
               },
@@ -167,10 +181,17 @@ final class _TodoGroupList extends ConsumerWidget {
             final TodoViewModel viewModel = ref.read(
               todoViewModelProvider.notifier,
             );
-            return Padding(
+            return DecoratedBox(
               key: ValueKey<String>(todo.id),
-              padding: EdgeInsets.only(
-                bottom: index == todos.length - 1 ? 0 : 8,
+              decoration: BoxDecoration(
+                border: index == todos.length - 1
+                    ? null
+                    : Border(
+                        bottom: BorderSide(
+                          color: theme.colorScheme.outlineVariant,
+                          width: 0.5,
+                        ),
+                      ),
               ),
               child: TodoRow(
                 todo: todo,

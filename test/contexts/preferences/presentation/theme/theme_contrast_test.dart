@@ -24,6 +24,35 @@ void main() {
         _contrast(extension.focusRing, theme.colorScheme.surface),
         greaterThanOrEqualTo(3),
       );
+      expect(
+        _contrast(theme.colorScheme.outline, theme.colorScheme.surface),
+        greaterThanOrEqualTo(3),
+      );
+      expect(
+        _contrast(extension.mutedText, theme.colorScheme.surface),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(
+        _contrast(
+          theme.colorScheme.onPrimaryContainer,
+          theme.colorScheme.primaryContainer,
+        ),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(
+        _contrast(
+          theme.colorScheme.onSecondaryContainer,
+          theme.colorScheme.secondaryContainer,
+        ),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(
+        _contrast(
+          theme.colorScheme.onErrorContainer,
+          theme.colorScheme.errorContainer,
+        ),
+        greaterThanOrEqualTo(4.5),
+      );
       expect(extension.accentSecondary, definition.accentSecondary.color);
       expect(extension.sourceText, definition.text.color);
     });

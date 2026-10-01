@@ -35,50 +35,56 @@ final class RhythmSettingsSummary extends StatelessWidget {
       NotificationSoundMode.custom =>
         sound.customFileName ?? copy.soundCustomFallback,
     };
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          copy.rhythmSettingsSummary(
-            state.draft.rhythmConfiguration.focusDuration.minutes,
-            state.draft.rhythmConfiguration.restDuration.minutes,
-            state.draft.rhythmConfiguration.dailyRhythm.start.text,
-            state.draft.rhythmConfiguration.dailyRhythm.end.text,
-            soundSummary,
-          ),
-        ),
-        if (preview case final RhythmSettingsPreview value)
+    final ThemeData theme = Theme.of(context);
+    return DefaultTextStyle.merge(
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
           Text(
-            copy.rhythmSettingsNextEvent(
-              const ClockTimeFormatter().formatLocalDateTime(
-                value.nextEvent.occursAt,
+            copy.rhythmSettingsSummary(
+              state.draft.rhythmConfiguration.focusDuration.minutes,
+              state.draft.rhythmConfiguration.restDuration.minutes,
+              state.draft.rhythmConfiguration.dailyRhythm.start.text,
+              state.draft.rhythmConfiguration.dailyRhythm.end.text,
+              soundSummary,
+            ),
+          ),
+          if (preview case final RhythmSettingsPreview value)
+            Text(
+              copy.rhythmSettingsNextEvent(
+                const ClockTimeFormatter().formatLocalDateTime(
+                  value.nextEvent.occursAt,
+                ),
+              ),
+              key: const ValueKey<String>('rhythm-settings-next-event'),
+            )
+          else
+            Text(
+              copy.rhythmSettingsNextEventUnavailable,
+              key: const ValueKey<String>(
+                'rhythm-settings-next-event-unavailable',
               ),
             ),
-            key: const ValueKey<String>('rhythm-settings-next-event'),
-          )
-        else
-          Text(
-            copy.rhythmSettingsNextEventUnavailable,
-            key: const ValueKey<String>(
-              'rhythm-settings-next-event-unavailable',
+          if (preview?.isOutsideDailyRhythm ?? false)
+            Text(
+              copy.rhythmSettingsSummaryOutsideDailyRhythm,
+              key: const ValueKey<String>('rhythm-summary-outside-window'),
             ),
-          ),
-        if (preview?.isOutsideDailyRhythm ?? false)
-          Text(
-            copy.rhythmSettingsSummaryOutsideDailyRhythm,
-            key: const ValueKey<String>('rhythm-summary-outside-window'),
-          ),
-        if (state.isDirty)
-          Text(
-            copy.rhythmSettingsSummaryDirty,
-            key: const ValueKey<String>('rhythm-summary-dirty'),
-          ),
-        if (hasInvalidInput)
-          Text(
-            copy.rhythmSettingsSummaryInvalid,
-            key: const ValueKey<String>('rhythm-summary-invalid'),
-          ),
-      ],
+          if (state.isDirty)
+            Text(
+              copy.rhythmSettingsSummaryDirty,
+              key: const ValueKey<String>('rhythm-summary-dirty'),
+            ),
+          if (hasInvalidInput)
+            Text(
+              copy.rhythmSettingsSummaryInvalid,
+              key: const ValueKey<String>('rhythm-summary-invalid'),
+            ),
+        ],
+      ),
     );
   }
 }

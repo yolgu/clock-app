@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/i18n/public.dart';
+import '../../../shared/ui/public.dart'
+    show ClockRhythmLayout, ClockRhythmPageHeader;
 import 'data_management_panel.dart';
 
 final class DataPage extends StatelessWidget {
@@ -7,11 +10,20 @@ final class DataPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations copy = AppLocalizations.of(context);
     return ListView(
       key: const PageStorageKey<String>('data-page-scroll'),
       restorationId: 'data_page_scroll',
-      padding: const EdgeInsets.all(16),
-      children: const <Widget>[DataManagementPanel()],
+      padding: ClockRhythmLayout.pageInsetsFor(
+        MediaQuery.sizeOf(context).width,
+      ),
+      children: <Widget>[
+        ClockRhythmPageHeader(
+          title: copy.navigationData,
+          description: copy.dataPageDescription,
+        ),
+        const DataManagementPanel(),
+      ],
     );
   }
 }

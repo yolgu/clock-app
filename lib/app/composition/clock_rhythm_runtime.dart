@@ -565,7 +565,10 @@ final class ClockRhythmRuntime {
 
   static AppDestinationPages _destinationPages() {
     return AppDestinationPages(
-      clock: (_) => const ClockPage(todayTodo: TodayTodoPanel()),
+      clock: (BuildContext context) => ClockPage(
+        todayTodo: const TodayTodoPanel(),
+        onOpenSettings: () => context.go(MainDestination.settings.location),
+      ),
       calendar: (BuildContext context, AppCalendarDate? selectedDate) {
         return CalendarPage(
           initialSelectedDate: selectedDate == null
@@ -580,6 +583,7 @@ final class ClockRhythmRuntime {
       },
       data: (_) => const DataPage(),
       theme: (_) => const ThemePage(),
+      settings: (_) => const PreferencesPage(),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:clock_rhythm/contexts/preferences/public_model.dart';
+import 'package:clock_rhythm/contexts/preferences/public_presentation.dart';
 import 'package:clock_rhythm/features/data_transfer/public.dart';
 import 'package:clock_rhythm/features/data_transfer/public_presentation.dart';
 import 'package:clock_rhythm/shared/i18n/public.dart';
@@ -15,6 +17,10 @@ Widget buildDataPageTestApp({TextScaler textScaler = TextScaler.noScaling}) {
       locale: const Locale('en'),
       supportedLocales: LanguageLocaleMapper.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
+      theme: ClockRhythmTheme.build(
+        ThemeCatalog.resolve(ThemePreference.current),
+        platform: TargetPlatform.android,
+      ),
       builder: (BuildContext context, Widget? child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaler: textScaler),

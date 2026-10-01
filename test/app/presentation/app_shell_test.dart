@@ -17,6 +17,7 @@ void main() {
     calendarLabel: 'Calendar',
     dataLabel: 'Data',
     themeLabel: 'Theme',
+    settingsLabel: 'Settings',
     routeErrorTitle: 'Cannot open page',
     malformedCalendarDateMessage: 'Invalid calendar date',
     unknownLocationMessage: 'Unknown page',
@@ -46,26 +47,59 @@ void main() {
     expect(clockRouter.router.state.uri.path, '/clock');
   });
 
-  testWidgets('Windows uses top navigation and Ctrl+4 selects Theme', (
+  testWidgets(
+    'Windows uses top navigation and Ctrl+4/5 select Theme and Settings',
+    (WidgetTester tester) async {
+      final ClockRhythmRouter clockRouter = ClockRhythmRouter(
+        profile: PlatformPresentationProfile.windows,
+        navigationCopy: copy,
+      );
+      addTearDown(clockRouter.dispose);
+      await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(WindowsTopNavigation), findsOneWidget);
+      expect(find.byType(AndroidBottomNavigation), findsNothing);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit4);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+
+      expect(clockRouter.router.state.uri.path, '/theme');
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit5);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+
+      expect(clockRouter.router.state.uri.path, '/settings');
+    },
+  );
+
+  testWidgets('both platforms expose a Settings destination', (
     WidgetTester tester,
   ) async {
-    final ClockRhythmRouter clockRouter = ClockRhythmRouter(
-      profile: PlatformPresentationProfile.windows,
-      navigationCopy: copy,
-    );
-    addTearDown(clockRouter.dispose);
-    await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
-    await tester.pumpAndSettle();
+    for (final PlatformPresentationProfile profile
+        in PlatformPresentationProfile.values) {
+      final ClockRhythmRouter clockRouter = ClockRhythmRouter(
+        profile: profile,
+        navigationCopy: copy,
+      );
+      await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(WindowsTopNavigation), findsOneWidget);
-    expect(find.byType(AndroidBottomNavigation), findsNothing);
+      await tester.tap(find.text('Settings').first);
+      await tester.pumpAndSettle();
+      expect(
+        clockRouter.router.state.uri.path,
+        '/settings',
+        reason: '$profile',
+      );
 
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
-    await tester.sendKeyEvent(LogicalKeyboardKey.digit4);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-    await tester.pumpAndSettle();
-
-    expect(clockRouter.router.state.uri.path, '/theme');
+      await tester.pumpWidget(const SizedBox.shrink());
+      clockRouter.dispose();
+    }
   });
 
   testWidgets('indexed branches retain their form state', (
@@ -79,6 +113,7 @@ void main() {
         calendar: (_, _) => const TextField(key: Key('calendar-field')),
         data: (_) => const Text('Data page'),
         theme: (_) => const Text('Theme page'),
+        settings: (_) => const Text('Settings page'),
       ),
     );
     addTearDown(clockRouter.dispose);
@@ -114,6 +149,7 @@ void main() {
         ),
         data: (_) => const Text('Data page'),
         theme: (_) => const Text('Theme page'),
+        settings: (_) => const Text('Settings page'),
       );
       await tester.pumpWidget(
         _RestorableRouterHarness(key: harnessKey, pages: pages, copy: copy),
@@ -163,6 +199,7 @@ void main() {
         ),
         data: (_) => const Text('Data page'),
         theme: (_) => const Text('Theme page'),
+        settings: (_) => const Text('Settings page'),
       ),
     );
     addTearDown(clockRouter.dispose);

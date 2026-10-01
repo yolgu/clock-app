@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'design_tokens.dart';
+
 final class FocusRing extends StatefulWidget {
   const FocusRing({
     required this.focusNode,
@@ -7,7 +9,7 @@ final class FocusRing extends StatefulWidget {
     this.onKeyEvent,
     this.onFocusChange,
     this.canRequestFocus = true,
-    this.borderRadius = 8,
+    this.borderRadius = ClockRhythmRadius.small,
     this.borderWidth = 3,
     super.key,
   });
@@ -50,7 +52,10 @@ final class _FocusRingState extends State<FocusRing> {
         widget.onFocusChange?.call(hasFocus);
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 100),
+        duration: ClockRhythmMotion.accessibleDuration(
+          context,
+          ClockRhythmMotion.fast,
+        ),
         foregroundDecoration: BoxDecoration(
           border: _isFocused
               ? Border.all(

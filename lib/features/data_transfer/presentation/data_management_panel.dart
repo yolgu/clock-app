@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart';
+import '../../../shared/ui/public.dart'
+    show
+        ClockRhythmCard,
+        ClockRhythmLayout,
+        ClockRhythmRadius,
+        ClockRhythmSpace;
 import '../../../shared/ui/public.dart' show SemanticStatusAnnouncement;
 import '../application/backup_failure.dart';
 import '../application/prepare_backup_import.dart';
@@ -17,36 +23,90 @@ final class DataManagementPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations copy = AppLocalizations.of(context);
+    final ThemeData theme = Theme.of(context);
     final DataTransferState state = ref.watch(dataTransferViewModelProvider);
-    return Card(
+    return ClockRhythmCard.unpadded(
       key: const ValueKey<String>('data-management-panel'),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(
+          ClockRhythmLayout.cardPaddingFor(MediaQuery.sizeOf(context).width),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(copy.backupEyebrow),
-            Text(
-              copy.backupTitle,
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: const SizedBox.square(
+                    dimension: 36,
+                    child: Icon(
+                      Icons.folder_rounded,
+                      size: 22,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: ClockRhythmSpace.space12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(copy.backupTitle, style: theme.textTheme.titleLarge),
+                      const SizedBox(height: ClockRhythmSpace.space4),
+                      Text(
+                        copy.backupDescription,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Text(copy.backupDescription),
-            const SizedBox(height: 12),
-            Text(
-              copy.backupPlainTextWarning,
-              key: const ValueKey<String>('data-plain-text-warning'),
+            const SizedBox(height: ClockRhythmSpace.space16),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(ClockRhythmSpace.space12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 20,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: ClockRhythmSpace.space8),
+                    Expanded(
+                      child: Text(
+                        copy.backupPlainTextWarning,
+                        key: const ValueKey<String>('data-plain-text-warning'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: ClockRhythmSpace.space16),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: ClockRhythmSpace.space8,
+              runSpacing: ClockRhythmSpace.space8,
               children: <Widget>[
                 FilledButton.icon(
                   key: const ValueKey<String>('export-backup'),
                   onPressed: state.isBusy
                       ? null
                       : () => _confirmExport(context, ref),
-                  icon: const Icon(Icons.download),
+                  icon: const Icon(Icons.ios_share_rounded),
                   label: Text(copy.backupExport),
                 ),
                 OutlinedButton.icon(
@@ -54,7 +114,7 @@ final class DataManagementPanel extends ConsumerWidget {
                   onPressed: state.isBusy
                       ? null
                       : () => _prepareImport(context, ref),
-                  icon: const Icon(Icons.upload),
+                  icon: const Icon(Icons.file_open_rounded),
                   label: Text(copy.backupImport),
                 ),
               ],

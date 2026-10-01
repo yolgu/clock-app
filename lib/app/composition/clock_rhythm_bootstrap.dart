@@ -8,6 +8,7 @@ import '../../contexts/preferences/public_presentation.dart'
 import '../../features/data_transfer/public.dart' show PreparedBackupImport;
 import '../../shared/i18n/public.dart'
     show AppLocalizations, LanguageLocaleMapper;
+import '../../shared/ui/public.dart' show ClockRhythmSpace;
 import '../infrastructure/persistence/database_failure.dart';
 import '../infrastructure/persistence/database_recovery_file_manager.dart';
 import '../infrastructure/persistence/database_startup.dart';
@@ -252,12 +253,12 @@ final class _RuntimeStartupFailurePage extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(ClockRhythmSpace.space24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(copy.failureUnknown, textAlign: TextAlign.center),
-              const SizedBox(height: 16),
+              const SizedBox(height: ClockRhythmSpace.space16),
               FilledButton(onPressed: onRetry, child: Text(copy.actionRetry)),
             ],
           ),

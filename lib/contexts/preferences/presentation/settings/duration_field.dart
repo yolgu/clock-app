@@ -26,15 +26,23 @@ final class DurationField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations copy = AppLocalizations.of(context);
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final ButtonStyle stepperStyle = IconButton.styleFrom(
+      backgroundColor: colors.surfaceContainerHighest,
+      foregroundColor: colors.onSurface,
+      disabledBackgroundColor: colors.onSurface.withValues(alpha: 0.06),
+    );
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         IconButton(
           key: ValueKey<String>('decrease-$label'),
           tooltip: copy.rhythmSettingsDecrease(label),
+          style: stepperStyle,
           onPressed: enabled ? () => _step(-1) : null,
-          icon: const Icon(Icons.remove),
+          icon: const Icon(Icons.remove_rounded),
         ),
+        const SizedBox(width: 8),
         Expanded(
           child: TextField(
             key: ValueKey<String>('duration-$label'),
@@ -53,11 +61,13 @@ final class DurationField extends StatelessWidget {
             onChanged: onChanged,
           ),
         ),
+        const SizedBox(width: 8),
         IconButton(
           key: ValueKey<String>('increase-$label'),
           tooltip: copy.rhythmSettingsIncrease(label),
+          style: stepperStyle,
           onPressed: enabled ? () => _step(1) : null,
-          icon: const Icon(Icons.add),
+          icon: const Icon(Icons.add_rounded),
         ),
       ],
     );

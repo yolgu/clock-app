@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../shared/i18n/public.dart' show AppLocalizations;
-import '../../../shared/ui/public.dart' show FocusRing, MinimumTapTarget;
+import '../../../shared/ui/public.dart'
+    show ClockRhythmRadius, ClockRhythmSpace, FocusRing, MinimumTapTarget;
 import '../domain/todo.dart';
 import 'todo_editor.dart';
 
@@ -44,13 +45,16 @@ final class TodoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
     return Material(
       key: ValueKey<String>('todo-row-${todo.id}'),
-      color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12),
+      type: MaterialType.transparency,
+      borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.symmetric(
+          vertical: isEditing
+              ? ClockRhythmSpace.space8
+              : ClockRhythmSpace.space4,
+        ),
         child: isEditing
             ? _buildEditingRow(context)
             : LayoutBuilder(
@@ -59,7 +63,7 @@ final class TodoRow extends StatelessWidget {
                     context,
                   ).scale(16);
                   final bool useStackedActions =
-                      constraints.maxWidth < 520 || scaledBody > 24;
+                      constraints.maxWidth < 380 || scaledBody > 24;
                   return _buildDisplayRow(context, useStackedActions);
                 },
               ),
@@ -87,16 +91,16 @@ final class TodoRow extends StatelessWidget {
           children: <Widget>[
             _buildReorderHandle(context),
             _buildCompletionControl(context),
-            const SizedBox(width: 4),
+            const SizedBox(width: ClockRhythmSpace.space4),
             Expanded(child: _buildTodoCopy(context)),
             if (!useStackedActions) ...<Widget>[
-              const SizedBox(width: 8),
+              const SizedBox(width: ClockRhythmSpace.space8),
               actions,
             ],
           ],
         ),
         if (useStackedActions) ...<Widget>[
-          const SizedBox(height: 4),
+          const SizedBox(height: ClockRhythmSpace.space4),
           Align(alignment: AlignmentDirectional.centerEnd, child: actions),
         ],
       ],
@@ -108,7 +112,7 @@ final class TodoRow extends StatelessWidget {
       children: <Widget>[
         _buildReorderHandle(context),
         _buildCompletionControl(context),
-        const SizedBox(width: 4),
+        const SizedBox(width: ClockRhythmSpace.space4),
         Expanded(child: _buildTodoCopy(context)),
       ],
     );
@@ -166,7 +170,10 @@ final class TodoRow extends StatelessWidget {
           overflow: TextOverflow.visible,
           style: textTheme.bodyLarge?.copyWith(
             decoration: todo.completed ? TextDecoration.lineThrough : null,
-            fontWeight: todo.completed ? FontWeight.normal : FontWeight.w600,
+            fontWeight: todo.completed ? FontWeight.w400 : FontWeight.w500,
+            color: todo.completed
+                ? Theme.of(context).colorScheme.onSurfaceVariant
+                : null,
           ),
         ),
         if (todo.time case final String time)
@@ -193,7 +200,7 @@ final class TodoRow extends StatelessWidget {
       todo.title,
     ].join(', ');
     return Wrap(
-      spacing: 4,
+      spacing: ClockRhythmSpace.space4,
       children: <Widget>[
         Semantics(
           label: editLabel,
@@ -205,7 +212,8 @@ final class TodoRow extends StatelessWidget {
             key: ValueKey<String>('todo-edit-${todo.id}'),
             onPressed: enabled ? onStartEditing : null,
             tooltip: localizations.todoActionEdit,
-            icon: const Icon(Icons.edit_outlined),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            icon: const Icon(Icons.edit_outlined, size: 20),
           ),
         ),
         Semantics(
@@ -226,8 +234,22 @@ final class TodoRow extends StatelessWidget {
                   }
                 : null,
             tooltip: localizations.todoActionDelete,
-            color: Theme.of(context).colorScheme.error,
-            icon: const Icon(Icons.delete_outline),
+            style: ButtonStyle(
+              foregroundColor: WidgetStateProperty.resolveWith<Color?>((
+                Set<WidgetState> states,
+              ) {
+                final ColorScheme colors = Theme.of(context).colorScheme;
+                if (states.contains(WidgetState.disabled)) {
+                  return colors.onSurfaceVariant.withValues(alpha: 0.4);
+                }
+                return states.contains(WidgetState.hovered) ||
+                        states.contains(WidgetState.focused) ||
+                        states.contains(WidgetState.pressed)
+                    ? colors.error
+                    : colors.onSurfaceVariant;
+              }),
+            ),
+            icon: const Icon(Icons.delete_outline, size: 20),
           ),
         ),
       ],
@@ -293,7 +315,15 @@ final class _TodoReorderHandleState extends State<_TodoReorderHandle> {
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: _focusNode.requestFocus,
-            child: const MinimumTapTarget(child: Icon(Icons.drag_handle)),
+            child: MinimumTapTarget(
+              child: Icon(
+                Icons.drag_handle,
+                size: 20,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
+            ),
           ),
         ),
       ),

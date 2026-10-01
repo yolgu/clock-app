@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart';
+import '../../../shared/ui/public.dart' show ClockRhythmCard;
 import 'preferences_platform_capabilities.dart';
 import 'preferences_providers.dart';
 
@@ -35,55 +36,74 @@ final class _PermissionStatusPanelState
     final AsyncValue<DeliveryPermissionSnapshot?> value = ref.watch(
       deliveryPermissionProvider,
     );
-    return Card(
+    return ClockRhythmCard.padded(
       key: const ValueKey<String>('permission-status-panel'),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Text(
-              copy.permissionPanelTitle,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            value.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (Object error, StackTrace stackTrace) =>
-                  Text(copy.permissionDeliveryRecoveryDescription),
-              data: (DeliveryPermissionSnapshot? snapshot) {
-                if (snapshot == null) {
-                  return Text(copy.permissionDeliveryRecoveryDescription);
-                }
-                return Column(
-                  children: <Widget>[
-                    _PermissionRow(
-                      key: const ValueKey<String>('notification-permission'),
-                      title: copy.permissionNotificationTitle,
-                      granted: snapshot.notificationGranted,
-                      grantedLabel: copy.permissionGranted,
-                      requiredLabel: copy.permissionRequired,
-                      actionLabel: copy.permissionOpenNotificationSettings,
-                      onOpenSettings: () => ref
-                          .read(deliveryPermissionActionsProvider)
-                          ?.openNotificationSettings(),
-                    ),
-                    _PermissionRow(
-                      key: const ValueKey<String>('exact-alarm-permission'),
-                      title: copy.permissionExactAlarmTitle,
-                      granted: snapshot.exactAlarmGranted,
-                      grantedLabel: copy.permissionGranted,
-                      requiredLabel: copy.permissionRequired,
-                      actionLabel: copy.permissionOpenExactAlarmSettings,
-                      onOpenSettings: () => ref
-                          .read(deliveryPermissionActionsProvider)
-                          ?.openExactAlarmSettings(),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondary,
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: const SizedBox.square(
+                  dimension: 36,
+                  child: Icon(
+                    Icons.notifications_active_rounded,
+                    size: 22,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  copy.permissionPanelTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          value.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (Object error, StackTrace stackTrace) =>
+                Text(copy.permissionDeliveryRecoveryDescription),
+            data: (DeliveryPermissionSnapshot? snapshot) {
+              if (snapshot == null) {
+                return Text(copy.permissionDeliveryRecoveryDescription);
+              }
+              return Column(
+                children: <Widget>[
+                  _PermissionRow(
+                    key: const ValueKey<String>('notification-permission'),
+                    title: copy.permissionNotificationTitle,
+                    granted: snapshot.notificationGranted,
+                    grantedLabel: copy.permissionGranted,
+                    requiredLabel: copy.permissionRequired,
+                    actionLabel: copy.permissionOpenNotificationSettings,
+                    onOpenSettings: () => ref
+                        .read(deliveryPermissionActionsProvider)
+                        ?.openNotificationSettings(),
+                  ),
+                  _PermissionRow(
+                    key: const ValueKey<String>('exact-alarm-permission'),
+                    title: copy.permissionExactAlarmTitle,
+                    granted: snapshot.exactAlarmGranted,
+                    grantedLabel: copy.permissionGranted,
+                    requiredLabel: copy.permissionRequired,
+                    actionLabel: copy.permissionOpenExactAlarmSettings,
+                    onOpenSettings: () => ref
+                        .read(deliveryPermissionActionsProvider)
+                        ?.openExactAlarmSettings(),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -115,9 +135,13 @@ final class _PermissionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(granted ? Icons.check_circle : Icons.warning_amber),
+      leading: Icon(
+        granted ? Icons.check_circle_rounded : Icons.error_rounded,
+        color: granted ? colors.secondary : colors.error,
+      ),
       title: Text(title),
       subtitle: Text(granted ? grantedLabel : requiredLabel),
       trailing: granted

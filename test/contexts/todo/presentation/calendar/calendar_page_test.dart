@@ -2,6 +2,7 @@ import 'dart:ui' show Tristate;
 
 import 'package:clock_rhythm/contexts/todo/public.dart';
 import 'package:clock_rhythm/contexts/todo/public_presentation.dart';
+import 'package:clock_rhythm/shared/ui/public.dart' show ClockRhythmLayout;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -300,6 +301,51 @@ void main() {
     expect(find.text('2026년 6월'), findsOneWidget);
     expect(find.text('텍스트가 긴 캘린더 할 일'), findsOneWidget);
     expect(_findKeysWithPrefix('calendar-day-'), findsNWidgets(30));
+  });
+
+  testWidgets('calendar follows the responsive token matrix', (
+    WidgetTester tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    const List<({double width, Locale locale, TextScaler textScaler})> cases =
+        <({double width, Locale locale, TextScaler textScaler})>[
+          (width: 600, locale: Locale('ko'), textScaler: TextScaler.noScaling),
+          (width: 920, locale: Locale('en'), textScaler: TextScaler.linear(2)),
+          (width: 1280, locale: Locale('en'), textScaler: TextScaler.noScaling),
+        ];
+
+    for (final testCase in cases) {
+      tester.view.physicalSize = Size(testCase.width, 800);
+      final TestTodoDateClock dateClock = TestTodoDateClock(
+        DateTime(2026, 6, 2, 10),
+      );
+      await tester.pumpWidget(
+        buildTodoTestApp(
+          repository: TestTodoRepository(),
+          dateClock: dateClock,
+          locale: testCase.locale,
+          textScaler: testCase.textScaler,
+          child: const CalendarPage(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull, reason: '${testCase.width}px');
+      final SingleChildScrollView scroll = tester.widget<SingleChildScrollView>(
+        find.byType(SingleChildScrollView).first,
+      );
+      final EdgeInsets padding = scroll.padding!.resolve(TextDirection.ltr);
+      expect(
+        padding.left,
+        ClockRhythmLayout.horizontalInsetFor(testCase.width),
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      dateClock.dispose();
+    }
   });
 
   testWidgets('calendar scroll offset survives process restoration', (

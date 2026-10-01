@@ -15,23 +15,23 @@ void main() {
     await tester.pumpWidget(_testApp(actions, const RhythmControls()));
     await tester.pumpAndSettle();
 
-    expect(_button(tester, 'start-rhythm').onPressed, isNotNull);
-    expect(_button(tester, 'pause-rhythm').onPressed, isNull);
-    expect(_button(tester, 'resume-rhythm').onPressed, isNull);
-    expect(_button(tester, 'stop-rhythm-for-today').onPressed, isNull);
+    expect(_enabled(tester, 'start-rhythm'), isTrue);
+    expect(_enabled(tester, 'pause-rhythm'), isFalse);
+    expect(_enabled(tester, 'resume-rhythm'), isFalse);
+    expect(_enabled(tester, 'stop-rhythm-for-today'), isFalse);
 
     await tester.tap(find.byKey(const ValueKey<String>('start-rhythm')));
     await tester.pumpAndSettle();
-    expect(_button(tester, 'start-rhythm').onPressed, isNull);
-    expect(_button(tester, 'pause-rhythm').onPressed, isNotNull);
-    expect(_button(tester, 'resume-rhythm').onPressed, isNull);
-    expect(_button(tester, 'stop-rhythm-for-today').onPressed, isNotNull);
+    expect(_enabled(tester, 'start-rhythm'), isFalse);
+    expect(_enabled(tester, 'pause-rhythm'), isTrue);
+    expect(_enabled(tester, 'resume-rhythm'), isFalse);
+    expect(_enabled(tester, 'stop-rhythm-for-today'), isTrue);
 
     await tester.tap(find.byKey(const ValueKey<String>('pause-rhythm')));
     await tester.pumpAndSettle();
-    expect(_button(tester, 'pause-rhythm').onPressed, isNull);
-    expect(_button(tester, 'resume-rhythm').onPressed, isNotNull);
-    expect(_button(tester, 'stop-rhythm-for-today').onPressed, isNotNull);
+    expect(_enabled(tester, 'pause-rhythm'), isFalse);
+    expect(_enabled(tester, 'resume-rhythm'), isTrue);
+    expect(_enabled(tester, 'stop-rhythm-for-today'), isTrue);
   });
 
   testWidgets('permission denial explains the failure without claiming Running', (
@@ -51,7 +51,7 @@ void main() {
       ),
       findsOne,
     );
-    expect(_button(tester, 'start-rhythm').onPressed, isNotNull);
+    expect(_enabled(tester, 'start-rhythm'), isTrue);
     expect(actions.current.status, RhythmSessionStatus.idle);
 
     await tester.tap(find.text('Open settings'));
@@ -127,8 +127,14 @@ void main() {
   });
 }
 
-ButtonStyleButton _button(WidgetTester tester, String key) {
-  return tester.widget<ButtonStyleButton>(find.byKey(ValueKey<String>(key)));
+/// Controls that do not apply to the current session are not shown, so an
+/// absent control counts as unavailable.
+bool _enabled(WidgetTester tester, String key) {
+  final Finder finder = find.byKey(ValueKey<String>(key));
+  if (finder.evaluate().isEmpty) {
+    return false;
+  }
+  return tester.widget<ButtonStyleButton>(finder).onPressed != null;
 }
 
 Widget _testApp(

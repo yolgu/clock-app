@@ -23,7 +23,7 @@ final class SoundPreviewButton extends StatelessWidget {
     return OutlinedButton.icon(
       key: const ValueKey<String>('sound-preview-control'),
       onPressed: enabled ? (isPreviewing ? onStop : onPreview) : null,
-      icon: Icon(isPreviewing ? Icons.stop : Icons.play_arrow),
+      icon: Icon(isPreviewing ? Icons.stop_rounded : Icons.play_arrow_rounded),
       label: Text(isPreviewing ? stopLabel : previewLabel),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/i18n/public.dart' show AppLocalizations;
+import '../../../shared/ui/public.dart' show ClockRhythmSpace;
 import 'todo_view_model.dart';
 
 final class TodoStatusMessage extends StatelessWidget {
@@ -37,7 +38,7 @@ final class TodoStatusMessage extends StatelessWidget {
       container: true,
       liveRegion: true,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: ClockRhythmSpace.space8),
         child: Text(
           text,
           style: TextStyle(
@@ -63,11 +64,11 @@ final class TodoLoadFailure extends StatelessWidget {
       container: true,
       liveRegion: true,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: ClockRhythmSpace.space16),
         child: Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 12,
-          runSpacing: 8,
+          spacing: ClockRhythmSpace.space12,
+          runSpacing: ClockRhythmSpace.space8,
           children: <Widget>[
             Text(
               localizations.failureTodoAction,
@@ -75,7 +76,6 @@ final class TodoLoadFailure extends StatelessWidget {
             ),
             OutlinedButton(
               onPressed: onRetry,
-              style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
               child: Text(localizations.actionRetry),
             ),
           ],

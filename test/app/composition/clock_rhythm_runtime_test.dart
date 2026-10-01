@@ -20,7 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../helpers/test_database.dart';
 
 void main() {
-  testWidgets('wires durable providers and all four product destinations', (
+  testWidgets('wires durable providers and all five product destinations', (
     WidgetTester tester,
   ) async {
     final TestDatabase database = TestDatabase.open();
@@ -59,13 +59,35 @@ void main() {
       find.byKey(const ValueKey<String>('rhythm-controls')),
       findsOneWidget,
     );
+    final ScrollableState clockScroll = tester.state<ScrollableState>(
+      find.descendant(
+        of: find.byKey(const PageStorageKey<String>('clock-page-scroll')),
+        matching: find.byType(Scrollable),
+      ).first,
+    );
+    expect(clockScroll.position.pixels, 0, reason: 'opens at the clock face');
+    expect(
+      find.byKey(const ValueKey<String>('rhythm-settings-panel')),
+      findsNothing,
+    );
+    final Finder settingsShortcut = find.byKey(
+      const ValueKey<String>('rhythm-settings-shortcut'),
+    );
+    await tester.ensureVisible(settingsShortcut);
+    await tester.pumpAndSettle();
+    await tester.tap(settingsShortcut);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('rhythm-settings-panel')),
+      findsOneWidget,
+    );
     await tester.drag(
-      find.byKey(const PageStorageKey<String>('clock-page-scroll')),
+      find.byKey(const PageStorageKey<String>('preferences-page-scroll')),
       const Offset(0, -600),
     );
     await tester.pumpAndSettle();
     expect(
-      find.byKey(const ValueKey<String>('rhythm-settings-panel')),
+      find.byKey(const ValueKey<String>('notification-sound-panel')),
       findsOneWidget,
     );
 

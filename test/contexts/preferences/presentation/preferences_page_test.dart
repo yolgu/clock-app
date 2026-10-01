@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:clock_rhythm/contexts/preferences/public.dart';
 import 'package:clock_rhythm/contexts/preferences/public_presentation.dart';
 import 'package:clock_rhythm/shared/i18n/public.dart';
+import 'package:clock_rhythm/shared/ui/public.dart' show ClockRhythmLayout;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -442,6 +443,10 @@ void main() {
     );
     expect(save.onPressed, isNotNull);
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('save-rhythm-settings')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('save-rhythm-settings')),
     );
@@ -504,6 +509,10 @@ void main() {
       findsOne,
     );
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('discard-rhythm-settings')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('discard-rhythm-settings')),
     );
@@ -645,6 +654,79 @@ void main() {
     expect(find.byKey(const ValueKey<String>('theme-current')), findsOneWidget);
   });
 
+  testWidgets('theme page follows the responsive token matrix', (
+    WidgetTester tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    const List<
+      ({
+        double width,
+        Locale locale,
+        TextScaler textScaler,
+        PreferencesPlatformCapabilities capabilities,
+      })
+    >
+    cases =
+        <
+          ({
+            double width,
+            Locale locale,
+            TextScaler textScaler,
+            PreferencesPlatformCapabilities capabilities,
+          })
+        >[
+          (
+            width: 600,
+            locale: Locale('ko'),
+            textScaler: TextScaler.noScaling,
+            capabilities: PreferencesPlatformCapabilities.android,
+          ),
+          (
+            width: 920,
+            locale: Locale('en'),
+            textScaler: TextScaler.linear(2),
+            capabilities: PreferencesPlatformCapabilities.windows,
+          ),
+          (
+            width: 1280,
+            locale: Locale('en'),
+            textScaler: TextScaler.noScaling,
+            capabilities: PreferencesPlatformCapabilities.windows,
+          ),
+        ];
+
+    for (final testCase in cases) {
+      tester.view.physicalSize = Size(testCase.width, 800);
+      await tester.pumpWidget(
+        _testApp(
+          actions: FakeWidgetPreferencesActions(),
+          capabilities: testCase.capabilities,
+          locale: testCase.locale,
+          textScaler: testCase.textScaler,
+          home: const ThemePage(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull, reason: '${testCase.width}px');
+      final SliverPadding firstPadding = tester.widget<SliverPadding>(
+        find.byType(SliverPadding).first,
+      );
+      final EdgeInsets resolved = firstPadding.padding.resolve(
+        TextDirection.ltr,
+      );
+      expect(
+        resolved.left,
+        ClockRhythmLayout.horizontalInsetFor(testCase.width),
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    }
+  });
+
   testWidgets('settings actions meet target-size and label guidelines', (
     WidgetTester tester,
   ) async {
@@ -696,6 +778,12 @@ Widget _testApp({
     locale: locale,
     supportedLocales: LanguageLocaleMapper.supportedLocales,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
+    theme: ClockRhythmTheme.build(
+      ThemeCatalog.resolve(ThemePreference.current),
+      platform: capabilities.kind == PreferencesPlatformKind.windows
+          ? TargetPlatform.windows
+          : TargetPlatform.android,
+    ),
     builder: (BuildContext context, Widget? child) {
       return MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaler: textScaler),

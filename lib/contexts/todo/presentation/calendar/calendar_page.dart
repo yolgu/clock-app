@@ -5,6 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/i18n/public.dart'
     show AppLocalizations, LocalDateFormatter;
+import '../../../../shared/ui/public.dart'
+    show
+        ClockRhythmCard,
+        ClockRhythmLayout,
+        ClockRhythmPageHeader,
+        ClockRhythmSpace;
 import '../../domain/local_calendar_date.dart';
 import '../todo_date_math.dart';
 import '../todo_editor.dart';
@@ -70,22 +76,16 @@ final class _CalendarPageState extends ConsumerState<CalendarPage>
       child: SingleChildScrollView(
         key: const PageStorageKey<String>('calendar-page-scroll'),
         controller: _scrollController,
-        padding: const EdgeInsets.all(16),
+        padding: ClockRhythmLayout.pageInsetsFor(
+          MediaQuery.sizeOf(context).width,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(
-              localizations.calendarEyebrow,
-              style: Theme.of(context).textTheme.labelLarge,
+            ClockRhythmPageHeader(
+              eyebrow: localizations.calendarEyebrow,
+              title: localizations.calendarTitle,
             ),
-            Semantics(
-              header: true,
-              child: Text(
-                localizations.calendarTitle,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-            ),
-            const SizedBox(height: 16),
             asyncState.when<Widget>(
               data: (TodoViewState state) {
                 _scheduleRestoredScrollOffset();
@@ -102,7 +102,7 @@ final class _CalendarPageState extends ConsumerState<CalendarPage>
               ),
               loading: () => const Center(
                 child: Padding(
-                  padding: EdgeInsets.all(32),
+                  padding: EdgeInsets.all(ClockRhythmSpace.space32),
                   child: CircularProgressIndicator(),
                 ),
               ),
@@ -181,10 +181,12 @@ final class _CalendarPageContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final TodoViewModel viewModel = ref.read(todoViewModelProvider.notifier);
-    final Widget calendarBoard = Card(
+    final Widget calendarBoard = ClockRhythmCard.unpadded(
       key: const ValueKey<String>('calendar-board'),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(
+          ClockRhythmLayout.cardPaddingFor(MediaQuery.sizeOf(context).width),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -196,7 +198,7 @@ final class _CalendarPageContent extends ConsumerWidget {
                 onSelectedDateChanged?.call(state.todayDate);
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: ClockRhythmSpace.space12),
             CalendarGrid(
               state: state,
               onSelectDate: (LocalCalendarDate date) async {
@@ -228,7 +230,7 @@ final class _CalendarPageContent extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   calendarBoard,
-                  const SizedBox(height: 16),
+                  const SizedBox(height: ClockRhythmSpace.space16),
                   selectedDatePanel,
                 ],
               );
@@ -237,7 +239,7 @@ final class _CalendarPageContent extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Expanded(flex: 6, child: calendarBoard),
-                const SizedBox(width: 16),
+                const SizedBox(width: ClockRhythmSpace.space20),
                 Expanded(flex: 4, child: selectedDatePanel),
               ],
             );
@@ -262,17 +264,22 @@ final class _SelectedDatePanel extends StatelessWidget {
     final String formattedDate = formatter.formatFullDate(
       TodoDateMath.toLocalDateTime(state.selectedDate),
     );
-    return Card(
+    return ClockRhythmCard.unpadded(
       key: const ValueKey<String>('calendar-selected-date-panel'),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(
+          ClockRhythmLayout.cardPaddingFor(MediaQuery.sizeOf(context).width),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
               localizations.calendarSelectedEyebrow,
-              style: Theme.of(context).textTheme.labelLarge,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
+            const SizedBox(height: ClockRhythmSpace.space4),
             Semantics(
               header: true,
               label: localizations.calendarSelectedDateLabel(formattedDate),
@@ -280,9 +287,10 @@ final class _SelectedDatePanel extends StatelessWidget {
               child: Text(
                 formattedDate,
                 key: const ValueKey<String>('calendar-selected-date'),
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
             ),
+            const SizedBox(height: ClockRhythmSpace.space12),
             TodoEditor.forDate(
               key: ValueKey<String>(
                 'calendar-editor-${state.selectedDate.text}',

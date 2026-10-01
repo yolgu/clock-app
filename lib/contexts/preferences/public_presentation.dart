@@ -31,6 +31,8 @@ export 'presentation/settings/clock_time_field.dart' show ClockTimeField;
 export 'presentation/settings/duration_field.dart' show DurationField;
 export 'presentation/settings/rhythm_settings_panel.dart'
     show RhythmSettingsPanel;
+export 'presentation/settings/rhythm_settings_shortcut.dart'
+    show RhythmSettingsShortcut;
 export 'presentation/settings/rhythm_settings_summary.dart'
     show RhythmSettingsSummary;
 export 'presentation/sound/bundled_notification_sound.dart'

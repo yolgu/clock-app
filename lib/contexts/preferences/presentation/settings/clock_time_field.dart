@@ -38,7 +38,7 @@ final class ClockTimeField extends StatelessWidget {
           key: ValueKey<String>('clock-time-picker-$label'),
           tooltip: pickerTooltip,
           onPressed: enabled ? () => _selectTime(context) : null,
-          icon: const Icon(Icons.schedule_outlined),
+          icon: const Icon(Icons.schedule_rounded),
         ),
       ),
       onChanged: onChanged,

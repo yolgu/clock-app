@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/i18n/public.dart'
     show AppLocalizations, LocalDateFormatter;
+import '../../../../shared/ui/public.dart'
+    show ClockRhythmCard, ClockRhythmSpace;
 import '../todo_date_math.dart';
 import '../todo_editor.dart';
 import '../todo_list_panel.dart';
@@ -19,43 +21,42 @@ final class TodayTodoPanel extends ConsumerWidget {
     final AsyncValue<TodoViewState> asyncState = ref.watch(
       todoViewModelProvider,
     );
-    return Card(
+    return ClockRhythmCard.padded(
       key: const ValueKey<String>('today-todo-panel'),
       clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Semantics(
-              header: true,
-              child: Text(
-                localizations.todoTodayEyebrow,
-                style: Theme.of(context).textTheme.labelLarge,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Semantics(
+            header: true,
+            child: Text(
+              localizations.todoTodayEyebrow,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              localizations.todoTodayTitle,
-              style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            localizations.todoTodayTitle,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: ClockRhythmSpace.space4),
+          asyncState.when<Widget>(
+            data: (TodoViewState state) => _TodayTodoContent(state: state),
+            error: (Object error, StackTrace stackTrace) => TodoLoadFailure(
+              onRetry: () {
+                ref.invalidate(todoViewModelProvider);
+              },
             ),
-            const SizedBox(height: 8),
-            asyncState.when<Widget>(
-              data: (TodoViewState state) => _TodayTodoContent(state: state),
-              error: (Object error, StackTrace stackTrace) => TodoLoadFailure(
-                onRetry: () {
-                  ref.invalidate(todoViewModelProvider);
-                },
-              ),
-              loading: () => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: CircularProgressIndicator(),
-                ),
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(ClockRhythmSpace.space24),
+                child: CircularProgressIndicator(),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -80,8 +81,11 @@ final class _TodayTodoContent extends StatelessWidget {
         Text(
           formattedDate,
           key: const ValueKey<String>('today-date'),
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
+        const SizedBox(height: ClockRhythmSpace.space12),
         TodoEditor.today(
           key: const ValueKey<String>('today-todo-editor'),
           date: state.todayDate,

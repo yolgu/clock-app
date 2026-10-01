@@ -10,6 +10,7 @@ final class AppNavigationCopy {
     required this.calendarLabel,
     required this.dataLabel,
     required this.themeLabel,
+    required this.settingsLabel,
     required this.routeErrorTitle,
     required this.malformedCalendarDateMessage,
     required this.unknownLocationMessage,
@@ -21,6 +22,7 @@ final class AppNavigationCopy {
   final String calendarLabel;
   final String dataLabel;
   final String themeLabel;
+  final String settingsLabel;
   final String routeErrorTitle;
   final String malformedCalendarDateMessage;
   final String unknownLocationMessage;
@@ -34,6 +36,7 @@ final class AppNavigationCopy {
       calendarLabel: localizations.navigationCalendar,
       dataLabel: localizations.navigationData,
       themeLabel: localizations.navigationTheme,
+      settingsLabel: localizations.navigationSettings,
       routeErrorTitle: localizations.routeErrorTitle,
       malformedCalendarDateMessage:
           localizations.failureRouteInvalidCalendarDate,
@@ -48,6 +51,7 @@ final class AppNavigationCopy {
       MainDestination.calendar => calendarLabel,
       MainDestination.data => dataLabel,
       MainDestination.theme => themeLabel,
+      MainDestination.settings => settingsLabel,
     };
   }
 }

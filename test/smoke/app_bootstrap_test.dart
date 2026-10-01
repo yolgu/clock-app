@@ -15,6 +15,7 @@ void main() {
       calendarLabel: 'Calendar',
       dataLabel: 'Data',
       themeLabel: 'Theme',
+      settingsLabel: 'Settings',
       routeErrorTitle: 'Cannot open page',
       malformedCalendarDateMessage: 'Invalid calendar date',
       unknownLocationMessage: 'Unknown page',

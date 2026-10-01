@@ -44,12 +44,14 @@ abstract final class ThemeCatalog {
     ThemeDefinition(
       id: ThemePreference.current,
       displayName: 'Clock Rhythm',
+      // Apple dark appearance: system grouped backgrounds, label white,
+      // system blue (button tone), system green and system red.
       background: ColorToken('#000000', Color(0xFF000000)),
-      surface: ColorToken('#0a0a0e', Color(0xFF0A0A0E)),
-      text: ColorToken('#f3fffc', Color(0xFFF3FFFC)),
-      accentPrimary: ColorToken('#00fff0', Color(0xFF00FFF0)),
-      accentSecondary: ColorToken('#ff00e6', Color(0xFFFF00E6)),
-      danger: ColorToken('#ffb5d7', Color(0xFFFFB5D7)),
+      surface: ColorToken('#1c1c1e', Color(0xFF1C1C1E)),
+      text: ColorToken('#f5f5f7', Color(0xFFF5F5F7)),
+      accentPrimary: ColorToken('#0071e3', Color(0xFF0071E3)),
+      accentSecondary: ColorToken('#30d158', Color(0xFF30D158)),
+      danger: ColorToken('#ff453a', Color(0xFFFF453A)),
     ),
     ThemeDefinition(
       id: ThemePreference.tokyoNight,

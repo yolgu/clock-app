@@ -27,6 +27,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get navigationTheme => '테마';
 
   @override
+  String get navigationSettings => '설정';
+
+  @override
+  String get settingsTitle => '설정';
+
+  @override
+  String get settingsDescription => '집중 시간대, 알림, 알림음, 언어를 한곳에서 관리합니다.';
+
+  @override
+  String get clockPageEyebrow => '집중 리듬';
+
+  @override
+  String get clockSettingsShortcutHint => '설정에서 변경';
+
+  @override
+  String get dataPageDescription => '설정과 Todo를 백업하고 복원합니다.';
+
+  @override
   String get actionClose => '닫기';
 
   @override

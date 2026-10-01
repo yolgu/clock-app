@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('Ctrl+1 through Ctrl+4 map to the four main destinations', (
+  testWidgets('Ctrl+1 through Ctrl+5 map to the five main destinations', (
     WidgetTester tester,
   ) async {
     final List<int> selections = <int>[];
@@ -31,16 +31,17 @@ void main() {
       LogicalKeyboardKey.digit2,
       LogicalKeyboardKey.digit3,
       LogicalKeyboardKey.digit4,
+      LogicalKeyboardKey.digit5,
     ]) {
       await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
       await tester.sendKeyEvent(digit);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
     }
 
-    expect(selections, <int>[0, 1, 2, 3]);
+    expect(selections, <int>[0, 1, 2, 3, 4]);
   });
 
-  testWidgets('Windows segmented navigation responds to arrow keys', (
+  testWidgets('Windows tab navigation responds to arrow keys', (
     WidgetTester tester,
   ) async {
     final GlobalKey<_NavigationHarnessState> key =
@@ -94,6 +95,7 @@ const AppNavigationCopy _navigationCopy = AppNavigationCopy(
   calendarLabel: 'Calendar',
   dataLabel: 'Data',
   themeLabel: 'Theme',
+  settingsLabel: 'Settings',
   routeErrorTitle: 'Cannot open page',
   malformedCalendarDateMessage: 'Invalid calendar date',
   unknownLocationMessage: 'Unknown page',

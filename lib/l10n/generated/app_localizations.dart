@@ -134,6 +134,42 @@ abstract class AppLocalizations {
   /// **'Theme'**
   String get navigationTheme;
 
+  /// No description provided for @navigationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get navigationSettings;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus window, alerts, sound and language in one place.'**
+  String get settingsDescription;
+
+  /// No description provided for @clockPageEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus rhythm'**
+  String get clockPageEyebrow;
+
+  /// No description provided for @clockSettingsShortcutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Change in Settings'**
+  String get clockSettingsShortcutHint;
+
+  /// No description provided for @dataPageDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up and restore your preferences and Todos.'**
+  String get dataPageDescription;
+
   /// No description provided for @actionClose.
   ///
   /// In en, this message translates to:

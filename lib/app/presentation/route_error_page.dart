@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../shared/ui/public.dart' show ClockRhythmSpace;
 import '../navigation/route_error.dart';
 import 'app_navigation_copy.dart';
 
@@ -28,9 +29,9 @@ final class RouteErrorPage extends StatelessWidget {
                   copy.routeErrorTitle,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: ClockRhythmSpace.space12),
                 Text(message),
-                const SizedBox(height: 16),
+                const SizedBox(height: ClockRhythmSpace.space16),
                 TextButton(
                   onPressed: () {
                     context.go('/clock');

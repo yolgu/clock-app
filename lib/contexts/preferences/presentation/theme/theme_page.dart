@@ -1,8 +1,16 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/i18n/public.dart';
-import '../../../../shared/ui/public.dart' show SemanticStatusAnnouncement;
+import '../../../../shared/ui/public.dart'
+    show
+        ClockRhythmCard,
+        ClockRhythmLayout,
+        ClockRhythmPageHeader,
+        ClockRhythmSpace,
+        SemanticStatusAnnouncement;
 import '../../application/preferences_command_result.dart';
 import '../../domain/theme_preference.dart';
 import '../preferences_providers.dart';
@@ -23,22 +31,43 @@ final class ThemePage extends ConsumerWidget {
       error: (Object error, StackTrace stackTrace) =>
           Center(child: Text(copy.messagePreferencesFailed)),
       data: (PreferencesViewState state) {
+        final double width = MediaQuery.sizeOf(context).width;
+        final double horizontalInset = ClockRhythmLayout.horizontalInsetFor(
+          width,
+        );
+        final double cardPadding = ClockRhythmLayout.cardPaddingFor(width);
+        final double scaledTitleLineHeight = MediaQuery.textScalerOf(
+          context,
+        ).scale(24);
+        final int maximumTitleLines =
+            width < ClockRhythmLayout.compactBreakpoint ? 2 : 3;
+        final double cardExtent = math.max(
+          176,
+          cardPadding * 2 +
+              ClockRhythmSpace.space8 +
+              48 +
+              scaledTitleLineHeight * maximumTitleLines,
+        );
         return CustomScrollView(
           key: const PageStorageKey<String>('theme-page-scroll'),
           restorationId: 'theme_page_scroll',
           slivers: <Widget>[
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              padding: EdgeInsets.fromLTRB(
+                horizontalInset,
+                ClockRhythmSpace.space24,
+                horizontalInset,
+                0,
+              ),
               sliver: SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(copy.themeEyebrow),
-                    Text(
-                      copy.themeTitle,
-                      style: Theme.of(context).textTheme.headlineMedium,
+                    ClockRhythmPageHeader(
+                      eyebrow: copy.themeEyebrow,
+                      title: copy.themeTitle,
+                      description: copy.themeDescription,
                     ),
-                    Text(copy.themeDescription),
                     if (state.failure == PreferencesFailure.theme)
                       SemanticStatusAnnouncement(
                         message: copy.failurePreferencesSave,
@@ -68,13 +97,18 @@ final class ThemePage extends ConsumerWidget {
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+              padding: EdgeInsets.fromLTRB(
+                horizontalInset,
+                ClockRhythmSpace.space8,
+                horizontalInset,
+                ClockRhythmSpace.space24,
+              ),
               sliver: SliverGrid.builder(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 320,
-                  mainAxisExtent: 176,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  mainAxisExtent: cardExtent,
+                  crossAxisSpacing: ClockRhythmSpace.space16,
+                  mainAxisSpacing: ClockRhythmSpace.space16,
                 ),
                 itemCount: ThemeCatalog.definitions.length,
                 itemBuilder: (BuildContext context, int index) {
@@ -89,6 +123,7 @@ final class ThemePage extends ConsumerWidget {
                     selectedLabel: copy.themeSelected,
                     selectLabel: copy.themeSelect,
                     enabled: !state.isBusy,
+                    maximumTitleLines: maximumTitleLines,
                     onSelected: () {
                       ref
                           .read(preferencesViewModelProvider.notifier)
@@ -129,6 +164,7 @@ final class _ThemeChoice extends StatelessWidget {
     required this.selectedLabel,
     required this.selectLabel,
     required this.enabled,
+    required this.maximumTitleLines,
     required this.onSelected,
   });
 
@@ -138,6 +174,7 @@ final class _ThemeChoice extends StatelessWidget {
   final String selectedLabel;
   final String selectLabel;
   final bool enabled;
+  final int maximumTitleLines;
   final VoidCallback onSelected;
 
   @override
@@ -147,14 +184,19 @@ final class _ThemeChoice extends StatelessWidget {
       button: true,
       label: name,
       hint: selectLabel,
-      child: Card(
+      child: ClockRhythmCard.unpadded(
         color: definition.surface.color,
+        borderColor: selected ? definition.accentPrimary.color : null,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           key: ValueKey<String>('theme-${definition.id.id}'),
           onTap: enabled && !selected ? onSelected : null,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(
+              ClockRhythmLayout.cardPaddingFor(
+                MediaQuery.sizeOf(context).width,
+              ),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -163,31 +205,49 @@ final class _ThemeChoice extends StatelessWidget {
                     Expanded(
                       child: Text(
                         name,
-                        style: TextStyle(
-                          color: definition.text.color,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        maxLines: maximumTitleLines,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: definition.text.color),
                       ),
                     ),
                     if (selected)
                       Tooltip(
                         message: selectedLabel,
                         child: Icon(
-                          Icons.check_circle,
+                          Icons.check_circle_rounded,
                           color: definition.accentPrimary.color,
                         ),
                       ),
                   ],
                 ),
                 const Spacer(),
-                Row(
-                  children: definition.sourceSwatches
-                      .map((ColorToken token) {
-                        return Expanded(
-                          child: Container(height: 48, color: token.color),
-                        );
-                      })
-                      .toList(growable: false),
+                SizedBox(
+                  height: ClockRhythmLayout.minimumInteractiveDimension,
+                  child: Row(
+                    children: definition.sourceSwatches
+                        .map((ColorToken token) {
+                          return Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                              end: ClockRhythmSpace.space8,
+                            ),
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: token.color,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: definition.text.color.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        })
+                        .toList(growable: false),
+                  ),
                 ),
               ],
             ),

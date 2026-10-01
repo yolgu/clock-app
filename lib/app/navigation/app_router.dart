@@ -20,12 +20,14 @@ final class AppDestinationPages {
     required this.calendar,
     required this.data,
     required this.theme,
+    required this.settings,
   });
 
   final DestinationPageBuilder clock;
   final CalendarPageBuilder calendar;
   final DestinationPageBuilder data;
   final DestinationPageBuilder theme;
+  final DestinationPageBuilder settings;
 
   factory AppDestinationPages.placeholders(AppNavigationCopy copy) {
     return AppDestinationPages(
@@ -33,6 +35,7 @@ final class AppDestinationPages {
       calendar: (_, _) => _DestinationPlaceholder(label: copy.calendarLabel),
       data: (_) => _DestinationPlaceholder(label: copy.dataLabel),
       theme: (_) => _DestinationPlaceholder(label: copy.themeLabel),
+      settings: (_) => _DestinationPlaceholder(label: copy.settingsLabel),
     );
   }
 
@@ -49,6 +52,9 @@ final class AppDestinationPages {
       ),
       theme: (BuildContext context) => _DestinationPlaceholder(
         label: AppNavigationCopy.fromContext(context).themeLabel,
+      ),
+      settings: (BuildContext context) => _DestinationPlaceholder(
+        label: AppNavigationCopy.fromContext(context).settingsLabel,
       ),
     );
   }
@@ -163,6 +169,19 @@ final class ClockRhythmRouter {
                 ),
               ],
             ),
+            StatefulShellBranch(
+              navigatorKey: _settingsNavigatorKey,
+              restorationScopeId: 'settings_branch',
+              routes: <RouteBase>[
+                GoRoute(
+                  path: MainDestination.settings.location,
+                  name: 'settings',
+                  builder: (BuildContext context, GoRouterState state) {
+                    return destinationPages.settings(context);
+                  },
+                ),
+              ],
+            ),
           ],
         ),
       ],
@@ -187,6 +206,8 @@ final class ClockRhythmRouter {
   );
   final GlobalKey<NavigatorState> _themeNavigatorKey =
       GlobalKey<NavigatorState>(debugLabel: 'theme');
+  final GlobalKey<NavigatorState> _settingsNavigatorKey =
+      GlobalKey<NavigatorState>(debugLabel: 'settings');
 
   late final GoRouter router;
 

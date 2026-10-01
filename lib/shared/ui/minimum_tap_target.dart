@@ -1,9 +1,11 @@
 import 'package:flutter/widgets.dart';
 
+import 'design_tokens.dart';
+
 final class MinimumTapTarget extends StatelessWidget {
   const MinimumTapTarget({
     required this.child,
-    this.minimumSize = 48,
+    this.minimumSize = ClockRhythmLayout.minimumInteractiveDimension,
     super.key,
   });
 

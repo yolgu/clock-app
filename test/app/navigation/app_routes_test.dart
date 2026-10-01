@@ -2,10 +2,10 @@ import 'package:clock_rhythm/app/navigation/app_routes.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('declares the four stable main destination locations', () {
+  test('declares the five stable main destination locations', () {
     expect(
       MainDestination.values.map((MainDestination value) => value.location),
-      <String>['/clock', '/calendar', '/data', '/theme'],
+      <String>['/clock', '/calendar', '/data', '/theme', '/settings'],
     );
   });
 

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../navigation/app_routes.dart';
 import 'app_navigation_copy.dart';
+import 'destination_icons.dart';
 
+/// An iOS-style tab bar: hairline top edge, tinted glyphs, no indicator.
 final class AndroidBottomNavigation extends StatelessWidget {
   const AndroidBottomNavigation({
     required this.selectedIndex,
@@ -19,31 +22,30 @@ final class AndroidBottomNavigation extends StatelessWidget {
     return Semantics(
       container: true,
       label: copy.navigationSemanticsLabel,
-      child: NavigationBar(
-        selectedIndex: selectedIndex,
-        onDestinationSelected: onDestinationSelected,
-        destinations: <NavigationDestination>[
-          NavigationDestination(
-            icon: const Icon(Icons.schedule_outlined),
-            selectedIcon: const Icon(Icons.schedule),
-            label: copy.clockLabel,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              width: 0.5,
+            ),
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.calendar_month_outlined),
-            selectedIcon: const Icon(Icons.calendar_month),
-            label: copy.calendarLabel,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.storage_outlined),
-            selectedIcon: const Icon(Icons.storage),
-            label: copy.dataLabel,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.palette_outlined),
-            selectedIcon: const Icon(Icons.palette),
-            label: copy.themeLabel,
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onDestinationSelected,
+          destinations: MainDestination.values
+              .map(
+                (MainDestination destination) => NavigationDestination(
+                  icon: Icon(DestinationIcons.of(destination, selected: false)),
+                  selectedIcon: Icon(
+                    DestinationIcons.of(destination, selected: true),
+                  ),
+                  label: copy.labelFor(destination),
+                ),
+              )
+              .toList(growable: false),
+        ),
       ),
     );
   }

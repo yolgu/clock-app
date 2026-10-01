@@ -5,7 +5,8 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart';
-import '../../../shared/ui/public.dart' show SemanticStatusAnnouncement;
+import '../../../shared/ui/public.dart'
+    show ClockRhythmSpace, SemanticStatusAnnouncement;
 import '../application/ports/legacy_coexistence_warning.dart';
 import '../application/ports/rhythm_start_capability.dart';
 import '../domain/rhythm_session.dart';
@@ -13,7 +14,10 @@ import 'rhythm_providers.dart';
 import 'rhythm_view_state.dart';
 
 final class RhythmControls extends ConsumerStatefulWidget {
-  const RhythmControls({super.key});
+  const RhythmControls({this.center, super.key});
+
+  /// Content shown between the two round controls, such as session status.
+  final Widget? center;
 
   @override
   ConsumerState<RhythmControls> createState() => _RhythmControlsState();
@@ -71,49 +75,55 @@ final class _RhythmControlsState extends ConsumerState<RhythmControls> {
     final bool canStop =
         status == RhythmSessionStatus.running ||
         status == RhythmSessionStatus.paused;
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    // The primary slot swaps with the session, like Start/Pause in Clock.
+    final Widget primary = switch (status) {
+      RhythmSessionStatus.running => _RoundControl(
+        controlKey: const ValueKey<String>('pause-rhythm'),
+        label: copy.rhythmControlPause,
+        tone: _RoundTone.tinted(_pauseOrange, colors),
+        onPressed: !state.isBusy && canPause
+            ? () => ref.read(rhythmViewModelProvider.notifier).pause()
+            : null,
+      ),
+      RhythmSessionStatus.paused => _RoundControl(
+        controlKey: const ValueKey<String>('resume-rhythm'),
+        label: copy.rhythmControlResume,
+        tone: _RoundTone.tinted(colors.secondary, colors),
+        onPressed: !state.isBusy && canResume
+            ? () => ref.read(rhythmViewModelProvider.notifier).resume()
+            : null,
+      ),
+      RhythmSessionStatus.idle ||
+      RhythmSessionStatus.stoppedForToday => _RoundControl(
+        controlKey: const ValueKey<String>('start-rhythm'),
+        label: copy.rhythmControlStart,
+        tone: _RoundTone.tinted(colors.secondary, colors),
+        onPressed: !state.isBusy && !_isPreparingStart && canStart
+            ? _startRhythm
+            : null,
+      ),
+    };
+    final Widget stop = _RoundControl(
+      controlKey: const ValueKey<String>('stop-rhythm-for-today'),
+      label: copy.rhythmControlStopForToday,
+      tone: _RoundTone.neutral(colors),
+      onPressed: !state.isBusy && canStop
+          ? () => ref.read(rhythmViewModelProvider.notifier).stopForToday()
+          : null,
+    );
+    final Widget? center = widget.center;
     return Column(
       key: const ValueKey<String>('rhythm-controls'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 8,
-          runSpacing: 8,
+        Row(
           children: <Widget>[
-            FilledButton.icon(
-              key: const ValueKey<String>('start-rhythm'),
-              onPressed: !state.isBusy && !_isPreparingStart && canStart
-                  ? _startRhythm
-                  : null,
-              icon: const Icon(Icons.play_arrow),
-              label: Text(copy.rhythmControlStart),
-            ),
-            FilledButton.tonalIcon(
-              key: const ValueKey<String>('pause-rhythm'),
-              onPressed: !state.isBusy && canPause
-                  ? () => ref.read(rhythmViewModelProvider.notifier).pause()
-                  : null,
-              icon: const Icon(Icons.pause),
-              label: Text(copy.rhythmControlPause),
-            ),
-            FilledButton.tonalIcon(
-              key: const ValueKey<String>('resume-rhythm'),
-              onPressed: !state.isBusy && canResume
-                  ? () => ref.read(rhythmViewModelProvider.notifier).resume()
-                  : null,
-              icon: const Icon(Icons.play_arrow),
-              label: Text(copy.rhythmControlResume),
-            ),
-            OutlinedButton.icon(
-              key: const ValueKey<String>('stop-rhythm-for-today'),
-              onPressed: !state.isBusy && canStop
-                  ? () => ref
-                        .read(rhythmViewModelProvider.notifier)
-                        .stopForToday()
-                  : null,
-              icon: const Icon(Icons.event_busy),
-              label: Text(copy.rhythmControlStopForToday),
-            ),
+            stop,
+            const SizedBox(width: ClockRhythmSpace.space12),
+            Expanded(child: center ?? const SizedBox.shrink()),
+            const SizedBox(width: ClockRhythmSpace.space12),
+            primary,
           ],
         ),
         if (state.startFailure != null)
@@ -241,6 +251,102 @@ final class _StartFailure extends StatelessWidget {
           failure == RhythmStartFailure.deliveryUnavailable
               ? copy.actionRetry
               : copy.actionOpenSettings,
+        ),
+      ),
+    );
+  }
+}
+
+const Color _pauseOrange = Color(0xFFFF9F0A);
+
+final class _RoundTone {
+  const _RoundTone({
+    required this.fill,
+    required this.ring,
+    required this.label,
+  });
+
+  /// Apple's tinted style: a dim wash of the hue with a bright label.
+  factory _RoundTone.tinted(Color hue, ColorScheme colors) {
+    return _RoundTone(
+      fill: Color.lerp(colors.surface, hue, 0.24)!,
+      ring: Color.lerp(colors.surface, hue, 0.24)!,
+      label: Color.lerp(hue, Colors.white, 0.18)!,
+    );
+  }
+
+  factory _RoundTone.neutral(ColorScheme colors) {
+    return _RoundTone(
+      fill: colors.surfaceContainerHighest,
+      ring: colors.surfaceContainerHighest,
+      label: colors.onSurface,
+    );
+  }
+
+  final Color fill;
+  final Color ring;
+  final Color label;
+}
+
+/// A round control with the double ring of the Clock app's timer buttons.
+/// It grows into a capsule when its label needs more room.
+final class _RoundControl extends StatelessWidget {
+  const _RoundControl({
+    required this.controlKey,
+    required this.label,
+    required this.tone,
+    required this.onPressed,
+  });
+
+  static const double diameter = 84;
+
+  final Key controlKey;
+  final String label;
+  final _RoundTone tone;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool enabled = onPressed != null;
+    final double opacity = enabled ? 1 : 0.4;
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: tone.ring.withValues(alpha: opacity),
+            width: 2,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(3),
+        child: FilledButton(
+          key: controlKey,
+          onPressed: onPressed,
+          style: ButtonStyle(
+            minimumSize: const WidgetStatePropertyAll<Size>(
+              Size.square(diameter - 10),
+            ),
+            padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
+              EdgeInsets.symmetric(horizontal: ClockRhythmSpace.space12),
+            ),
+            shape: const WidgetStatePropertyAll<OutlinedBorder>(
+              StadiumBorder(),
+            ),
+            backgroundColor: WidgetStatePropertyAll<Color>(
+              tone.fill.withValues(alpha: opacity),
+            ),
+            foregroundColor: WidgetStatePropertyAll<Color>(
+              tone.label.withValues(alpha: enabled ? 1 : 0.55),
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          ),
         ),
       ),
     );

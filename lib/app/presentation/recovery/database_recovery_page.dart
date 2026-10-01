@@ -7,6 +7,7 @@ import '../../../features/data_transfer/public.dart'
 import '../../../features/data_transfer/public_presentation.dart'
     show BackupImportPreviewDialog;
 import '../../../shared/i18n/public.dart';
+import '../../../shared/ui/public.dart' show ClockRhythmSpace;
 import 'database_recovery_contract.dart';
 import 'database_reset_confirmation.dart';
 
@@ -43,13 +44,13 @@ final class _DatabaseRecoveryPageState extends State<DatabaseRecoveryPage> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 640),
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(ClockRhythmSpace.space24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   const Icon(Icons.storage, size: 64),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: ClockRhythmSpace.space16),
                   Text(
                     copy.databaseRecoveryTitle,
                     textAlign: TextAlign.center,
@@ -59,13 +60,13 @@ final class _DatabaseRecoveryPageState extends State<DatabaseRecoveryPage> {
                     copy.databaseRecoveryDescription,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: ClockRhythmSpace.space8),
                   Text(
                     _reasonMessage(copy),
                     key: const ValueKey<String>('database-recovery-reason'),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: ClockRhythmSpace.space24),
                   FilledButton(
                     key: const ValueKey<String>('retry-database-open'),
                     onPressed: _busy ? null : _retry,

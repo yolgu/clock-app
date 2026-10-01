@@ -6,7 +6,8 @@ import 'package:flutter/services.dart';
 
 import '../../../../shared/i18n/public.dart'
     show AppLocalizations, LocalDateFormatter;
-import '../../../../shared/ui/public.dart' show FocusRing;
+import '../../../../shared/ui/public.dart'
+    show ClockRhythmRadius, ClockRhythmSpace, FocusRing;
 import '../../domain/local_calendar_date.dart';
 import '../../domain/todo_collection.dart';
 import '../todo_date_math.dart';
@@ -28,7 +29,7 @@ final class CalendarGrid extends StatefulWidget {
 }
 
 final class _CalendarGridState extends State<CalendarGrid> {
-  static const double _cellSpacing = 4;
+  static const double _cellSpacing = ClockRhythmSpace.space4;
   static const double _minimumCellWidth = 56;
 
   late final List<FocusNode> _focusNodes = List<FocusNode>.generate(
@@ -103,7 +104,7 @@ final class _CalendarGridState extends State<CalendarGrid> {
                               child: Text(
                                 weekdays[index],
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.labelMedium,
+                                style: Theme.of(context).textTheme.labelSmall,
                               ),
                             ),
                           ),
@@ -209,16 +210,7 @@ final class _CalendarBlankCell extends StatelessWidget {
     return Semantics(
       container: true,
       enabled: false,
-      child: DecoratedBox(
-        key: ValueKey<String>('calendar-blank-$index'),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
-      ),
+      child: SizedBox.expand(key: ValueKey<String>('calendar-blank-$index')),
     );
   }
 }
@@ -265,12 +257,15 @@ final class _CalendarDayCell extends StatelessWidget {
     final String? visualSummary = daySummary == null
         ? null
         : '${daySummary.completed}/${daySummary.total}';
-    final Color borderColor = isSelected
-        ? theme.colorScheme.primary
+    final ColorScheme colors = theme.colorScheme;
+    final Color numberColor = isSelected
+        ? colors.onPrimary
         : isToday
-        ? theme.colorScheme.secondary
-        : theme.colorScheme.outlineVariant;
-    final double borderWidth = isSelected ? 3 : 1;
+        ? colors.error
+        : colors.onSurface;
+    final Color cellColor = daySummary != null
+        ? colors.surfaceContainerHigh
+        : Colors.transparent;
 
     return Semantics(
       key: ValueKey<String>('calendar-day-${date.text}'),
@@ -281,48 +276,83 @@ final class _CalendarDayCell extends StatelessWidget {
       onTap: enabled ? onTap : null,
       excludeSemantics: true,
       child: Material(
-        color: daySummary == null
-            ? theme.colorScheme.surfaceContainerLow
-            : theme.colorScheme.secondaryContainer.withValues(alpha: 0.45),
+        color: cellColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: borderColor, width: borderWidth),
+          borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
+          side: isSelected
+              ? BorderSide(color: colors.primary.withValues(alpha: 0.5))
+              : BorderSide.none,
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           canRequestFocus: false,
           onTap: enabled ? onTap : null,
           child: Padding(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(5),
             child: Stack(
               children: <Widget>[
                 Align(
-                  alignment: AlignmentDirectional.topStart,
-                  child: Text(
-                    day.toString(),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minWidth: 30,
+                      minHeight: 30,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? colors.primary
+                          : isToday
+                          ? colors.error.withValues(alpha: 0.16)
+                          : null,
+                      borderRadius: BorderRadius.circular(
+                        ClockRhythmRadius.pill,
+                      ),
+                    ),
+                    child: Center(
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: Text(
+                        day.toString(),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: numberColor,
+                          fontWeight: isSelected || isToday
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          fontFeatures: const <FontFeature>[
+                            FontFeature.tabularFigures(),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
                 if (isSelected)
-                  const Align(
+                  Align(
                     alignment: AlignmentDirectional.topEnd,
-                    child: Icon(Icons.check, size: 16),
+                    child: Icon(Icons.check, size: 12, color: colors.primary),
                   )
                 else if (isToday)
-                  const Align(
+                  Align(
                     alignment: AlignmentDirectional.topEnd,
-                    child: Icon(Icons.today_outlined, size: 16),
+                    child: Icon(
+                      Icons.today_outlined,
+                      size: 12,
+                      color: colors.error,
+                    ),
                   ),
                 if (daySummary != null && visualSummary != null)
                   Align(
-                    alignment: AlignmentDirectional.bottomStart,
+                    alignment: Alignment.bottomCenter,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        const Icon(Icons.checklist, size: 14),
-                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.checklist,
+                          size: 12,
+                          color: colors.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 3),
                         Flexible(
                           child: Text(
                             visualSummary,

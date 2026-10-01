@@ -20,6 +20,7 @@ void main() {
       calendar: (_, _) => const SizedBox.shrink(),
       data: (_) => const SizedBox.shrink(),
       theme: (_) => const SizedBox.shrink(),
+      settings: (_) => const SizedBox.shrink(),
     );
     final ClockRhythmRouter router = ClockRhythmRouter(
       profile: PlatformPresentationProfile.windows,
@@ -72,6 +73,7 @@ void main() {
       calendar: (_, _) => const SizedBox.shrink(),
       data: (_) => const SizedBox.shrink(),
       theme: (_) => const SizedBox.shrink(),
+      settings: (_) => const SizedBox.shrink(),
     );
     final ClockRhythmRouter router = ClockRhythmRouter(
       profile: PlatformPresentationProfile.windows,
