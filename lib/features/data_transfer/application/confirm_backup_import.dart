@@ -26,8 +26,15 @@ final class ConfirmBackupImport {
   ) async {
     try {
       await _rhythmSafety.stopForImport();
-    } on Object {
-      throw const BackupFailure(key: BackupFailureKey.rhythmSafety);
+    } on Object catch (error, stackTrace) {
+      Error.throwWithStackTrace(
+        BackupFailure(
+          key: BackupFailureKey.rhythmSafety,
+          cause: error,
+          stackTrace: stackTrace,
+        ),
+        stackTrace,
+      );
     }
     try {
       final BackupReplacementResult result = await _replacement.replaceAll(
@@ -39,8 +46,15 @@ final class ConfirmBackupImport {
       );
     } on BackupFailure {
       rethrow;
-    } on Object {
-      throw const BackupFailure(key: BackupFailureKey.replacement);
+    } on Object catch (error, stackTrace) {
+      Error.throwWithStackTrace(
+        BackupFailure(
+          key: BackupFailureKey.replacement,
+          cause: error,
+          stackTrace: stackTrace,
+        ),
+        stackTrace,
+      );
     }
   }
 }

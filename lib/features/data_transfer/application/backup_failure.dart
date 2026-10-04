@@ -28,10 +28,17 @@ enum BackupFailureKey {
 }
 
 final class BackupFailure implements Exception {
-  const BackupFailure({required this.key, this.zeroBasedTodoIndex});
+  const BackupFailure({
+    required this.key,
+    this.zeroBasedTodoIndex,
+    this.cause,
+    this.stackTrace,
+  });
 
   final BackupFailureKey key;
   final int? zeroBasedTodoIndex;
+  final Object? cause;
+  final StackTrace? stackTrace;
 
   @override
   String toString() {

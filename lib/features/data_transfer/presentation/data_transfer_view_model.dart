@@ -25,8 +25,14 @@ final class DataTransferViewModel extends Notifier<DataTransferState> {
           : const DataTransferState();
     } on BackupFailure catch (failure) {
       _fail(failure);
-    } on Object {
-      _fail(const BackupFailure(key: BackupFailureKey.export));
+    } on Object catch (error, stackTrace) {
+      _fail(
+        BackupFailure(
+          key: BackupFailureKey.export,
+          cause: error,
+          stackTrace: stackTrace,
+        ),
+      );
     }
   }
 
@@ -45,8 +51,14 @@ final class DataTransferViewModel extends Notifier<DataTransferState> {
             );
     } on BackupFailure catch (failure) {
       _fail(failure);
-    } on Object {
-      _fail(const BackupFailure(key: BackupFailureKey.fileRead));
+    } on Object catch (error, stackTrace) {
+      _fail(
+        BackupFailure(
+          key: BackupFailureKey.fileRead,
+          cause: error,
+          stackTrace: stackTrace,
+        ),
+      );
     }
   }
 
@@ -85,9 +97,13 @@ final class DataTransferViewModel extends Notifier<DataTransferState> {
       );
     } on BackupFailure catch (failure) {
       _fail(failure, prepared: prepared);
-    } on Object {
+    } on Object catch (error, stackTrace) {
       _fail(
-        const BackupFailure(key: BackupFailureKey.replacement),
+        BackupFailure(
+          key: BackupFailureKey.replacement,
+          cause: error,
+          stackTrace: stackTrace,
+        ),
         prepared: prepared,
       );
     }

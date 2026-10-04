@@ -17,7 +17,7 @@ import '../todo_editor.dart';
 import '../todo_list_panel.dart';
 import '../todo_providers.dart';
 import '../todo_status_message.dart';
-import '../todo_view_model.dart';
+import '../todo_view_state.dart';
 import 'calendar_grid.dart';
 import 'calendar_header.dart';
 
@@ -70,7 +70,7 @@ final class _CalendarPageState extends ConsumerState<CalendarPage>
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context);
     final AsyncValue<TodoViewState> asyncState = ref.watch(
-      todoViewModelProvider,
+      todoViewStateProvider,
     );
     return SafeArea(
       child: SingleChildScrollView(
@@ -96,7 +96,7 @@ final class _CalendarPageState extends ConsumerState<CalendarPage>
               },
               error: (Object error, StackTrace stackTrace) => TodoLoadFailure(
                 onRetry: () {
-                  ref.invalidate(todoViewModelProvider);
+                  ref.invalidate(todoDataControllerProvider);
                   _scheduleRouteDateSynchronization();
                 },
               ),
@@ -125,7 +125,7 @@ final class _CalendarPageState extends ConsumerState<CalendarPage>
 
   Future<void> _synchronizeRouteDate(LocalCalendarDate routeDate) async {
     try {
-      await ref.read(todoViewModelProvider.future);
+      await ref.read(todoDataControllerProvider.future);
     } on Object {
       return;
     }
@@ -133,7 +133,7 @@ final class _CalendarPageState extends ConsumerState<CalendarPage>
       return;
     }
     await ref
-        .read(todoViewModelProvider.notifier)
+        .read(calendarViewModelProvider.notifier)
         .synchronizeSelectedDate(routeDate);
   }
 
@@ -180,7 +180,9 @@ final class _CalendarPageContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final TodoViewModel viewModel = ref.read(todoViewModelProvider.notifier);
+    final CalendarViewModel viewModel = ref.read(
+      calendarViewModelProvider.notifier,
+    );
     final Widget calendarBoard = ClockRhythmCard.unpadded(
       key: const ValueKey<String>('calendar-board'),
       child: Padding(

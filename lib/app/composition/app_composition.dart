@@ -19,6 +19,7 @@ import 'android_platform_services_factory.dart';
 import 'clock_rhythm_bootstrap.dart';
 import 'clock_rhythm_runtime.dart';
 import 'database_recovery_backup_importer.dart';
+import 'macos_platform_services_factory.dart';
 import 'windows_platform_services_factory.dart';
 
 final class AppComposition {
@@ -57,8 +58,12 @@ final class AppComposition {
       platform = WindowsPlatformServicesFactory(configuration: configuration);
     } else if (Platform.isAndroid) {
       platform = AndroidPlatformServicesFactory();
+    } else if (Platform.isMacOS) {
+      platform = MacOSPlatformServicesFactory();
     } else {
-      throw UnsupportedError('Clock Rhythm supports Windows and Android.');
+      throw UnsupportedError(
+        'Clock Rhythm supports Windows, Android and macOS.',
+      );
     }
     final DatabaseStartup databaseStartup = DatabaseStartup(
       connectionFactory: PrivateDatabaseConnectionFactory(

@@ -1,5 +1,5 @@
 import '../../../contexts/preferences/public.dart'
-    show GetPreferences, UserPreferences;
+    show PreferencesService, UserPreferences;
 import '../../../contexts/todo/public_model.dart' show Todo;
 import 'backup_preview.dart';
 import 'ports.dart';
@@ -36,20 +36,16 @@ final class PrepareBackupImport {
   factory PrepareBackupImport({
     required BackupFilePort backupFile,
     required PortableBackupCodec codec,
-    required GetPreferences getPreferences,
+    required PreferencesService preferences,
   }) {
-    return PrepareBackupImport._(backupFile, codec, getPreferences);
+    return PrepareBackupImport._(backupFile, codec, preferences);
   }
 
-  const PrepareBackupImport._(
-    this._backupFile,
-    this._codec,
-    this._getPreferences,
-  );
+  const PrepareBackupImport._(this._backupFile, this._codec, this._preferences);
 
   final BackupFilePort _backupFile;
   final PortableBackupCodec _codec;
-  final GetPreferences _getPreferences;
+  final PreferencesService _preferences;
 
   Future<PreparedBackupImport?> execute() async {
     final BackupFileContent? content = await _backupFile.pickImport(
@@ -59,7 +55,7 @@ final class PrepareBackupImport {
       return null;
     }
     final PortableBackupData data = _codec.decode(content.bytes);
-    final UserPreferences currentPreferences = await _getPreferences.execute();
+    final UserPreferences currentPreferences = await _preferences.load();
     return PreparedBackupImport.fromValidatedData(
       data: data,
       currentAutoStartEnabled: currentPreferences.autoStartEnabled,

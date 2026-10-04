@@ -1,20 +1,20 @@
 import '../../../contexts/preferences/public.dart'
-    show GetPreferences, UserPreferences;
-import '../../../contexts/todo/public.dart' show ExportTodoSnapshots;
+    show PreferencesService, UserPreferences;
+import '../../../contexts/todo/public.dart' show TodoQueryService;
 import '../../../contexts/todo/public_model.dart'
     show Todo, TodoRestoreSnapshot;
 import 'ports.dart';
 
 final class ExportPortableBackup {
   factory ExportPortableBackup({
-    required GetPreferences getPreferences,
-    required ExportTodoSnapshots exportTodos,
+    required PreferencesService preferences,
+    required TodoQueryService exportTodos,
     required BackupFilePort backupFile,
     required PortableBackupCodec codec,
     required BackupClock clock,
   }) {
     return ExportPortableBackup._(
-      getPreferences,
+      preferences,
       exportTodos,
       backupFile,
       codec,
@@ -23,22 +23,22 @@ final class ExportPortableBackup {
   }
 
   const ExportPortableBackup._(
-    this._getPreferences,
+    this._preferences,
     this._exportTodos,
     this._backupFile,
     this._codec,
     this._clock,
   );
 
-  final GetPreferences _getPreferences;
-  final ExportTodoSnapshots _exportTodos;
+  final PreferencesService _preferences;
+  final TodoQueryService _exportTodos;
   final BackupFilePort _backupFile;
   final PortableBackupCodec _codec;
   final BackupClock _clock;
 
   Future<bool> execute() async {
-    final UserPreferences preferences = await _getPreferences.execute();
-    final List<Todo> todos = (await _exportTodos.execute())
+    final UserPreferences preferences = await _preferences.load();
+    final List<Todo> todos = (await _exportTodos.exportSnapshots())
         .map(
           (snapshot) => Todo.restore(
             TodoRestoreSnapshot(

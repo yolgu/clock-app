@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../application/ports/rhythm_start_capability.dart';
-import '../application/reconcile_rhythm.dart';
+import '../application/rhythm_service.dart';
 import '../application/rhythm_status_snapshot.dart';
 import '../domain/rhythm_session.dart';
 import 'rhythm_actions.dart';

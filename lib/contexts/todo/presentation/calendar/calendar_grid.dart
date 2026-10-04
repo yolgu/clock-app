@@ -11,7 +11,7 @@ import '../../../../shared/ui/public.dart'
 import '../../domain/local_calendar_date.dart';
 import '../../domain/todo_collection.dart';
 import '../todo_date_math.dart';
-import '../todo_view_model.dart';
+import '../todo_view_state.dart';
 import 'calendar_cells.dart';
 
 final class CalendarGrid extends StatefulWidget {

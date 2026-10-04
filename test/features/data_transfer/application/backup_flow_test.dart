@@ -169,11 +169,22 @@ void main() {
     await expectLater(
       harness.confirm.execute(prepared),
       throwsA(
-        isA<BackupFailure>().having(
-          (BackupFailure failure) => failure.key,
-          'key',
-          BackupFailureKey.replacement,
-        ),
+        isA<BackupFailure>()
+            .having(
+              (BackupFailure failure) => failure.key,
+              'key',
+              BackupFailureKey.replacement,
+            )
+            .having(
+              (BackupFailure failure) => failure.cause,
+              'cause',
+              isA<StateError>(),
+            )
+            .having(
+              (BackupFailure failure) => failure.stackTrace,
+              'stackTrace',
+              isNotNull,
+            ),
       ),
     );
 
@@ -201,8 +212,8 @@ void main() {
     final BackupHarness harness = BackupHarness(importBytes: null);
     harness.todoRepository.todos = <Todo>[_todo()];
     final ExportPortableBackup export = ExportPortableBackup(
-      getPreferences: GetPreferences(harness.settingsRepository),
-      exportTodos: ExportTodoSnapshots(repository: harness.todoRepository),
+      preferences: harness.preferences,
+      exportTodos: TodoQueryService(repository: harness.todoRepository),
       backupFile: harness.file,
       codec: const BackupV1Codec(),
       clock: const FixedBackupClock(),
@@ -247,8 +258,8 @@ void main() {
       source.settingsRepository.current = sourcePreferences;
       source.todoRepository.todos = sourceTodos;
       final ExportPortableBackup export = ExportPortableBackup(
-        getPreferences: GetPreferences(source.settingsRepository),
-        exportTodos: ExportTodoSnapshots(repository: source.todoRepository),
+        preferences: source.preferences,
+        exportTodos: TodoQueryService(repository: source.todoRepository),
         backupFile: source.file,
         codec: const BackupV1Codec(),
         clock: const FixedBackupClock(),
@@ -282,6 +293,10 @@ void main() {
 final class BackupHarness {
   BackupHarness({required List<int>? importBytes}) {
     settingsRepository = MemorySettingsRepository(calls);
+    preferences = PreferencesService(
+      settingsRepository: settingsRepository,
+      preferencesChanged: const NoOpPreferencesChanged(),
+    );
     todoRepository = MemoryTodoRepository();
     file = FakeBackupFilePort(calls, importBytes);
     rhythm = FakeRhythmSafetyPort(calls);
@@ -289,7 +304,7 @@ final class BackupHarness {
     prepare = PrepareBackupImport(
       backupFile: file,
       codec: const BackupV1Codec(),
-      getPreferences: GetPreferences(settingsRepository),
+      preferences: preferences,
     );
     confirm = ConfirmBackupImport(
       rhythmSafety: rhythm,
@@ -299,6 +314,7 @@ final class BackupHarness {
 
   final List<String> calls = <String>[];
   late final MemorySettingsRepository settingsRepository;
+  late final PreferencesService preferences;
   late final MemoryTodoRepository todoRepository;
   late final FakeBackupFilePort file;
   late final FakeRhythmSafetyPort rhythm;
@@ -451,4 +467,10 @@ Todo _todo({
           : '2026-08-23T00:00:00.000Z',
     ),
   );
+}
+
+final class NoOpPreferencesChanged implements PreferencesChangedPort {
+  const NoOpPreferencesChanged();
+  @override
+  Future<void> publish(PreferencesChangedEvent event) async {}
 }

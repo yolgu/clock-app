@@ -67,11 +67,11 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
   @override
   Widget build(BuildContext context) {
     ref.listen<AsyncValue<PreferencesViewState>>(
-      preferencesViewModelProvider,
+      preferencesViewStateProvider,
       _handlePreferencesTransition,
     );
     final AsyncValue<PreferencesViewState> value = ref.watch(
-      preferencesViewModelProvider,
+      preferencesViewStateProvider,
     );
     return value.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -316,7 +316,7 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                         if (language != null &&
                             language != state.preferences.language) {
                           ref
-                              .read(preferencesViewModelProvider.notifier)
+                              .read(preferencesDataControllerProvider.notifier)
                               .changeLanguage(language);
                         }
                       },
@@ -353,7 +353,7 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                         ? null
                         : () {
                             ref
-                                .read(preferencesViewModelProvider.notifier)
+                                .read(rhythmSettingsEditorProvider.notifier)
                                 .saveRhythm();
                           },
                     child: Text(copy.rhythmSettingsSave),
@@ -369,7 +369,7 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                     onPressed: state.isBusy
                         ? null
                         : () => ref
-                              .read(preferencesViewModelProvider.notifier)
+                              .read(rhythmSettingsEditorProvider.notifier)
                               .repairDraftStore(),
                     child: Text(copy.actionRetry),
                   ),
@@ -385,7 +385,7 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                     onPressed: state.isBusy
                         ? null
                         : () => ref
-                              .read(preferencesViewModelProvider.notifier)
+                              .read(preferencesDataControllerProvider.notifier)
                               .repairEffect(
                                 PreferencesRepairNeed.rhythmSchedule,
                               ),
@@ -401,7 +401,7 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                     onPressed: state.isBusy
                         ? null
                         : () => ref
-                              .read(preferencesViewModelProvider.notifier)
+                              .read(preferencesDataControllerProvider.notifier)
                               .repairAutoStart(),
                     child: Text(copy.autoStartRepair),
                   ),
@@ -469,7 +469,7 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
     setState(() => _validation = result);
     final RhythmSettingsDraft? draft = result.draft;
     if (draft != null) {
-      ref.read(preferencesViewModelProvider.notifier).updateDraft(draft);
+      ref.read(rhythmSettingsEditorProvider.notifier).updateDraft(draft);
     }
   }
 
@@ -479,7 +479,7 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
   }
 
   Future<void> _discard() async {
-    await ref.read(preferencesViewModelProvider.notifier).discardDraft();
+    await ref.read(rhythmSettingsEditorProvider.notifier).discardDraft();
   }
 
   void _synchronize(RhythmSettingsDraft draft) {

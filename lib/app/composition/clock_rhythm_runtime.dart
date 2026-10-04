@@ -196,7 +196,7 @@ final class ClockRhythmRuntime {
       );
       Error.throwWithStackTrace(error, stackTrace);
     }
-    final _RhythmUseCases rhythmUseCases = _createRhythmUseCases(
+    final _RhythmComposition rhythmComposition = _createRhythmComposition(
       session: rhythmSession,
       clock: clock,
       platform: platformServices,
@@ -204,11 +204,16 @@ final class ClockRhythmRuntime {
     );
     final CoordinatingPreferencesChangedPort preferencesChanged =
         CoordinatingPreferencesChangedPort(
-          rescheduleRhythm: rhythmUseCases.reschedule,
+          rescheduleRhythm: rhythmComposition.service,
           refreshDeliveryPayload: platformServices.refreshDeliveryPayload,
           refreshSound: platformServices.refreshSound,
         );
+    final PreferencesService preferencesService = PreferencesService(
+      settingsRepository: settingsRepository,
+      preferencesChanged: preferencesChanged,
+    );
     final PreferencesActions preferencesActions = _createPreferencesActions(
+      preferences: preferencesService,
       settingsRepository: settingsRepository,
       draftStore: draftStore,
       preferencesChanged: preferencesChanged,
@@ -236,7 +241,7 @@ final class ClockRhythmRuntime {
           },
         );
     final DataTransferActions dataTransferActions = _createDataTransferActions(
-      settingsRepository: settingsRepository,
+      preferences: preferencesService,
       todoRepository: todoRepository,
       backupFile: backupFile,
       backupCodec: backupCodec,
@@ -269,7 +274,7 @@ final class ClockRhythmRuntime {
         deliveryPermissionActionsProvider.overrideWithValue(
           platformServices.deliveryPermissionActions,
         ),
-        rhythmActionsProvider.overrideWithValue(rhythmUseCases.actions),
+        rhythmActionsProvider.overrideWithValue(rhythmComposition.actions),
         legacyCoexistenceWarningProvider.overrideWithValue(
           legacyCoexistenceWarning,
         ),
@@ -287,7 +292,7 @@ final class ClockRhythmRuntime {
       ],
     );
     try {
-      await platformServices.bindRhythmActions(rhythmUseCases.actions);
+      await platformServices.bindRhythmActions(rhythmComposition.actions);
     } on Object {
       container.dispose();
       router.dispose();
@@ -321,61 +326,26 @@ final class ClockRhythmRuntime {
     await _databaseReady.database.close();
   }
 
-  static _RhythmUseCases _createRhythmUseCases({
+  static _RhythmComposition _createRhythmComposition({
     required rhythm.RhythmSession session,
     required SystemClock clock,
     required AppPlatformServices platform,
     required _InitialRhythmLoad initialRhythmLoad,
   }) {
-    final rhythm.StartRhythm start = rhythm.StartRhythm(
+    final rhythm.RhythmService service = rhythm.RhythmService(
       session: session,
       clock: clock,
       delivery: platform.rhythmDelivery,
       statusSink: platform.rhythmStatusSink,
     );
-    final rhythm.PauseRhythm pause = rhythm.PauseRhythm(
-      session: session,
-      clock: clock,
-      delivery: platform.rhythmDelivery,
-      statusSink: platform.rhythmStatusSink,
-    );
-    final rhythm.ResumeRhythm resume = rhythm.ResumeRhythm(
-      session: session,
-      clock: clock,
-      delivery: platform.rhythmDelivery,
-      statusSink: platform.rhythmStatusSink,
-    );
-    final rhythm.StopRhythmForToday stopForToday = rhythm.StopRhythmForToday(
-      session: session,
-      clock: clock,
-      delivery: platform.rhythmDelivery,
-      statusSink: platform.rhythmStatusSink,
-    );
-    final rhythm.ReconcileRhythm reconcile = rhythm.ReconcileRhythm(
-      session: session,
-      clock: clock,
-      delivery: platform.rhythmDelivery,
-      statusSink: platform.rhythmStatusSink,
-    );
-    final rhythm.RescheduleRunningRhythm reschedule =
-        rhythm.RescheduleRunningRhythm(
-          session: session,
-          clock: clock,
-          delivery: platform.rhythmDelivery,
-          statusSink: platform.rhythmStatusSink,
-        );
-    return _RhythmUseCases(
+    return _RhythmComposition(
       actions: ApplicationRhythmActions(
-        start: start,
-        pause: pause,
-        resume: resume,
-        stopForToday: stopForToday,
-        reconcile: reconcile,
+        service: service,
         startCapability: platform.rhythmStartCapability,
         initialSnapshot: initialRhythmLoad.snapshot,
         initialRecoveryRequired: initialRhythmLoad.recoveryRequired,
       ),
-      reschedule: reschedule,
+      service: service,
     );
   }
 
@@ -435,54 +405,23 @@ final class ClockRhythmRuntime {
   }
 
   static PreferencesActions _createPreferencesActions({
+    required PreferencesService preferences,
     required SettingsRepository settingsRepository,
     required DraftStore draftStore,
     required PreferencesChangedPort preferencesChanged,
     required AppPlatformServices platform,
   }) {
-    final GetPreferences getPreferences = GetPreferences(settingsRepository);
-    final LoadRhythmSettingsDraft loadDraft = LoadRhythmSettingsDraft(
-      settingsRepository: settingsRepository,
-      draftStore: draftStore,
-    );
-    final StoreRhythmSettingsDraft storeDraft = StoreRhythmSettingsDraft(
-      draftStore,
-    );
-    final DiscardRhythmSettingsDraft discardDraft = DiscardRhythmSettingsDraft(
-      settingsRepository: settingsRepository,
-      draftStore: draftStore,
-    );
     return ApplicationPreferencesActions(
-      getPreferences: getPreferences,
-      loadDraft: loadDraft,
-      storeDraft: storeDraft,
-      discardDraft: discardDraft,
-      saveRhythm: SaveRhythmSettings(
+      preferences: preferences,
+      rhythmSettings: RhythmSettingsService(
         settingsRepository: settingsRepository,
+        draftStore: draftStore,
         autoStart: platform.autoStart,
         preferencesChanged: preferencesChanged,
-        draftStore: draftStore,
       ),
-      changeLanguage: ChangeLanguage(
-        settingsRepository: settingsRepository,
-        preferencesChanged: preferencesChanged,
-      ),
-      changeTheme: ChangeTheme(
-        settingsRepository: settingsRepository,
-        preferencesChanged: preferencesChanged,
-      ),
-      changeSound: ChangeNotificationSound(
+      sound: NotificationSoundService(
         settingsRepository: settingsRepository,
         soundFilePort: platform.notificationSoundFile,
-        soundPreview: platform.soundPreview,
-        preferencesChanged: preferencesChanged,
-      ),
-      changeVolume: ChangeVolume(
-        settingsRepository: settingsRepository,
-        preferencesChanged: preferencesChanged,
-      ),
-      toggleMute: ToggleMute(
-        settingsRepository: settingsRepository,
         soundPreview: platform.soundPreview,
         preferencesChanged: preferencesChanged,
         unmuteBehavior:
@@ -490,19 +429,6 @@ final class ClockRhythmRuntime {
                 PreferencesPlatformKind.windows
             ? UnmuteSoundBehavior.restorePreviousSelection
             : UnmuteSoundBehavior.bundledDefault,
-      ),
-      previewSound: PreviewNotificationSound(
-        settingsRepository: settingsRepository,
-        soundPreview: platform.soundPreview,
-      ),
-      stopSoundPreview: StopNotificationSoundPreview(platform.soundPreview),
-      repairEffect: RepairPreferencesEffect(
-        settingsRepository: settingsRepository,
-        preferencesChanged: preferencesChanged,
-      ),
-      repairAutoStart: RepairAutoStart(
-        settingsRepository: settingsRepository,
-        autoStart: platform.autoStart,
       ),
       repairState: platform.preferencesRepairState,
     );
@@ -514,26 +440,17 @@ final class ClockRhythmRuntime {
     required todo.TodoIdGenerator idGenerator,
   }) {
     return TodoPresentationDependencies(
-      createTodo: todo.CreateTodo(
+      commands: todo.TodoCommandService(
         repository: repository,
+        clock: clock,
         idGenerator: idGenerator,
-        clock: clock,
       ),
-      updateTodo: todo.UpdateTodo(repository: repository, clock: clock),
-      renameTodo: todo.RenameTodo(repository: repository, clock: clock),
-      toggleTodoCompletion: todo.ToggleTodoCompletion(
-        repository: repository,
-        clock: clock,
-      ),
-      reorderTodos: todo.ReorderTodos(repository: repository, clock: clock),
-      deleteTodo: todo.DeleteTodo(repository: repository),
-      listTodosForDate: todo.ListTodosForDate(repository: repository),
-      listMonthSummary: todo.ListMonthSummary(repository: repository),
+      queries: todo.TodoQueryService(repository: repository),
     );
   }
 
   static DataTransferActions _createDataTransferActions({
-    required SettingsRepository settingsRepository,
+    required PreferencesService preferences,
     required todo.TodoRepository todoRepository,
     required BackupFilePort backupFile,
     required PortableBackupCodec backupCodec,
@@ -542,11 +459,10 @@ final class ClockRhythmRuntime {
     required RhythmSafetyPort rhythmSafety,
     required DataImportRefreshPort importRefresh,
   }) {
-    final GetPreferences getPreferences = GetPreferences(settingsRepository);
     return ApplicationDataTransferActions(
       exportBackup: ExportPortableBackup(
-        getPreferences: getPreferences,
-        exportTodos: todo.ExportTodoSnapshots(repository: todoRepository),
+        preferences: preferences,
+        exportTodos: todo.TodoQueryService(repository: todoRepository),
         backupFile: backupFile,
         codec: backupCodec,
         clock: clock,
@@ -554,7 +470,7 @@ final class ClockRhythmRuntime {
       prepareImport: PrepareBackupImport(
         backupFile: backupFile,
         codec: backupCodec,
-        getPreferences: getPreferences,
+        preferences: preferences,
       ),
       confirmImport: ConfirmBackupImport(
         rhythmSafety: rhythmSafety,
@@ -589,11 +505,11 @@ final class ClockRhythmRuntime {
   }
 }
 
-final class _RhythmUseCases {
-  const _RhythmUseCases({required this.actions, required this.reschedule});
+final class _RhythmComposition {
+  const _RhythmComposition({required this.actions, required this.service});
 
   final RhythmActions actions;
-  final rhythm.RescheduleRunningRhythm reschedule;
+  final rhythm.RhythmService service;
 }
 
 final class _InitialRhythmLoad {

@@ -6,7 +6,7 @@ import '../../../../shared/i18n/public.dart'
     show AppLocalizations, LocalDateFormatter;
 import '../../../../shared/ui/public.dart' show ClockRhythmSpace;
 import '../todo_date_math.dart';
-import '../todo_view_model.dart';
+import '../todo_view_state.dart';
 
 final class CalendarHeader extends StatelessWidget {
   const CalendarHeader({

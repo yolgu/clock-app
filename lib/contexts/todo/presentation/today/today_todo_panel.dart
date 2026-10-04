@@ -10,7 +10,6 @@ import '../todo_editor.dart';
 import '../todo_list_panel.dart';
 import '../todo_providers.dart';
 import '../todo_status_message.dart';
-import '../todo_view_model.dart';
 
 final class TodayTodoPanel extends ConsumerWidget {
   const TodayTodoPanel({super.key});
@@ -18,8 +17,8 @@ final class TodayTodoPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations localizations = AppLocalizations.of(context);
-    final AsyncValue<TodoViewState> asyncState = ref.watch(
-      todoViewModelProvider,
+    final AsyncValue<TodoDataState> asyncState = ref.watch(
+      todoDataControllerProvider,
     );
     return ClockRhythmCard.padded(
       key: const ValueKey<String>('today-todo-panel'),
@@ -43,10 +42,10 @@ final class TodayTodoPanel extends ConsumerWidget {
           ),
           const SizedBox(height: ClockRhythmSpace.space4),
           asyncState.when<Widget>(
-            data: (TodoViewState state) => _TodayTodoContent(state: state),
+            data: (TodoDataState state) => _TodayTodoContent(state: state),
             error: (Object error, StackTrace stackTrace) => TodoLoadFailure(
               onRetry: () {
-                ref.invalidate(todoViewModelProvider);
+                ref.invalidate(todoDataControllerProvider);
               },
             ),
             loading: () => const Center(
@@ -65,7 +64,7 @@ final class TodayTodoPanel extends ConsumerWidget {
 final class _TodayTodoContent extends StatefulWidget {
   const _TodayTodoContent({required this.state});
 
-  final TodoViewState state;
+  final TodoDataState state;
 
   @override
   State<_TodayTodoContent> createState() => _TodayTodoContentState();
@@ -73,7 +72,7 @@ final class _TodayTodoContent extends StatefulWidget {
 
 final class _TodayTodoContentState extends State<_TodayTodoContent> {
   final FocusNode _composerFocus = FocusNode(debugLabel: 'Today composer');
-  TodoViewState get state => widget.state;
+  TodoDataState get state => widget.state;
 
   @override
   void dispose() {

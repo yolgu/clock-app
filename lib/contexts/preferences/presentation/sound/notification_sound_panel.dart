@@ -36,7 +36,7 @@ final class _NotificationSoundPanelState
   @override
   Widget build(BuildContext context) {
     final AsyncValue<PreferencesViewState> value = ref.watch(
-      preferencesViewModelProvider,
+      preferencesViewStateProvider,
     );
     return value.when(
       loading: () => const SizedBox.shrink(),
@@ -142,12 +142,12 @@ final class _NotificationSoundPanelState
                   enabled: !state.isBusy && sound.isAudible && volume > 0,
                   onPreview: () {
                     ref
-                        .read(preferencesViewModelProvider.notifier)
+                        .read(soundPreviewControllerProvider.notifier)
                         .previewSound();
                   },
                   onStop: () {
                     ref
-                        .read(preferencesViewModelProvider.notifier)
+                        .read(soundPreviewControllerProvider.notifier)
                         .stopSoundPreview();
                   },
                 ),
@@ -162,7 +162,7 @@ final class _NotificationSoundPanelState
                           : () {
                               _clearLocalVolume();
                               ref
-                                  .read(preferencesViewModelProvider.notifier)
+                                  .read(soundPreviewControllerProvider.notifier)
                                   .useBundledSound();
                             },
                       child: SoundActionContent(
@@ -188,7 +188,9 @@ final class _NotificationSoundPanelState
                             ? null
                             : () {
                                 ref
-                                    .read(preferencesViewModelProvider.notifier)
+                                    .read(
+                                      soundPreviewControllerProvider.notifier,
+                                    )
                                     .chooseCustomSound();
                               },
                         child: SoundActionContent(
@@ -213,7 +215,7 @@ final class _NotificationSoundPanelState
                           ? null
                           : () {
                               ref
-                                  .read(preferencesViewModelProvider.notifier)
+                                  .read(soundPreviewControllerProvider.notifier)
                                   .toggleMute();
                             },
                       style: sound.mode == NotificationSoundMode.muted
@@ -275,7 +277,9 @@ final class _NotificationSoundPanelState
                             ? null
                             : (double next) async {
                                 await ref
-                                    .read(preferencesViewModelProvider.notifier)
+                                    .read(
+                                      soundPreviewControllerProvider.notifier,
+                                    )
                                     .changeVolume(next);
                                 _clearLocalVolume();
                               },
@@ -315,7 +319,7 @@ final class _NotificationSoundPanelState
                       ? null
                       : () {
                           ref
-                              .read(preferencesViewModelProvider.notifier)
+                              .read(preferencesDataControllerProvider.notifier)
                               .repairEffect(repairNeed);
                         },
                   child: Text(copy.soundRepair),

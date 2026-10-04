@@ -277,7 +277,7 @@ void main() {
     },
   );
 
-  testWidgets('LB-026 Escape cancels an edit without sending UpdateTodo', (
+  testWidgets('LB-026 Escape cancels an edit without saving changes', (
     WidgetTester tester,
   ) async {
     final TestTodoRepository repository = TestTodoRepository(<Todo>[
@@ -403,7 +403,7 @@ void main() {
     expect(repository.todos.single.time?.text, '09:05');
   });
 
-  testWidgets('LB-027 blocks an invalid edit before UpdateTodo is called', (
+  testWidgets('LB-027 blocks an invalid edit before saving changes', (
     WidgetTester tester,
   ) async {
     final TestTodoRepository repository = TestTodoRepository(<Todo>[
@@ -473,9 +473,9 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
       await tester.pumpAndSettle();
 
-      final List<TodoSnapshot> ordered = await ListTodosForDate(
+      final List<TodoSnapshot> ordered = await TodoQueryService(
         repository: repository,
-      ).execute('2026-06-02');
+      ).listForDate('2026-06-02');
       expect(ordered.map((TodoSnapshot todo) => todo.id), <String>[
         'b',
         'a',
@@ -522,9 +522,9 @@ void main() {
       await drag.up();
       await tester.pumpAndSettle();
 
-      final List<TodoSnapshot> ordered = await ListTodosForDate(
+      final List<TodoSnapshot> ordered = await TodoQueryService(
         repository: repository,
-      ).execute('2026-06-02');
+      ).listForDate('2026-06-02');
       expect(ordered.map((TodoSnapshot todo) => todo.id), <String>[
         'b',
         'a',

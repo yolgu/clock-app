@@ -1,13 +1,8 @@
-import 'package:clock_rhythm/contexts/todo/application/create_todo.dart';
-import 'package:clock_rhythm/contexts/todo/application/delete_todo.dart';
 import 'package:clock_rhythm/contexts/todo/application/ports/clock.dart';
 import 'package:clock_rhythm/contexts/todo/application/ports/todo_id_generator.dart';
 import 'package:clock_rhythm/contexts/todo/application/ports/todo_repository.dart';
-import 'package:clock_rhythm/contexts/todo/application/rename_todo.dart';
-import 'package:clock_rhythm/contexts/todo/application/reorder_todos.dart';
-import 'package:clock_rhythm/contexts/todo/application/reschedule_todo.dart';
-import 'package:clock_rhythm/contexts/todo/application/toggle_todo_completion.dart';
-import 'package:clock_rhythm/contexts/todo/application/update_todo.dart';
+import 'package:clock_rhythm/contexts/todo/application/todo_command_service.dart';
+import 'package:clock_rhythm/contexts/todo/application/todo_commands.dart';
 import 'package:clock_rhythm/contexts/todo/domain/completion_group.dart';
 import 'package:clock_rhythm/contexts/todo/domain/local_calendar_date.dart';
 import 'package:clock_rhythm/contexts/todo/domain/todo.dart';
@@ -28,13 +23,13 @@ void main() {
       'created',
     );
     final RecordingClock clock = RecordingClock(DateTime.utc(2026, 6, 2, 2));
-    final CreateTodo useCase = CreateTodo(
+    final TodoCommandService useCase = TodoCommandService(
       repository: repository,
       idGenerator: idGenerator,
       clock: clock,
     );
 
-    final TodoSnapshot created = await useCase.execute(
+    final TodoSnapshot created = await useCase.create(
       const CreateTodoCommand(title: '  추가  ', date: '2026-06-02'),
     );
 
@@ -62,14 +57,14 @@ void main() {
         'over-limit',
       );
       final RecordingClock clock = RecordingClock(DateTime.utc(2026, 6, 2, 2));
-      final CreateTodo useCase = CreateTodo(
+      final TodoCommandService useCase = TodoCommandService(
         repository: repository,
         idGenerator: idGenerator,
         clock: clock,
       );
 
       await expectLater(
-        useCase.execute(
+        useCase.create(
           const CreateTodoCommand(
             title: '추가할 수 없음',
             date: '2026-06-02',
@@ -95,12 +90,13 @@ void main() {
     final MemoryTodoRepository repository = MemoryTodoRepository(<Todo>[
       existing,
     ]);
-    final RenameTodo useCase = RenameTodo(
+    final TodoCommandService useCase = TodoCommandService(
+      idGenerator: RecordingTodoIdGenerator('unused'),
       repository: repository,
       clock: RecordingClock(DateTime.utc(2026, 6, 2, 2)),
     );
 
-    final TodoSnapshot renamed = await useCase.execute(
+    final TodoSnapshot renamed = await useCase.rename(
       const RenameTodoCommand(id: 'todo-1', title: '  새 이름  '),
     );
 
@@ -114,10 +110,14 @@ void main() {
   test('reports a missing Todo without reading the Clock or saving', () async {
     final MemoryTodoRepository repository = MemoryTodoRepository(<Todo>[]);
     final RecordingClock clock = RecordingClock(DateTime.utc(2026, 6, 2, 2));
-    final RenameTodo useCase = RenameTodo(repository: repository, clock: clock);
+    final TodoCommandService useCase = TodoCommandService(
+      idGenerator: RecordingTodoIdGenerator('unused'),
+      repository: repository,
+      clock: clock,
+    );
 
     await expectLater(
-      useCase.execute(const RenameTodoCommand(id: 'missing', title: '새 이름')),
+      useCase.rename(const RenameTodoCommand(id: 'missing', title: '새 이름')),
       throwsA(isA<TodoNotFoundFailure>()),
     );
 
@@ -139,12 +139,13 @@ void main() {
       targetCompleted,
       _todo(id: 'target-incomplete', date: '2026-06-03', order: 50),
     ]);
-    final RescheduleTodo useCase = RescheduleTodo(
+    final TodoCommandService useCase = TodoCommandService(
+      idGenerator: RecordingTodoIdGenerator('unused'),
       repository: repository,
       clock: RecordingClock(DateTime.utc(2026, 6, 2, 2)),
     );
 
-    final TodoSnapshot moved = await useCase.execute(
+    final TodoSnapshot moved = await useCase.reschedule(
       const RescheduleTodoCommand(
         id: 'moving',
         date: '2026-06-03',
@@ -162,13 +163,14 @@ void main() {
     final MemoryTodoRepository repository = MemoryTodoRepository(<Todo>[
       _todo(id: 'todo-1', order: 9),
     ]);
-    final ToggleTodoCompletion useCase = ToggleTodoCompletion(
+    final TodoCommandService useCase = TodoCommandService(
+      idGenerator: RecordingTodoIdGenerator('unused'),
       repository: repository,
       clock: RecordingClock(DateTime.utc(2026, 6, 2, 2)),
     );
 
-    final TodoSnapshot completed = await useCase.execute('todo-1');
-    final TodoSnapshot reopened = await useCase.execute('todo-1');
+    final TodoSnapshot completed = await useCase.toggleCompletion('todo-1');
+    final TodoSnapshot reopened = await useCase.toggleCompletion('todo-1');
 
     expect(completed.completed, isTrue);
     expect(reopened.completed, isFalse);
@@ -182,12 +184,13 @@ void main() {
       _todo(id: 'b', order: 1),
       _todo(id: 'done', order: 0).complete(DateTime.utc(2026, 6, 2, 1)),
     ]);
-    final ReorderTodos useCase = ReorderTodos(
+    final TodoCommandService useCase = TodoCommandService(
+      idGenerator: RecordingTodoIdGenerator('unused'),
       repository: repository,
       clock: RecordingClock(DateTime.utc(2026, 6, 2, 2)),
     );
 
-    final List<TodoSnapshot> ordered = await useCase.execute(
+    final List<TodoSnapshot> ordered = await useCase.reorder(
       ReorderTodosCommand(
         date: '2026-06-02',
         group: CompletionGroup.incomplete,
@@ -212,13 +215,14 @@ void main() {
       _todo(id: 'a'),
       _todo(id: 'done').complete(DateTime.utc(2026, 6, 2, 1)),
     ]);
-    final ReorderTodos useCase = ReorderTodos(
+    final TodoCommandService useCase = TodoCommandService(
+      idGenerator: RecordingTodoIdGenerator('unused'),
       repository: repository,
       clock: RecordingClock(DateTime.utc(2026, 6, 2, 2)),
     );
 
     await expectLater(
-      useCase.execute(
+      useCase.reorder(
         ReorderTodosCommand(
           date: '2026-06-02',
           group: CompletionGroup.incomplete,
@@ -237,13 +241,17 @@ void main() {
       final MemoryTodoRepository repository = MemoryTodoRepository(<Todo>[
         _todo(id: 'delete-me'),
       ]);
-      final DeleteTodo useCase = DeleteTodo(repository: repository);
+      final TodoCommandService useCase = TodoCommandService(
+        clock: RecordingClock(DateTime.utc(2026, 6, 2)),
+        idGenerator: RecordingTodoIdGenerator('unused'),
+        repository: repository,
+      );
 
-      await useCase.execute('delete-me');
+      await useCase.delete('delete-me');
 
       expect(repository.todos, isEmpty);
       expect(repository.saveCalls, 1);
-      await useCase.execute('delete-me');
+      await useCase.delete('delete-me');
       expect(repository.todos, isEmpty);
       expect(repository.saveCalls, 2);
     },
@@ -253,22 +261,22 @@ void main() {
     'concurrent creates are serialized without losing either Todo',
     () async {
       final MemoryTodoRepository repository = MemoryTodoRepository(<Todo>[]);
-      final CreateTodo first = CreateTodo(
+      final TodoCommandService first = TodoCommandService(
         repository: repository,
         idGenerator: RecordingTodoIdGenerator('first'),
         clock: RecordingClock(DateTime.utc(2026, 6, 2)),
       );
-      final CreateTodo second = CreateTodo(
+      final TodoCommandService second = TodoCommandService(
         repository: repository,
         idGenerator: RecordingTodoIdGenerator('second'),
         clock: RecordingClock(DateTime.utc(2026, 6, 2, 0, 1)),
       );
 
       await Future.wait(<Future<TodoSnapshot>>[
-        first.execute(
+        first.create(
           const CreateTodoCommand(title: 'First', date: '2026-06-02'),
         ),
-        second.execute(
+        second.create(
           const CreateTodoCommand(title: 'Second', date: '2026-06-02'),
         ),
       ]);
@@ -285,12 +293,13 @@ void main() {
       _todo(id: 'editing', date: '2026-06-02'),
       _todo(id: 'target', date: '2026-06-03', order: 7),
     ]);
-    final UpdateTodo update = UpdateTodo(
+    final TodoCommandService update = TodoCommandService(
+      idGenerator: RecordingTodoIdGenerator('unused'),
       repository: repository,
       clock: RecordingClock(DateTime.utc(2026, 6, 2, 2)),
     );
 
-    final TodoSnapshot result = await update.execute(
+    final TodoSnapshot result = await update.update(
       const UpdateTodoCommand(
         id: 'editing',
         title: ' Updated ',

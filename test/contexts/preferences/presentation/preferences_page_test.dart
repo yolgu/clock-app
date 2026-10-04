@@ -815,7 +815,7 @@ void main() {
       autoStartEnabled: importedDraft.autoStartEnabled,
     );
     actions.draft = RhythmSettingsDraft.fromPreferences(actions.preferences);
-    container.invalidate(preferencesViewModelProvider);
+    container.invalidate(preferencesInitialDataProvider);
     await tester.pump();
     await tester.pumpAndSettle();
 
@@ -823,7 +823,7 @@ void main() {
     expect(reloadedField.controller!.text, '25');
     expect(
       container
-          .read(preferencesViewModelProvider)
+          .read(preferencesViewStateProvider)
           .requireValue
           .draft
           .rhythmConfiguration

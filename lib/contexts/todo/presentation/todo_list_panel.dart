@@ -13,7 +13,6 @@ import 'todo_inline_edit_session.dart';
 import 'todo_providers.dart';
 import 'todo_row.dart';
 import 'todo_status_message.dart';
-import 'todo_view_model.dart';
 
 final class TodoListPanel extends ConsumerStatefulWidget {
   TodoListPanel({
@@ -32,7 +31,7 @@ final class TodoListPanel extends ConsumerStatefulWidget {
 final class _TodoListPanelState extends ConsumerState<TodoListPanel> {
   late final TodoInlineEditSession _editSession = TodoInlineEditSession(
     rename: (String id, String title) => ref
-        .read(todoViewModelProvider.notifier)
+        .read(todoDataControllerProvider.notifier)
         .renameTodo(id: id, title: title),
   );
 
@@ -71,8 +70,8 @@ final class _TodoListPanelState extends ConsumerState<TodoListPanel> {
 
   Widget _buildList(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context);
-    final AsyncValue<TodoViewState> asyncState = ref.watch(
-      todoViewModelProvider,
+    final AsyncValue<TodoDataState> asyncState = ref.watch(
+      todoDataControllerProvider,
     );
     final bool enabled =
         !(asyncState.value?.isMutating ?? true) || _editSession.isSaving;
@@ -207,8 +206,8 @@ final class _TodoGroupList extends ConsumerWidget {
               },
           itemBuilder: (BuildContext context, int index) {
             final TodoSnapshot todo = todos[index];
-            final TodoViewModel viewModel = ref.read(
-              todoViewModelProvider.notifier,
+            final TodoDataController viewModel = ref.read(
+              todoDataControllerProvider.notifier,
             );
             return DecoratedBox(
               key: ValueKey<String>(todo.id),
@@ -274,7 +273,7 @@ final class _TodoGroupList extends ConsumerWidget {
     final LocalCalendarDate date = LocalCalendarDate.parse(todos.first.date);
     unawaited(
       ref
-          .read(todoViewModelProvider.notifier)
+          .read(todoDataControllerProvider.notifier)
           .reorderTodoGroup(date: date, group: group, orderedIds: orderedIds),
     );
   }

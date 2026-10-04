@@ -11,7 +11,6 @@ import 'todo_editor.dart';
 import 'todo_inline_edit_session.dart';
 import 'todo_providers.dart';
 import 'todo_status_message.dart';
-import 'todo_view_model.dart';
 
 final class TodoDetailsButton extends ConsumerStatefulWidget {
   const TodoDetailsButton({
@@ -53,7 +52,7 @@ final class _TodoDetailsButtonState extends ConsumerState<TodoDetailsButton> {
       return;
     }
     final TodoSnapshot todo = ref
-        .read(todoViewModelProvider)
+        .read(todoDataControllerProvider)
         .requireValue
         .todosForDate(LocalCalendarDate.parse(widget.todo.date))
         .firstWhere((TodoSnapshot candidate) => candidate.id == widget.todo.id);
@@ -112,8 +111,8 @@ final class _TodoDetailsSurface extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool saving =
-        ref.watch(todoViewModelProvider).value?.isMutating ?? false;
-    final TodoViewState? state = ref.watch(todoViewModelProvider).value;
+        ref.watch(todoDataControllerProvider).value?.isMutating ?? false;
+    final TodoDataState? state = ref.watch(todoDataControllerProvider).value;
     final Widget form = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,

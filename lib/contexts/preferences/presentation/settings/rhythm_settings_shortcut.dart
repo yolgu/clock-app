@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../shared/i18n/public.dart';
 import '../../../../shared/ui/public.dart'
     show ClockRhythmCard, ClockRhythmLayout, ClockRhythmSpace;
 import '../../domain/notification_sound_preference.dart';
 import '../../domain/user_preferences.dart';
+import '../preferences_data_controller.dart';
 import '../preferences_providers.dart';
-import '../preferences_view_state.dart';
 
 /// A Settings-style row summarising the saved rhythm that opens the
 /// Settings destination, where the focus window and sound are edited.
@@ -21,9 +20,9 @@ final class RhythmSettingsShortcut extends ConsumerWidget {
     final ThemeData theme = Theme.of(context);
     final AppLocalizations copy = AppLocalizations.of(context);
     final UserPreferences? preferences = ref
-        .watch(preferencesViewModelProvider)
+        .watch(preferencesDataControllerProvider)
         .maybeWhen(
-          data: (PreferencesViewState state) => state.preferences,
+          data: (PreferencesDataState state) => state.preferences,
           orElse: () => null,
         );
     final String? summary = preferences == null

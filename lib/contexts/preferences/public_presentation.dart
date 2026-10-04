@@ -6,6 +6,8 @@ export 'presentation/preferences_actions.dart'
         ApplicationPreferencesActions,
         PreferencesActions,
         PreferencesInitialData;
+export 'presentation/preferences_data_controller.dart'
+    show PreferencesDataController, PreferencesDataState;
 export 'presentation/preferences_page.dart' show PreferencesPage;
 export 'presentation/preferences_platform_capabilities.dart'
     show
@@ -19,8 +21,11 @@ export 'presentation/preferences_providers.dart'
         deliveryPermissionProvider,
         preferencesActionsProvider,
         preferencesPlatformCapabilitiesProvider,
-        preferencesViewModelProvider;
-export 'presentation/preferences_view_model.dart' show PreferencesViewModel;
+        preferencesViewStateProvider,
+        preferencesInitialDataProvider,
+        preferencesDataControllerProvider,
+        rhythmSettingsEditorProvider,
+        soundPreviewControllerProvider;
 export 'presentation/preferences_view_state.dart'
     show
         PreferencesFailure,
@@ -29,6 +34,8 @@ export 'presentation/preferences_view_state.dart'
         PreferencesViewState;
 export 'presentation/settings/clock_time_field.dart' show ClockTimeField;
 export 'presentation/settings/duration_field.dart' show DurationField;
+export 'presentation/settings/rhythm_settings_editor.dart'
+    show RhythmSettingsEditor;
 export 'presentation/settings/rhythm_settings_panel.dart'
     show RhythmSettingsPanel;
 export 'presentation/settings/rhythm_settings_shortcut.dart'
@@ -40,6 +47,8 @@ export 'presentation/sound/bundled_notification_sound.dart'
 export 'presentation/sound/notification_sound_panel.dart'
     show NotificationSoundPanel;
 export 'presentation/sound/sound_preview_button.dart' show SoundPreviewButton;
+export 'presentation/sound/sound_preview_controller.dart'
+    show SoundPreviewController;
 export 'presentation/theme/clock_rhythm_theme.dart' show ClockRhythmTheme;
 export 'presentation/theme/clock_rhythm_theme_extension.dart'
     show ClockRhythmThemeExtension;

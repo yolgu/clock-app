@@ -125,8 +125,8 @@ final class _RootProbe extends ConsumerWidget {
           FilledButton(
             key: const ValueKey<String>('change-root-style'),
             onPressed: () async {
-              final PreferencesViewModel viewModel = ref.read(
-                preferencesViewModelProvider.notifier,
+              final PreferencesDataController viewModel = ref.read(
+                preferencesDataControllerProvider.notifier,
               );
               await viewModel.changeLanguage(LanguagePreference.english);
               await viewModel.changeTheme(ThemePreference.nord);

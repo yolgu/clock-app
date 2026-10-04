@@ -11,7 +11,21 @@ Clock Rhythm은 집중과 휴식의 반복 주기인 Daily Rhythm과 날짜별 T
 | Windows | Windows 10/11 x64 | tray 실행, 단일 인스턴스, 자동 시작, Custom Notification Sound(MP3), 앱 볼륨 |
 | Android | API 24 이상 phone/tablet | 운영체제 알림, 사용자가 허용한 exact alarm, reboot/update/time 변화 복구 |
 
-iOS, macOS, Linux, web, Windows Arm64, 계정·클라우드 동기화와 Todo 알림은 현재 범위가 아닙니다.
+iOS, Linux, web, Windows Arm64, 계정·클라우드 동기화와 Todo 알림은 현재 범위가 아닙니다. macOS는 아래의 로컬 실행 구성을 제공합니다.
+
+### macOS 로컬 실행
+
+Xcode와 FVM을 준비한 뒤 프로젝트에 고정된 Flutter로 실행합니다.
+
+```sh
+fvm install
+fvm flutter pub get
+fvm flutter run -d macos
+```
+
+별도 실행 가능한 앱은 `fvm flutter build macos --release`로 만들며, 결과는 `build/macos/Build/Products/Release/Clock Rhythm Beta.app`입니다. macOS 실행 구성은 beta 앱 식별자를 사용합니다.
+
+시계, Todo, 캘린더, 설정, 테마와 JSON 백업을 기존 앱과 공유합니다. 앱 실행 중 타이머 알림과 소리를 제공하며, 시스템 알림 권한은 리듬을 시작할 때 요청합니다. Windows의 자동 시작, 트레이 상주와 사용자 MP3 선택은 제공하지 않습니다. 앱 종료 후나 Mac 잠자기 중의 예약 알림은 지원하지 않습니다.
 
 Android는 foreground service를 유지하지 않습니다. Focus 또는 Rest Interval이 9분보다 짧으면 deep idle에서 알림이 지연될 수 있고, 이미 지난 boundary는 늦게 몰아서 재생하지 않고 건너뜁니다. Notification/exact-alarm permission, reboot·Doze·시간 변경은 실제 device evidence가 없으면 지원 완료로 판정하지 않습니다.
 

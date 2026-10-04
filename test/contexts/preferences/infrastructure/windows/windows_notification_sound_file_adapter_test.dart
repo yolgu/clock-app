@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:clock_rhythm/contexts/preferences/application/change_notification_sound.dart';
+import 'package:clock_rhythm/contexts/preferences/application/notification_sound_service.dart';
 import 'package:clock_rhythm/contexts/preferences/application/ports/notification_sound_file_port.dart';
 import 'package:clock_rhythm/contexts/preferences/application/ports/preferences_changed_port.dart';
 import 'package:clock_rhythm/contexts/preferences/application/ports/settings_repository.dart';
@@ -231,7 +231,8 @@ void main() {
           WindowsPickedSoundFile(name: 'new.mp3', path: source.path),
         ),
       );
-      final ChangeNotificationSound command = ChangeNotificationSound(
+      final NotificationSoundService command = NotificationSoundService(
+        unmuteBehavior: UnmuteSoundBehavior.restorePreviousSelection,
         settingsRepository: repository,
         soundFilePort: soundFiles,
         soundPreview: const NoOpSoundPreview(),
@@ -263,7 +264,8 @@ void main() {
         WindowsPickedSoundFile(name: 'new.mp3', path: source.path),
       ),
     );
-    final ChangeNotificationSound command = ChangeNotificationSound(
+    final NotificationSoundService command = NotificationSoundService(
+      unmuteBehavior: UnmuteSoundBehavior.restorePreviousSelection,
       settingsRepository: repository,
       soundFilePort: soundFiles,
       soundPreview: const NoOpSoundPreview(),

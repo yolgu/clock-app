@@ -1,1 +1,1 @@
-enum PlatformPresentationProfile { windows, android }
+enum PlatformPresentationProfile { windows, android, macos }

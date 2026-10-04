@@ -1,8 +1,6 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../shared/i18n/public.dart';
 import '../../../../shared/ui/public.dart'
     show
@@ -13,8 +11,7 @@ import '../../../../shared/ui/public.dart'
         SemanticStatusAnnouncement;
 import '../../application/preferences_command_result.dart';
 import '../../domain/theme_preference.dart';
-import '../preferences_providers.dart';
-import '../preferences_view_state.dart';
+import '../preferences_data_controller.dart';
 import 'theme_catalog.dart';
 
 final class ThemePage extends ConsumerWidget {
@@ -23,14 +20,14 @@ final class ThemePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations copy = AppLocalizations.of(context);
-    final AsyncValue<PreferencesViewState> value = ref.watch(
-      preferencesViewModelProvider,
+    final AsyncValue<PreferencesDataState> value = ref.watch(
+      preferencesDataControllerProvider,
     );
     return value.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (Object error, StackTrace stackTrace) =>
           Center(child: Text(copy.messagePreferencesFailed)),
-      data: (PreferencesViewState state) {
+      data: (PreferencesDataState state) {
         final double width = MediaQuery.sizeOf(context).width;
         final double horizontalInset = ClockRhythmLayout.horizontalInsetFor(
           width,
@@ -87,7 +84,10 @@ final class ThemePage extends ConsumerWidget {
                           onPressed: state.isBusy
                               ? null
                               : () => ref
-                                    .read(preferencesViewModelProvider.notifier)
+                                    .read(
+                                      preferencesDataControllerProvider
+                                          .notifier,
+                                    )
                                     .repairEffect(PreferencesRepairNeed.visual),
                           child: Text(copy.actionRetry),
                         ),
@@ -126,7 +126,7 @@ final class ThemePage extends ConsumerWidget {
                     maximumTitleLines: maximumTitleLines,
                     onSelected: () {
                       ref
-                          .read(preferencesViewModelProvider.notifier)
+                          .read(preferencesDataControllerProvider.notifier)
                           .changeTheme(definition.id);
                     },
                   );

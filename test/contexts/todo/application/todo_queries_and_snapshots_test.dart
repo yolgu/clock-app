@@ -1,8 +1,6 @@
-import 'package:clock_rhythm/contexts/todo/application/export_todo_snapshots.dart';
-import 'package:clock_rhythm/contexts/todo/application/list_month_summary.dart';
-import 'package:clock_rhythm/contexts/todo/application/list_todos_for_date.dart';
 import 'package:clock_rhythm/contexts/todo/application/ports/todo_repository.dart';
 import 'package:clock_rhythm/contexts/todo/application/replace_todo_snapshots.dart';
+import 'package:clock_rhythm/contexts/todo/application/todo_query_service.dart';
 import 'package:clock_rhythm/contexts/todo/domain/local_calendar_date.dart';
 import 'package:clock_rhythm/contexts/todo/domain/todo.dart';
 import 'package:clock_rhythm/contexts/todo/domain/todo_collection.dart';
@@ -19,9 +17,9 @@ void main() {
       _todo(id: 'early-time', order: 1, time: '06:00'),
       _todo(id: 'done', order: 0).complete(DateTime.utc(2026, 6, 2, 1)),
     ]);
-    final ListTodosForDate useCase = ListTodosForDate(repository: repository);
+    final TodoQueryService useCase = TodoQueryService(repository: repository);
 
-    final List<TodoSnapshot> todos = await useCase.execute('2026-06-02');
+    final List<TodoSnapshot> todos = await useCase.listForDate('2026-06-02');
 
     expect(todos.map((TodoSnapshot todo) => todo.id), <String>[
       'late-time',
@@ -36,15 +34,15 @@ void main() {
       _todo(id: 'b').complete(DateTime.utc(2026, 6, 2, 1)),
       _todo(id: 'outside', date: '2026-07-01'),
     ]);
-    final ListMonthSummary useCase = ListMonthSummary(repository: repository);
+    final TodoQueryService useCase = TodoQueryService(repository: repository);
 
-    final Map<String, TodoDaySummary> summary = await useCase.execute(
+    final Map<String, TodoDaySummary> summary = await useCase.listMonthSummary(
       '2026-06',
     );
 
     expect(summary['2026-06-02']?.total, 2);
     expect(summary['2026-06-02']?.completed, 1);
-    await expectLater(useCase.execute('2026-6'), throwsArgumentError);
+    await expectLater(useCase.listMonthSummary('2026-6'), throwsArgumentError);
   });
 
   test('exports validated snapshots in repository order', () async {
@@ -52,11 +50,9 @@ void main() {
       _todo(id: 'b'),
       _todo(id: 'a'),
     ]);
-    final ExportTodoSnapshots useCase = ExportTodoSnapshots(
-      repository: repository,
-    );
+    final TodoQueryService useCase = TodoQueryService(repository: repository);
 
-    final List<TodoSnapshot> snapshots = await useCase.execute();
+    final List<TodoSnapshot> snapshots = await useCase.exportSnapshots();
 
     expect(snapshots.map((TodoSnapshot snapshot) => snapshot.id), <String>[
       'b',

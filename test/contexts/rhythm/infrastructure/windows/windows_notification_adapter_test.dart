@@ -6,6 +6,7 @@ import 'package:clock_rhythm/contexts/rhythm/application/rhythm_status_snapshot.
 import 'package:clock_rhythm/contexts/rhythm/domain/rhythm_configuration.dart';
 import 'package:clock_rhythm/contexts/rhythm/domain/rhythm_event.dart';
 import 'package:clock_rhythm/contexts/rhythm/domain/rhythm_session.dart';
+import 'package:clock_rhythm/contexts/rhythm/infrastructure/timer/timer_rhythm_delivery_adapter.dart';
 import 'package:clock_rhythm/contexts/rhythm/infrastructure/windows/windows_notification_adapter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -108,14 +109,13 @@ void main() {
       final RecordingNotificationPort notification =
           RecordingNotificationPort();
       final RecordingEventSoundPort sound = RecordingEventSoundPort();
-      final FakeWindowsRhythmTimerFactory timers =
-          FakeWindowsRhythmTimerFactory();
+      final FakeRhythmTimerFactory timers = FakeRhythmTimerFactory();
       final List<RhythmEvent> evaluated = <RhythmEvent>[];
       final List<EventSoundPlaybackResult> soundResults =
           <EventSoundPlaybackResult>[];
-      final List<WindowsRhythmDeliveryFailure> failures =
-          <WindowsRhythmDeliveryFailure>[];
-      WindowsRhythmDeliveryContext current = WindowsRhythmDeliveryContext(
+      final List<TimerRhythmDeliveryFailure> failures =
+          <TimerRhythmDeliveryFailure>[];
+      RhythmDeliveryContext current = RhythmDeliveryContext(
         notification: RhythmNotification(
           event: _event(RhythmEventKind.focusEnds),
           title: 'Old title',
@@ -123,23 +123,22 @@ void main() {
         ),
         sound: EventSoundSelection.bundledDefault(volume: 1),
       );
-      final WindowsRhythmDeliveryAdapter delivery =
-          WindowsRhythmDeliveryAdapter(
-            notification: notification,
-            sound: sound,
-            loadContext: (RhythmEvent _) async => current,
-            evaluateEvent: (RhythmEvent event, DateTime observedAt) async {
-              evaluated.add(event);
-              return _deliveryDecision(event, observedAt: observedAt);
-            },
-            onSoundResult: soundResults.add,
-            onFailure: failures.add,
-            now: () => DateTime(2026, 8, 23, 5),
-            timerFactory: timers.create,
-          );
+      final TimerRhythmDeliveryAdapter delivery = TimerRhythmDeliveryAdapter(
+        notification: notification,
+        sound: sound,
+        loadContext: (RhythmEvent _) async => current,
+        evaluateEvent: (RhythmEvent event, DateTime observedAt) async {
+          evaluated.add(event);
+          return _deliveryDecision(event, observedAt: observedAt);
+        },
+        onSoundResult: soundResults.add,
+        onFailure: failures.add,
+        now: () => DateTime(2026, 8, 23, 5),
+        timerFactory: timers.create,
+      );
       final RhythmEvent event = _event(RhythmEventKind.focusEnds);
       await delivery.schedule(event);
-      current = WindowsRhythmDeliveryContext(
+      current = RhythmDeliveryContext(
         notification: RhythmNotification(
           event: event,
           title: '최신 제목',
@@ -229,7 +228,7 @@ void main() {
     );
 
     await harness.delivery.schedule(harness.event);
-    final FakeWindowsScheduledRhythmOperation completed =
+    final FakeScheduledRhythmOperation completed =
         harness.timers.operations.single;
     await completed.fire();
     await harness.delivery.cancelScheduledEvent();
@@ -245,39 +244,36 @@ void main() {
       final RecordingNotificationPort notification =
           RecordingNotificationPort();
       final RecordingEventSoundPort sound = RecordingEventSoundPort();
-      final FakeWindowsRhythmTimerFactory timers =
-          FakeWindowsRhythmTimerFactory();
+      final FakeRhythmTimerFactory timers = FakeRhythmTimerFactory();
       final RhythmEvent event = _event(RhythmEventKind.focusEnds);
       final RhythmEvent nextEvent = RhythmEvent(
         kind: RhythmEventKind.restEnds,
         occursAt: DateTime(2026, 8, 23, 6),
         windowStartsAt: DateTime(2026, 8, 23, 5),
       );
-      final WindowsRhythmDeliveryAdapter delivery =
-          WindowsRhythmDeliveryAdapter(
-            notification: notification,
-            sound: sound,
-            loadContext: (RhythmEvent current) async =>
-                WindowsRhythmDeliveryContext(
-                  notification: RhythmNotification(
-                    event: current,
-                    title: 'Title',
-                    body: 'Body',
-                  ),
-                  sound: EventSoundSelection.bundledDefault(volume: 1),
-                ),
-            evaluateEvent: (RhythmEvent current, DateTime observedAt) async {
-              return _deliveryDecision(
-                current,
-                observedAt: observedAt,
-                nextEvent: nextEvent,
-              );
-            },
-            onSoundResult: (EventSoundPlaybackResult _) {},
-            onFailure: (WindowsRhythmDeliveryFailure _) {},
-            now: () => DateTime(2026, 8, 23, 5, 50),
-            timerFactory: timers.create,
+      final TimerRhythmDeliveryAdapter delivery = TimerRhythmDeliveryAdapter(
+        notification: notification,
+        sound: sound,
+        loadContext: (RhythmEvent current) async => RhythmDeliveryContext(
+          notification: RhythmNotification(
+            event: current,
+            title: 'Title',
+            body: 'Body',
+          ),
+          sound: EventSoundSelection.bundledDefault(volume: 1),
+        ),
+        evaluateEvent: (RhythmEvent current, DateTime observedAt) async {
+          return _deliveryDecision(
+            current,
+            observedAt: observedAt,
+            nextEvent: nextEvent,
           );
+        },
+        onSoundResult: (EventSoundPlaybackResult _) {},
+        onFailure: (TimerRhythmDeliveryFailure _) {},
+        now: () => DateTime(2026, 8, 23, 5, 50),
+        timerFactory: timers.create,
+      );
 
       await delivery.schedule(event);
       await timers.operations.single.fire();
@@ -301,15 +297,14 @@ void main() {
     );
     final RecordingNotificationPort notification = RecordingNotificationPort();
     final RecordingEventSoundPort sound = RecordingEventSoundPort();
-    final FakeWindowsRhythmTimerFactory timers =
-        FakeWindowsRhythmTimerFactory();
+    final FakeRhythmTimerFactory timers = FakeRhythmTimerFactory();
     int contextLoads = 0;
-    final WindowsRhythmDeliveryAdapter delivery = WindowsRhythmDeliveryAdapter(
+    final TimerRhythmDeliveryAdapter delivery = TimerRhythmDeliveryAdapter(
       notification: notification,
       sound: sound,
       loadContext: (RhythmEvent event) async {
         contextLoads += 1;
-        return WindowsRhythmDeliveryContext(
+        return RhythmDeliveryContext(
           notification: RhythmNotification(
             event: event,
             title: 'Stale',
@@ -321,7 +316,7 @@ void main() {
       evaluateEvent: (RhythmEvent event, DateTime observedAt) =>
           evaluator.execute(event, observedAt: observedAt),
       onSoundResult: (EventSoundPlaybackResult _) {},
-      onFailure: (WindowsRhythmDeliveryFailure _) {},
+      onFailure: (TimerRhythmDeliveryFailure _) {},
       now: () => DateTime(2026, 8, 23, 6, 1),
       timerFactory: timers.create,
     );
@@ -478,24 +473,25 @@ final class RecordingRhythmStatusSink implements RhythmStatusSink {
   }
 }
 
-final class FakeWindowsRhythmTimerFactory {
-  final List<FakeWindowsScheduledRhythmOperation> operations =
-      <FakeWindowsScheduledRhythmOperation>[];
+final class FakeRhythmTimerFactory {
+  final List<FakeScheduledRhythmOperation> operations =
+      <FakeScheduledRhythmOperation>[];
 
-  WindowsScheduledRhythmOperation create(
+  ScheduledRhythmOperation create(
     Duration delay,
     Future<void> Function() operation,
   ) {
-    final FakeWindowsScheduledRhythmOperation scheduled =
-        FakeWindowsScheduledRhythmOperation(delay, operation);
+    final FakeScheduledRhythmOperation scheduled = FakeScheduledRhythmOperation(
+      delay,
+      operation,
+    );
     operations.add(scheduled);
     return scheduled;
   }
 }
 
-final class FakeWindowsScheduledRhythmOperation
-    implements WindowsScheduledRhythmOperation {
-  FakeWindowsScheduledRhythmOperation(this.delay, this._operation);
+final class FakeScheduledRhythmOperation implements ScheduledRhythmOperation {
+  FakeScheduledRhythmOperation(this.delay, this._operation);
 
   final Duration delay;
   final Future<void> Function() _operation;
@@ -518,11 +514,11 @@ final class DeliveryHarness {
     : event = _event(RhythmEventKind.focusEnds),
       notification = RecordingNotificationPort(),
       sound = RecordingEventSoundPort(),
-      timers = FakeWindowsRhythmTimerFactory() {
-    delivery = WindowsRhythmDeliveryAdapter(
+      timers = FakeRhythmTimerFactory() {
+    delivery = TimerRhythmDeliveryAdapter(
       notification: notification,
       sound: sound,
-      loadContext: (RhythmEvent event) async => WindowsRhythmDeliveryContext(
+      loadContext: (RhythmEvent event) async => RhythmDeliveryContext(
         notification: RhythmNotification(
           event: event,
           title: 'Title',
@@ -544,13 +540,13 @@ final class DeliveryHarness {
   final RhythmEvent event;
   final RecordingNotificationPort notification;
   final RecordingEventSoundPort sound;
-  final FakeWindowsRhythmTimerFactory timers;
+  final FakeRhythmTimerFactory timers;
   final List<RhythmEvent> elapsed = <RhythmEvent>[];
   final List<EventSoundPlaybackResult> soundResults =
       <EventSoundPlaybackResult>[];
-  final List<WindowsRhythmDeliveryFailure> failures =
-      <WindowsRhythmDeliveryFailure>[];
-  late final WindowsRhythmDeliveryAdapter delivery;
+  final List<TimerRhythmDeliveryFailure> failures =
+      <TimerRhythmDeliveryFailure>[];
+  late final TimerRhythmDeliveryAdapter delivery;
 }
 
 RhythmEventDeliveryDecision _deliveryDecision(

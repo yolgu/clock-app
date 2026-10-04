@@ -21,12 +21,7 @@ void main() {
     _acceptType<RhythmDeliveryPort>();
     _acceptType<RhythmStatusSink>();
     _acceptType<RhythmStatusSnapshot>();
-    _acceptType<StartRhythm>();
-    _acceptType<PauseRhythm>();
-    _acceptType<ResumeRhythm>();
-    _acceptType<StopRhythmForToday>();
-    _acceptType<ReconcileRhythm>();
-    _acceptType<RescheduleRunningRhythm>();
+    _acceptType<RhythmService>();
 
     expect(RhythmConfiguration.defaults().focusDuration.minutes, 50);
   });

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../contexts/preferences/public_model.dart'
     show LanguagePreference, ThemePreference, UserPreferences;
 import '../../contexts/preferences/public_presentation.dart'
-    show PreferencesViewState, preferencesViewModelProvider;
+    show PreferencesDataState, preferencesDataControllerProvider;
 import '../../features/data_transfer/public_presentation.dart'
     show DataTransferPhase, DataTransferState, dataTransferViewModelProvider;
 import '../../shared/i18n/public.dart' show LanguageLocaleMapper;
@@ -19,9 +19,9 @@ final class ClockRhythmRoot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final UserPreferences preferences = ref
-        .watch(preferencesViewModelProvider)
+        .watch(preferencesDataControllerProvider)
         .maybeWhen(
-          data: (PreferencesViewState state) => state.preferences,
+          data: (PreferencesDataState state) => state.preferences,
           orElse: UserPreferences.defaults,
         );
     final DataTransferState transfer = ref.watch(dataTransferViewModelProvider);

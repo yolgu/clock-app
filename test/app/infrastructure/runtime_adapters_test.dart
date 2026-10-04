@@ -16,7 +16,7 @@ void main() {
       final _RecordingRhythmDelivery delivery = _RecordingRhythmDelivery();
       final _RecordingRhythmStatusSink statusSink =
           _RecordingRhythmStatusSink();
-      final RescheduleRunningRhythm reschedule = RescheduleRunningRhythm(
+      final RhythmService reschedule = RhythmService(
         session: session,
         clock: _FixedRhythmClock(DateTime(2026, 8, 23, 6)),
         delivery: delivery,

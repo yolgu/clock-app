@@ -23,7 +23,8 @@ final class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget scaffold = switch (profile) {
-      PlatformPresentationProfile.windows => Scaffold(
+      PlatformPresentationProfile.windows ||
+      PlatformPresentationProfile.macos => Scaffold(
         body: Column(
           children: <Widget>[
             WindowsTopNavigation(

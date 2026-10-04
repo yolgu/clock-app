@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:path_provider/path_provider.dart';
-
+import '../../contexts/preferences/infrastructure/audio/audio_sound_preview_adapter.dart';
 import '../../contexts/preferences/infrastructure/windows/private_sound_store.dart';
 import '../../contexts/preferences/infrastructure/windows/windows_auto_start_adapter.dart';
 import '../../contexts/preferences/infrastructure/windows/windows_notification_sound_file_adapter.dart';
-import '../../contexts/preferences/infrastructure/windows/windows_sound_preview_adapter.dart';
 import '../../contexts/preferences/public.dart';
 import '../../contexts/preferences/public_presentation.dart';
-import '../../contexts/rhythm/infrastructure/windows/windows_event_sound_adapter.dart';
+import '../../contexts/rhythm/infrastructure/audio/audio_event_sound_adapter.dart';
+import '../../contexts/rhythm/infrastructure/timer/timer_rhythm_delivery_adapter.dart';
 import '../../contexts/rhythm/infrastructure/windows/windows_notification_adapter.dart';
 import '../../contexts/rhythm/infrastructure/windows/windows_tray_adapter.dart';
 import '../../contexts/rhythm/public.dart';
@@ -77,10 +76,10 @@ final class WindowsPlatformServicesFactory implements AppPlatformBootstrap {
     );
     final WindowsNotificationSoundFileAdapter notificationSoundFile =
         WindowsNotificationSoundFileAdapter(privateStore: privateSoundStore);
-    final WindowsSoundPreviewAdapter soundPreview = WindowsSoundPreviewAdapter(
+    final AudioSoundPreviewAdapter soundPreview = AudioSoundPreviewAdapter(
       bundledAssetPath: BundledNotificationSound.assetPath,
     );
-    final WindowsEventSoundAdapter eventSound = WindowsEventSoundAdapter(
+    final AudioEventSoundAdapter eventSound = AudioEventSoundAdapter(
       bundledAssetPath: BundledNotificationSound.assetPath,
     );
     final WindowsNotificationAdapter notification = WindowsNotificationAdapter(
@@ -101,7 +100,7 @@ final class WindowsPlatformServicesFactory implements AppPlatformBootstrap {
     );
     await notification.initialize();
 
-    late final WindowsRhythmDeliveryAdapter delivery;
+    late final TimerRhythmDeliveryAdapter delivery;
     late final _WindowsPlatformCoordinator coordinator;
     final WindowsTrayAdapter tray = WindowsTrayAdapter(
       toolTip: configuration.displayName,
@@ -125,7 +124,7 @@ final class WindowsPlatformServicesFactory implements AppPlatformBootstrap {
           session: context.rhythmSession,
           statusSink: coordinator,
         );
-    delivery = WindowsRhythmDeliveryAdapter(
+    delivery = TimerRhythmDeliveryAdapter(
       notification: notification,
       sound: eventSound,
       loadContext: (RhythmEvent event) {
@@ -139,7 +138,7 @@ final class WindowsPlatformServicesFactory implements AppPlatformBootstrap {
           _repairState.report(PreferencesRepairNeed.sound);
         }
       },
-      onFailure: (WindowsRhythmDeliveryFailure failure) {
+      onFailure: (TimerRhythmDeliveryFailure failure) {
         _repairState.report(_repairNeedFor(failure.code));
       },
     );
@@ -168,7 +167,7 @@ final class WindowsPlatformServicesFactory implements AppPlatformBootstrap {
     );
   }
 
-  Future<WindowsRhythmDeliveryContext> _loadDeliveryContext(
+  Future<RhythmDeliveryContext> _loadDeliveryContext(
     ClockRhythmPlatformContext context,
     RhythmEvent event,
   ) async {
@@ -182,7 +181,7 @@ final class WindowsPlatformServicesFactory implements AppPlatformBootstrap {
               ? RhythmNotificationEvent.focusEnded
               : RhythmNotificationEvent.restEnded,
         );
-    return WindowsRhythmDeliveryContext(
+    return RhythmDeliveryContext(
       notification: RhythmNotification(
         event: event,
         title: payload.title,
@@ -206,24 +205,24 @@ final class WindowsPlatformServicesFactory implements AppPlatformBootstrap {
     };
   }
 
-  PreferencesRepairNeed _repairNeedFor(WindowsRhythmDeliveryFailureCode code) {
+  PreferencesRepairNeed _repairNeedFor(TimerRhythmDeliveryFailureCode code) {
     return switch (code) {
-      WindowsRhythmDeliveryFailureCode.contextUnavailable ||
-      WindowsRhythmDeliveryFailureCode.notificationUnavailable =>
+      TimerRhythmDeliveryFailureCode.contextUnavailable ||
+      TimerRhythmDeliveryFailureCode.notificationUnavailable =>
         PreferencesRepairNeed.notificationPayload,
-      WindowsRhythmDeliveryFailureCode.soundUnavailable =>
+      TimerRhythmDeliveryFailureCode.soundUnavailable =>
         PreferencesRepairNeed.sound,
-      WindowsRhythmDeliveryFailureCode.progressionUnavailable =>
+      TimerRhythmDeliveryFailureCode.progressionUnavailable =>
         PreferencesRepairNeed.rhythmSchedule,
     };
   }
 
   Future<void> _disposeRuntime({
     required _WindowsPlatformCoordinator coordinator,
-    required WindowsRhythmDeliveryAdapter delivery,
+    required TimerRhythmDeliveryAdapter delivery,
     required WindowsNotificationAdapter notification,
-    required WindowsEventSoundAdapter eventSound,
-    required WindowsSoundPreviewAdapter soundPreview,
+    required AudioEventSoundAdapter eventSound,
+    required AudioSoundPreviewAdapter soundPreview,
   }) async {
     Object? firstFailure;
     StackTrace? firstStackTrace;

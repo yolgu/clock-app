@@ -393,7 +393,7 @@ void main() {
   test('rejects Rhythm depending on Preferences public contracts', () {
     final ArchitectureFixture fixture = ArchitectureFixture.create();
     addTearDown(fixture.dispose);
-    const String sourcePath = 'contexts/rhythm/application/start_rhythm.dart';
+    const String sourcePath = 'contexts/rhythm/application/rhythm_service.dart';
     fixture
       ..addFile(
         sourcePath,
@@ -519,7 +519,7 @@ void main() {
         'features/data_transfer/application/prepare_backup.dart',
         "import 'package:clock_rhythm/contexts/preferences/public_model.dart';\n"
             "import 'package:clock_rhythm/contexts/todo/public.dart' "
-            'show ExportTodoSnapshots;\n',
+            'show TodoQueryService;\n',
       )
       ..addFile(
         'app/composition/bootstrap.dart',

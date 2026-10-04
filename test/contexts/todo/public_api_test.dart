@@ -21,19 +21,12 @@ void main() {
     _acceptType<TodoRepository>();
     _acceptType<TodoIdGenerator>();
     _acceptType<Clock>();
-    _acceptType<CreateTodo>();
+    _acceptType<TodoCommandService>();
     _acceptType<CreateTodoCommand>();
-    _acceptType<RenameTodo>();
     _acceptType<RenameTodoCommand>();
-    _acceptType<RescheduleTodo>();
     _acceptType<RescheduleTodoCommand>();
-    _acceptType<ToggleTodoCompletion>();
-    _acceptType<ReorderTodos>();
     _acceptType<ReorderTodosCommand>();
-    _acceptType<DeleteTodo>();
-    _acceptType<ListTodosForDate>();
-    _acceptType<ListMonthSummary>();
-    _acceptType<ExportTodoSnapshots>();
+    _acceptType<TodoQueryService>();
     _acceptType<ReplaceTodoSnapshots>();
 
     expect(TodoTitle.parse('과제').graphemeLength, 2);

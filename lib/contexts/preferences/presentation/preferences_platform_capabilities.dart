@@ -1,4 +1,4 @@
-enum PreferencesPlatformKind { windows, android }
+enum PreferencesPlatformKind { windows, android, macos }
 
 final class PreferencesPlatformCapabilities {
   const PreferencesPlatformCapabilities._({
@@ -25,6 +25,15 @@ final class PreferencesPlatformCapabilities {
         showsCustomSound: false,
         showsVolume: false,
         showsDeliveryPermissions: true,
+      );
+
+  static const PreferencesPlatformCapabilities macos =
+      PreferencesPlatformCapabilities._(
+        kind: PreferencesPlatformKind.macos,
+        showsAutoStart: false,
+        showsCustomSound: false,
+        showsVolume: true,
+        showsDeliveryPermissions: false,
       );
 
   final PreferencesPlatformKind kind;

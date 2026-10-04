@@ -1,13 +1,8 @@
-import 'package:clock_rhythm/contexts/rhythm/application/pause_rhythm.dart';
 import 'package:clock_rhythm/contexts/rhythm/application/ports/clock.dart';
 import 'package:clock_rhythm/contexts/rhythm/application/ports/rhythm_delivery_port.dart';
 import 'package:clock_rhythm/contexts/rhythm/application/ports/rhythm_status_sink.dart';
-import 'package:clock_rhythm/contexts/rhythm/application/reconcile_rhythm.dart';
-import 'package:clock_rhythm/contexts/rhythm/application/reschedule_running_rhythm.dart';
-import 'package:clock_rhythm/contexts/rhythm/application/resume_rhythm.dart';
+import 'package:clock_rhythm/contexts/rhythm/application/rhythm_service.dart';
 import 'package:clock_rhythm/contexts/rhythm/application/rhythm_status_snapshot.dart';
-import 'package:clock_rhythm/contexts/rhythm/application/start_rhythm.dart';
-import 'package:clock_rhythm/contexts/rhythm/application/stop_rhythm_for_today.dart';
 import 'package:clock_rhythm/contexts/rhythm/domain/clock_time.dart';
 import 'package:clock_rhythm/contexts/rhythm/domain/daily_rhythm.dart';
 import 'package:clock_rhythm/contexts/rhythm/domain/duration_minutes.dart';
@@ -24,7 +19,7 @@ void main() {
         now: DateTime(2026, 6, 2, 5, 10),
       );
 
-      final RhythmStatusSnapshot snapshot = await harness.start.execute(
+      final RhythmStatusSnapshot snapshot = await harness.service.start(
         RhythmConfiguration.defaults(),
       );
 
@@ -45,7 +40,7 @@ void main() {
       restMinutes: 1,
     );
 
-    final RhythmStatusSnapshot snapshot = await harness.start.execute(
+    final RhythmStatusSnapshot snapshot = await harness.service.start(
       configuration,
     );
 
@@ -57,7 +52,7 @@ void main() {
       now: DateTime(2026, 6, 2, 18, 1),
     );
 
-    final RhythmStatusSnapshot snapshot = await harness.start.execute(
+    final RhythmStatusSnapshot snapshot = await harness.service.start(
       RhythmConfiguration.defaults(),
     );
 
@@ -74,7 +69,7 @@ void main() {
       harness.delivery.scheduleFailure = StateError('delivery unavailable');
 
       await expectLater(
-        harness.start.execute(RhythmConfiguration.defaults()),
+        harness.service.start(RhythmConfiguration.defaults()),
         throwsA(
           isA<RhythmSynchronizationFailure>().having(
             (RhythmSynchronizationFailure failure) => failure.cause,
@@ -100,12 +95,12 @@ void main() {
       final RhythmHarness harness = RhythmHarness(
         now: DateTime(2026, 6, 2, 5, 10),
       );
-      await harness.start.execute(RhythmConfiguration.defaults());
+      await harness.service.start(RhythmConfiguration.defaults());
       harness.delivery.clear();
       harness.delivery.cancelFailuresRemaining = 1;
 
       await expectLater(
-        harness.pause.execute(),
+        harness.service.pause(),
         throwsA(
           isA<RhythmSynchronizationFailure>().having(
             (RhythmSynchronizationFailure failure) =>
@@ -127,13 +122,13 @@ void main() {
       final RhythmHarness harness = RhythmHarness(
         now: DateTime(2026, 6, 2, 5, 10),
       );
-      await harness.start.execute(RhythmConfiguration.defaults());
-      await harness.pause.execute();
+      await harness.service.start(RhythmConfiguration.defaults());
+      await harness.service.pause();
       harness.delivery.clear();
       harness.delivery.scheduleFailure = StateError('schedule failed');
 
       await expectLater(
-        harness.resume.execute(),
+        harness.service.resume(),
         throwsA(
           isA<RhythmSynchronizationFailure>().having(
             (RhythmSynchronizationFailure failure) =>
@@ -152,12 +147,12 @@ void main() {
     final RhythmHarness harness = RhythmHarness(
       now: DateTime(2026, 6, 2, 5, 10),
     );
-    await harness.start.execute(RhythmConfiguration.defaults());
+    await harness.service.start(RhythmConfiguration.defaults());
     harness.delivery.clear();
     harness.delivery.scheduleFailure = StateError('schedule failed');
 
     await expectLater(
-      harness.stopForToday.execute(),
+      harness.service.stopForToday(),
       throwsA(
         isA<RhythmSynchronizationFailure>().having(
           (RhythmSynchronizationFailure failure) => failure.safeSnapshot.status,
@@ -178,7 +173,7 @@ void main() {
       );
 
       await expectLater(
-        harness.start.execute(RhythmConfiguration.defaults()),
+        harness.service.start(RhythmConfiguration.defaults()),
         throwsArgumentError,
       );
       expect(harness.calls, isEmpty);
@@ -190,7 +185,7 @@ void main() {
       now: DateTime(2026, 6, 2, 5, 10),
     );
 
-    final RhythmStatusSnapshot snapshot = await harness.resume.execute();
+    final RhythmStatusSnapshot snapshot = await harness.service.resume();
 
     expect(snapshot.status, RhythmSessionStatus.idle);
     expect(snapshot.nextEvent, isNull);
@@ -201,10 +196,10 @@ void main() {
     final RhythmHarness harness = RhythmHarness(
       now: DateTime(2026, 6, 2, 5, 10),
     );
-    await harness.start.execute(RhythmConfiguration.defaults());
+    await harness.service.start(RhythmConfiguration.defaults());
     harness.delivery.clear();
 
-    final RhythmStatusSnapshot paused = await harness.pause.execute();
+    final RhythmStatusSnapshot paused = await harness.service.pause();
 
     expect(paused.status, RhythmSessionStatus.paused);
     expect(paused.nextEvent, isNull);
@@ -212,7 +207,7 @@ void main() {
 
     harness.clock.current = DateTime(2026, 6, 2, 5, 50, 1);
     harness.delivery.clear();
-    final RhythmStatusSnapshot resumed = await harness.resume.execute();
+    final RhythmStatusSnapshot resumed = await harness.service.resume();
 
     expect(resumed.status, RhythmSessionStatus.running);
     expect(resumed.nextEvent?.kind, RhythmEventKind.restEnds);
@@ -231,10 +226,10 @@ void main() {
       now: DateTime(2026, 6, 3, 0, 30),
       configuration: configuration,
     );
-    await harness.start.execute(configuration);
+    await harness.service.start(configuration);
     harness.delivery.clear();
 
-    final RhythmStatusSnapshot stopped = await harness.stopForToday.execute();
+    final RhythmStatusSnapshot stopped = await harness.service.stopForToday();
 
     expect(stopped.status, RhythmSessionStatus.stoppedForToday);
     expect(stopped.resumesAt, DateTime(2026, 6, 3, 22));
@@ -248,11 +243,11 @@ void main() {
       final RhythmHarness harness = RhythmHarness(
         now: DateTime(2026, 6, 2, 5, 10),
       );
-      await harness.start.execute(RhythmConfiguration.defaults());
+      await harness.service.start(RhythmConfiguration.defaults());
       harness.clock.current = DateTime(2026, 6, 2, 6, 1);
       harness.delivery.clear();
 
-      final RhythmStatusSnapshot snapshot = await harness.reconcile.execute();
+      final RhythmStatusSnapshot snapshot = await harness.service.reconcile();
 
       expect(snapshot.nextEvent?.kind, RhythmEventKind.focusEnds);
       expect(snapshot.nextEvent?.occursAt, DateTime(2026, 6, 2, 6, 50));
@@ -262,12 +257,12 @@ void main() {
 
   test('Reconcile automatically rolls Stop over at the next start', () async {
     final RhythmHarness harness = RhythmHarness(now: DateTime(2026, 6, 2, 9));
-    await harness.start.execute(RhythmConfiguration.defaults());
-    await harness.stopForToday.execute();
+    await harness.service.start(RhythmConfiguration.defaults());
+    await harness.service.stopForToday();
     harness.clock.current = DateTime(2026, 6, 3, 5);
     harness.delivery.clear();
 
-    final RhythmStatusSnapshot snapshot = await harness.reconcile.execute();
+    final RhythmStatusSnapshot snapshot = await harness.service.reconcile();
 
     expect(snapshot.status, RhythmSessionStatus.running);
     expect(snapshot.resumesAt, isNull);
@@ -276,12 +271,12 @@ void main() {
 
   test('Pause applies after an unobserved Stop rollover', () async {
     final RhythmHarness harness = RhythmHarness(now: DateTime(2026, 6, 2, 9));
-    await harness.start.execute(RhythmConfiguration.defaults());
-    await harness.stopForToday.execute();
+    await harness.service.start(RhythmConfiguration.defaults());
+    await harness.service.stopForToday();
     harness.clock.current = DateTime(2026, 6, 3, 5);
     harness.delivery.clear();
 
-    final RhythmStatusSnapshot snapshot = await harness.pause.execute();
+    final RhythmStatusSnapshot snapshot = await harness.service.pause();
 
     expect(snapshot.status, RhythmSessionStatus.paused);
     expect(snapshot.nextEvent, isNull);
@@ -290,12 +285,12 @@ void main() {
 
   test('Stop applies to the new window after an unobserved rollover', () async {
     final RhythmHarness harness = RhythmHarness(now: DateTime(2026, 6, 2, 9));
-    await harness.start.execute(RhythmConfiguration.defaults());
-    await harness.stopForToday.execute();
+    await harness.service.start(RhythmConfiguration.defaults());
+    await harness.service.stopForToday();
     harness.clock.current = DateTime(2026, 6, 3, 5);
     harness.delivery.clear();
 
-    final RhythmStatusSnapshot snapshot = await harness.stopForToday.execute();
+    final RhythmStatusSnapshot snapshot = await harness.service.stopForToday();
 
     expect(snapshot.status, RhythmSessionStatus.stoppedForToday);
     expect(snapshot.resumesAt, DateTime(2026, 6, 4, 5));
@@ -306,7 +301,7 @@ void main() {
     final RhythmHarness harness = RhythmHarness(
       now: DateTime(2026, 6, 2, 5, 10),
     );
-    await harness.start.execute(RhythmConfiguration.defaults());
+    await harness.service.start(RhythmConfiguration.defaults());
     harness.delivery.clear();
     final RhythmConfiguration changed = _configuration(
       start: '05:00',
@@ -315,7 +310,7 @@ void main() {
       restMinutes: 5,
     );
 
-    final RhythmStatusSnapshot snapshot = await harness.reschedule.execute(
+    final RhythmStatusSnapshot snapshot = await harness.service.reschedule(
       changed,
     );
 
@@ -335,11 +330,11 @@ void main() {
       final RhythmHarness harness = RhythmHarness(
         now: DateTime(2026, 6, 2, 5, 10),
       );
-      await harness.start.execute(RhythmConfiguration.defaults());
-      await harness.pause.execute();
+      await harness.service.start(RhythmConfiguration.defaults());
+      await harness.service.pause();
       harness.delivery.clear();
 
-      final RhythmStatusSnapshot snapshot = await harness.reschedule.execute(
+      final RhythmStatusSnapshot snapshot = await harness.service.reschedule(
         _configuration(
           start: '06:00',
           end: '18:00',
@@ -358,12 +353,12 @@ void main() {
     'Reschedule preserves Stop until the new configuration next start',
     () async {
       final RhythmHarness harness = RhythmHarness(now: DateTime(2026, 6, 2, 9));
-      await harness.start.execute(RhythmConfiguration.defaults());
-      await harness.stopForToday.execute();
+      await harness.service.start(RhythmConfiguration.defaults());
+      await harness.service.stopForToday();
       harness.clock.current = DateTime(2026, 6, 2, 10);
       harness.delivery.clear();
 
-      final RhythmStatusSnapshot snapshot = await harness.reschedule.execute(
+      final RhythmStatusSnapshot snapshot = await harness.service.reschedule(
         _configuration(
           start: '11:00',
           end: '18:00',
@@ -388,37 +383,7 @@ final class RhythmHarness {
       ) {
     delivery = FakeRhythmDeliveryPort(calls);
     statusSink = FakeRhythmStatusSink(calls);
-    start = StartRhythm(
-      session: session,
-      clock: clock,
-      delivery: delivery,
-      statusSink: statusSink,
-    );
-    pause = PauseRhythm(
-      session: session,
-      clock: clock,
-      delivery: delivery,
-      statusSink: statusSink,
-    );
-    resume = ResumeRhythm(
-      session: session,
-      clock: clock,
-      delivery: delivery,
-      statusSink: statusSink,
-    );
-    stopForToday = StopRhythmForToday(
-      session: session,
-      clock: clock,
-      delivery: delivery,
-      statusSink: statusSink,
-    );
-    reconcile = ReconcileRhythm(
-      session: session,
-      clock: clock,
-      delivery: delivery,
-      statusSink: statusSink,
-    );
-    reschedule = RescheduleRunningRhythm(
+    service = RhythmService(
       session: session,
       clock: clock,
       delivery: delivery,
@@ -426,17 +391,12 @@ final class RhythmHarness {
     );
   }
 
+  late final RhythmService service;
   final RhythmSession session;
   final FakeClock clock;
   final List<String> calls = <String>[];
   late final FakeRhythmDeliveryPort delivery;
   late final FakeRhythmStatusSink statusSink;
-  late final StartRhythm start;
-  late final PauseRhythm pause;
-  late final ResumeRhythm resume;
-  late final StopRhythmForToday stopForToday;
-  late final ReconcileRhythm reconcile;
-  late final RescheduleRunningRhythm reschedule;
 }
 
 final class FakeClock implements Clock {

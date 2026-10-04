@@ -1,10 +1,6 @@
-import '../application/pause_rhythm.dart';
 import '../application/ports/rhythm_start_capability.dart';
-import '../application/reconcile_rhythm.dart';
-import '../application/resume_rhythm.dart';
+import '../application/rhythm_service.dart';
 import '../application/rhythm_status_snapshot.dart';
-import '../application/start_rhythm.dart';
-import '../application/stop_rhythm_for_today.dart';
 import '../domain/rhythm_configuration.dart';
 
 final class RhythmStartResult {
@@ -46,11 +42,7 @@ abstract interface class RhythmActions {
 
 final class ApplicationRhythmActions implements RhythmActions {
   factory ApplicationRhythmActions({
-    required StartRhythm start,
-    required PauseRhythm pause,
-    required ResumeRhythm resume,
-    required StopRhythmForToday stopForToday,
-    required ReconcileRhythm reconcile,
+    required RhythmService service,
     required RhythmStartCapability startCapability,
     RhythmStatusSnapshot? initialSnapshot,
     bool initialRecoveryRequired = false,
@@ -61,11 +53,7 @@ final class ApplicationRhythmActions implements RhythmActions {
       );
     }
     return ApplicationRhythmActions._(
-      start,
-      pause,
-      resume,
-      stopForToday,
-      reconcile,
+      service,
       startCapability,
       initialSnapshot,
       initialRecoveryRequired,
@@ -73,21 +61,13 @@ final class ApplicationRhythmActions implements RhythmActions {
   }
 
   ApplicationRhythmActions._(
-    this._start,
-    this._pause,
-    this._resume,
-    this._stopForToday,
-    this._reconcile,
+    this._service,
     this._startCapability,
     this._initialSnapshot,
     this._initialRecoveryRequired,
   );
 
-  final StartRhythm _start;
-  final PauseRhythm _pause;
-  final ResumeRhythm _resume;
-  final StopRhythmForToday _stopForToday;
-  final ReconcileRhythm _reconcile;
+  final RhythmService _service;
   final RhythmStartCapability _startCapability;
   RhythmStatusSnapshot? _initialSnapshot;
   bool _initialRecoveryRequired;
@@ -109,7 +89,7 @@ final class ApplicationRhythmActions implements RhythmActions {
       }
       return Future<RhythmStatusSnapshot>.value(initialSnapshot);
     }
-    return _reconcile.execute();
+    return _service.reconcile();
   }
 
   @override
@@ -121,7 +101,7 @@ final class ApplicationRhythmActions implements RhythmActions {
       return RhythmStartResult.blocked(failure);
     }
     try {
-      return RhythmStartResult.started(await _start.execute(configuration));
+      return RhythmStartResult.started(await _service.start(configuration));
     } on RhythmSynchronizationFailure catch (failure) {
       return RhythmStartResult.blocked(
         RhythmStartFailure.deliveryUnavailable,
@@ -136,22 +116,22 @@ final class ApplicationRhythmActions implements RhythmActions {
 
   @override
   Future<RhythmStatusSnapshot> pause() {
-    return _pause.execute();
+    return _service.pause();
   }
 
   @override
   Future<RhythmStatusSnapshot> resume() {
-    return _resume.execute();
+    return _service.resume();
   }
 
   @override
   Future<RhythmStatusSnapshot> stopForToday() {
-    return _stopForToday.execute();
+    return _service.stopForToday();
   }
 
   @override
   Future<RhythmStatusSnapshot> reconcile() {
-    return _reconcile.execute();
+    return _service.reconcile();
   }
 
   @override

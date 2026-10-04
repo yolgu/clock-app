@@ -15,7 +15,6 @@ import '../domain/todo_title.dart';
 import 'todo_date_math.dart';
 import 'todo_providers.dart';
 import 'todo_title_feedback.dart';
-import 'todo_view_model.dart';
 
 enum _TodoEditorVariant { today, selectedDate, edit }
 
@@ -95,8 +94,8 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context);
-    final AsyncValue<TodoViewState> asyncState = ref.watch(
-      todoViewModelProvider,
+    final AsyncValue<TodoDataState> asyncState = ref.watch(
+      todoDataControllerProvider,
     );
     final bool commandInFlight = asyncState.value?.isMutating ?? false;
     final TodoTitleFeedback feedback = _titleFeedback(localizations);
@@ -346,7 +345,9 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
     _submissionFocus = FocusManager.instance.primaryFocus;
     _focusMovedDuringSubmission = false;
     FocusManager.instance.addListener(_trackSubmissionFocus);
-    final TodoViewModel viewModel = ref.read(todoViewModelProvider.notifier);
+    final TodoDataController viewModel = ref.read(
+      todoDataControllerProvider.notifier,
+    );
     final TodoSnapshot? todo = widget.todo;
     final bool succeeded = todo == null
         ? await viewModel.createTodo(

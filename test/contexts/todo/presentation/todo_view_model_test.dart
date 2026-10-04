@@ -34,9 +34,10 @@ void main() {
       addTearDown(container.dispose);
       addTearDown(dateClock.dispose);
 
-      final TodoViewState state = await container.read(
-        todoViewModelProvider.future,
-      );
+      await container.read(todoDataControllerProvider.future);
+      final TodoViewState state = container
+          .read(todoViewStateProvider)
+          .requireValue;
 
       expect(state.todayTodos.map((TodoSnapshot todo) => todo.id), <String>[
         'late',
@@ -66,9 +67,9 @@ void main() {
       );
       addTearDown(container.dispose);
       addTearDown(dateClock.dispose);
-      await container.read(todoViewModelProvider.future);
-      final TodoViewModel viewModel = container.read(
-        todoViewModelProvider.notifier,
+      await container.read(todoDataControllerProvider.future);
+      final TodoDataController viewModel = container.read(
+        todoDataControllerProvider.notifier,
       );
 
       expect(
@@ -79,7 +80,7 @@ void main() {
         ),
         isTrue,
       );
-      TodoViewState state = container.read(todoViewModelProvider).requireValue;
+      TodoViewState state = container.read(todoViewStateProvider).requireValue;
       final TodoSnapshot created = state.todayTodos.singleWhere(
         (TodoSnapshot todo) => todo.id.startsWith('created-'),
       );
@@ -87,7 +88,7 @@ void main() {
       expect(created.time, '23:45');
 
       expect(await viewModel.toggleTodo(created), isTrue);
-      state = container.read(todoViewModelProvider).requireValue;
+      state = container.read(todoViewStateProvider).requireValue;
       TodoSnapshot toggled = state.todayTodos.singleWhere(
         (TodoSnapshot todo) => todo.id == created.id,
       );
@@ -95,7 +96,7 @@ void main() {
       expect(state.message, TodoUiMessage.completed);
 
       expect(await viewModel.toggleTodo(toggled), isTrue);
-      state = container.read(todoViewModelProvider).requireValue;
+      state = container.read(todoViewStateProvider).requireValue;
       toggled = state.todayTodos.singleWhere(
         (TodoSnapshot todo) => todo.id == created.id,
       );
@@ -103,7 +104,7 @@ void main() {
       expect(state.message, TodoUiMessage.reopened);
 
       expect(await viewModel.deleteTodo(toggled), isTrue);
-      state = container.read(todoViewModelProvider).requireValue;
+      state = container.read(todoViewStateProvider).requireValue;
       expect(
         state.todayTodos.any((TodoSnapshot todo) => todo.id == created.id),
         isFalse,
@@ -114,7 +115,7 @@ void main() {
   );
 
   test(
-    'edits title, date, and time with exactly one UpdateTodo mutation',
+    'edits title, date, and time with exactly one repository mutation',
     () async {
       final TestTodoRepository repository = TestTodoRepository(<Todo>[
         createTestTodo(id: 'editing', title: 'Before'),
@@ -134,14 +135,15 @@ void main() {
       );
       addTearDown(container.dispose);
       addTearDown(dateClock.dispose);
-      final TodoViewState initial = await container.read(
-        todoViewModelProvider.future,
-      );
+      await container.read(todoDataControllerProvider.future);
+      final TodoViewState initial = container
+          .read(todoViewStateProvider)
+          .requireValue;
       final TodoSnapshot editing = initial.todayTodos.single;
       final int mutationsBeforeEdit = repository.mutateCalls;
 
       final bool succeeded = await container
-          .read(todoViewModelProvider.notifier)
+          .read(todoDataControllerProvider.notifier)
           .updateTodo(
             todo: editing,
             title: ' After ',
@@ -179,19 +181,20 @@ void main() {
       );
       addTearDown(container.dispose);
       addTearDown(dateClock.dispose);
-      final TodoViewState initial = await container.read(
-        todoViewModelProvider.future,
-      );
+      await container.read(todoDataControllerProvider.future);
+      final TodoViewState initial = container
+          .read(todoViewStateProvider)
+          .requireValue;
 
       expect(
         await container
-            .read(todoViewModelProvider.notifier)
+            .read(todoDataControllerProvider.notifier)
             .moveTodoDown(initial.todayTodos.first),
         isTrue,
       );
 
       final TodoViewState state = container
-          .read(todoViewModelProvider)
+          .read(todoViewStateProvider)
           .requireValue;
       expect(state.todayTodos.map((TodoSnapshot todo) => todo.id), <String>[
         'b',
@@ -222,20 +225,24 @@ void main() {
       );
       addTearDown(container.dispose);
       addTearDown(dateClock.dispose);
-      await container.read(todoViewModelProvider.future);
-      final TodoViewModel viewModel = container.read(
-        todoViewModelProvider.notifier,
+      await container.read(todoDataControllerProvider.future);
+      final TodoDataController viewModel = container.read(
+        todoDataControllerProvider.notifier,
       );
 
+      container.read(calendarViewModelProvider);
       await viewModel.reconcileLocalDate(DateTime(2026, 7, 1));
-      TodoViewState state = container.read(todoViewModelProvider).requireValue;
+      TodoViewState state = container.read(todoViewStateProvider).requireValue;
       expect(state.todayDate.text, '2026-07-01');
       expect(state.selectedDate.text, '2026-07-01');
       expect(state.visibleMonth.monthKey, '2026-07');
 
-      await viewModel.selectDate(LocalCalendarDate.parse('2026-07-05'));
+      await container
+          .read(calendarViewModelProvider.notifier)
+          .selectDate(LocalCalendarDate.parse('2026-07-05'));
+      container.read(calendarViewModelProvider);
       await viewModel.reconcileLocalDate(DateTime(2026, 7, 2));
-      state = container.read(todoViewModelProvider).requireValue;
+      state = container.read(todoViewStateProvider).requireValue;
       expect(state.todayDate.text, '2026-07-02');
       expect(state.selectedDate.text, '2026-07-05');
     },
@@ -254,16 +261,19 @@ void main() {
       );
       addTearDown(container.dispose);
       addTearDown(dateClock.dispose);
-      await container.read(todoViewModelProvider.future);
-      final TodoViewModel viewModel = container.read(
-        todoViewModelProvider.notifier,
+      await container.read(todoDataControllerProvider.future);
+      final TodoDataController viewModel = container.read(
+        todoDataControllerProvider.notifier,
       );
 
-      await viewModel.selectDate(LocalCalendarDate.parse('2026-06-05'));
+      await container
+          .read(calendarViewModelProvider.notifier)
+          .selectDate(LocalCalendarDate.parse('2026-06-05'));
+      container.read(calendarViewModelProvider);
       await viewModel.reconcileLocalDate(DateTime(2026, 7, 1));
 
       final TodoViewState state = container
-          .read(todoViewModelProvider)
+          .read(todoViewStateProvider)
           .requireValue;
       expect(state.todayDate.text, '2026-07-01');
       expect(state.selectedDate.text, '2026-06-05');
@@ -284,17 +294,76 @@ void main() {
       );
       addTearDown(container.dispose);
       addTearDown(dateClock.dispose);
-      await container.read(todoViewModelProvider.future);
+      await container.read(todoDataControllerProvider.future);
       await pumpEventQueue();
 
       dateClock.moveTo(DateTime(2026, 6, 3));
       await pumpEventQueue();
 
       final TodoViewState state = container
-          .read(todoViewModelProvider)
+          .read(todoViewStateProvider)
           .requireValue;
       expect(state.todayDate.text, '2026-06-03');
       expect(state.selectedDate.text, '2026-06-03');
+    },
+  );
+
+  test(
+    'a Todo change refreshes both dates without moving calendar selection',
+    () async {
+      final TestTodoRepository repository = TestTodoRepository(<Todo>[
+        createTestTodo(id: 'today', title: 'Today'),
+      ]);
+      final TestTodoDateClock clock = TestTodoDateClock(DateTime(2026, 6, 2));
+      final ProviderContainer container = _createContainer(repository, clock);
+      addTearDown(container.dispose);
+      addTearDown(clock.dispose);
+      await container.read(todoDataControllerProvider.future);
+      final LocalCalendarDate selected = LocalCalendarDate.parse('2026-07-05');
+      await container
+          .read(calendarViewModelProvider.notifier)
+          .synchronizeSelectedDate(selected);
+      await container
+          .read(todoDataControllerProvider.notifier)
+          .createTodo(title: 'Calendar item', date: selected, time: null);
+      final TodoViewState calendar = container
+          .read(todoViewStateProvider)
+          .requireValue;
+      final TodoDataState today = container
+          .read(todoDataControllerProvider)
+          .requireValue;
+      expect(calendar.selectedDate, selected);
+      expect(calendar.visibleMonth.monthKey, '2026-07');
+      expect(calendar.selectedDateTodos.single.title, 'Calendar item');
+      expect(calendar.monthSummary[selected.text]?.total, 1);
+      expect(today.todayTodos.single.title, 'Today');
+      await container
+          .read(todoDataControllerProvider.notifier)
+          .toggleTodo(today.todayTodos.single);
+      expect(
+        container
+            .read(todoViewStateProvider)
+            .requireValue
+            .todayTodos
+            .single
+            .completed,
+        isTrue,
+      );
+      expect(container.read(calendarViewModelProvider).selectedDate, selected);
+    },
+  );
+
+  test(
+    'disposing during initial load releases the local date subscription',
+    () async {
+      final TestTodoRepository repository = TestTodoRepository();
+      final TestTodoDateClock clock = TestTodoDateClock(DateTime(2026, 6, 2));
+      addTearDown(clock.dispose);
+      final ProviderContainer container = _createContainer(repository, clock);
+      container.read(todoDataControllerProvider);
+      container.dispose();
+      await pumpEventQueue();
+      expect(clock.hasActiveListeners, isFalse);
     },
   );
 
@@ -315,10 +384,10 @@ void main() {
       );
       addTearDown(container.dispose);
       addTearDown(dateClock.dispose);
-      await container.read(todoViewModelProvider.future);
+      await container.read(todoDataControllerProvider.future);
 
       final bool succeeded = await container
-          .read(todoViewModelProvider.notifier)
+          .read(todoDataControllerProvider.notifier)
           .createTodo(
             title: 'Over limit',
             date: LocalCalendarDate.parse('2026-06-02'),
@@ -327,7 +396,7 @@ void main() {
 
       expect(succeeded, isFalse);
       expect(
-        container.read(todoViewModelProvider).requireValue.message,
+        container.read(todoViewStateProvider).requireValue.message,
         TodoUiMessage.limitReached,
       );
     },
@@ -351,10 +420,10 @@ void main() {
       );
       addTearDown(container.dispose);
       addTearDown(dateClock.dispose);
-      await container.read(todoViewModelProvider.future);
+      await container.read(todoDataControllerProvider.future);
 
       final bool commandSucceeded = await container
-          .read(todoViewModelProvider.notifier)
+          .read(todoDataControllerProvider.notifier)
           .createTodo(
             title: 'Persisted',
             date: LocalCalendarDate.parse('2026-06-02'),
@@ -364,7 +433,7 @@ void main() {
       expect(commandSucceeded, isTrue);
       expect(repository.todos.single.title.text, 'Persisted');
       expect(
-        container.read(todoViewModelProvider),
+        container.read(todoViewStateProvider),
         isA<AsyncError<TodoViewState>>(),
       );
     },

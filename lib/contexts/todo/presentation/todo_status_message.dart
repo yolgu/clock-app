@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-
 import '../../../shared/i18n/public.dart' show AppLocalizations;
 import '../../../shared/ui/public.dart'
     show ClockRhythmSpace, StableContentSlot;
 import '../domain/todo_title.dart';
-import 'todo_view_model.dart';
+import 'todo_providers.dart';
 
 final class TodoStatusMessage extends StatelessWidget {
   const TodoStatusMessage({

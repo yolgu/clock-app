@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('exports the planned Todo presentation surface', () {
-    _acceptType<TodoViewModel>();
+    _acceptType<TodoDataController>();
     _acceptType<TodoViewState>();
     _acceptType<TodoUiMessage>();
     _acceptType<TodoPresentationDependencies>();
@@ -13,7 +13,7 @@ void main() {
     _acceptType<TodoEditor>();
     _acceptType<CalendarPage>();
 
-    expect(todoViewModelProvider.name, 'todoViewModelProvider');
+    expect(todoViewStateProvider.name, 'todoViewStateProvider');
     expect(
       todoPresentationDependenciesProvider.name,
       'todoPresentationDependenciesProvider',

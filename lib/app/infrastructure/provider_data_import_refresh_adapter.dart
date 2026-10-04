@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../contexts/preferences/public.dart'
     show DraftStore, RhythmSettingsDraft, SettingsRepository, UserPreferences;
 import '../../contexts/preferences/public_presentation.dart'
-    show preferencesViewModelProvider;
+    show preferencesInitialDataProvider, soundPreviewControllerProvider;
 import '../../contexts/rhythm/public_presentation.dart'
     show rhythmViewModelProvider;
 import '../../contexts/todo/public_presentation.dart'
-    show todoViewModelProvider;
+    show todoDataControllerProvider, calendarViewModelProvider;
 import '../../features/data_transfer/public.dart' show DataImportRefreshPort;
 
 typedef ProviderContainerResolver = ProviderContainer Function();
@@ -33,8 +33,10 @@ final class ProviderDataImportRefreshAdapter implements DataImportRefreshPort {
     await _draftStore.save(RhythmSettingsDraft.fromPreferences(imported));
     await _applyImportedPreferences(imported);
     final ProviderContainer container = _container();
-    container.invalidate(preferencesViewModelProvider);
-    container.invalidate(todoViewModelProvider);
+    container.invalidate(preferencesInitialDataProvider);
+    container.invalidate(soundPreviewControllerProvider);
+    container.invalidate(todoDataControllerProvider);
+    container.invalidate(calendarViewModelProvider);
     container.invalidate(rhythmViewModelProvider);
   }
 }

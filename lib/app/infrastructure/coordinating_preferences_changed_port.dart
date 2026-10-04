@@ -4,7 +4,7 @@ import '../../contexts/preferences/public.dart'
         PreferencesChangedEvent,
         PreferencesChangedPort,
         UserPreferences;
-import '../../contexts/rhythm/public.dart' show RescheduleRunningRhythm;
+import '../../contexts/rhythm/public.dart' show RhythmService;
 
 typedef PreferencesEffect = Future<void> Function(UserPreferences preferences);
 
@@ -16,7 +16,7 @@ final class CoordinatingPreferencesChangedPort
     required this._refreshSound,
   });
 
-  final RescheduleRunningRhythm _rescheduleRhythm;
+  final RhythmService _rescheduleRhythm;
   final PreferencesEffect _refreshDeliveryPayload;
   final PreferencesEffect _refreshSound;
 
@@ -30,7 +30,7 @@ final class CoordinatingPreferencesChangedPort
       ),
       PreferencesChangeImpact.rhythmSchedule =>
         _rescheduleRhythm
-            .execute(event.preferences.rhythmConfiguration)
+            .reschedule(event.preferences.rhythmConfiguration)
             .then<void>((_) {}),
     };
   }

@@ -77,7 +77,26 @@ void main() {
     },
   );
 
-  testWidgets('both platforms expose a Settings destination', (
+  testWidgets('macOS uses desktop navigation and opens Settings', (
+    WidgetTester tester,
+  ) async {
+    final ClockRhythmRouter clockRouter = ClockRhythmRouter(
+      profile: PlatformPresentationProfile.macos,
+      navigationCopy: copy,
+    );
+    addTearDown(clockRouter.dispose);
+
+    await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WindowsTopNavigation), findsOneWidget);
+    expect(find.byType(AndroidBottomNavigation), findsNothing);
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(clockRouter.router.state.uri.path, '/settings');
+  });
+
+  testWidgets('all platforms expose a Settings destination', (
     WidgetTester tester,
   ) async {
     for (final PlatformPresentationProfile profile

@@ -68,6 +68,8 @@ final class TestTodoDateClock implements TodoDateClock {
   @override
   DateTime now() => current;
 
+  bool get hasActiveListeners => _changes.hasListener;
+
   void moveTo(DateTime value) {
     current = value;
     _changes.add(value);
@@ -97,21 +99,12 @@ TodoPresentationDependencies createTodoPresentationDependencies({
   final TestApplicationClock clock =
       applicationClock ?? TestApplicationClock(DateTime.utc(2026, 6, 2));
   return TodoPresentationDependencies(
-    createTodo: CreateTodo(
+    commands: TodoCommandService(
       repository: repository,
+      clock: clock,
       idGenerator: idGenerator ?? SequenceTodoIdGenerator(),
-      clock: clock,
     ),
-    updateTodo: UpdateTodo(repository: repository, clock: clock),
-    renameTodo: RenameTodo(repository: repository, clock: clock),
-    toggleTodoCompletion: ToggleTodoCompletion(
-      repository: repository,
-      clock: clock,
-    ),
-    reorderTodos: ReorderTodos(repository: repository, clock: clock),
-    deleteTodo: DeleteTodo(repository: repository),
-    listTodosForDate: ListTodosForDate(repository: repository),
-    listMonthSummary: ListMonthSummary(repository: repository),
+    queries: TodoQueryService(repository: repository),
   );
 }
 

@@ -1,10 +1,4 @@
-import 'package:clock_rhythm/contexts/preferences/application/change_language.dart';
-import 'package:clock_rhythm/contexts/preferences/application/change_notification_sound.dart';
-import 'package:clock_rhythm/contexts/preferences/application/change_theme.dart';
-import 'package:clock_rhythm/contexts/preferences/application/change_volume.dart';
-import 'package:clock_rhythm/contexts/preferences/application/complete_initial_setup.dart';
-import 'package:clock_rhythm/contexts/preferences/application/get_preferences.dart';
-import 'package:clock_rhythm/contexts/preferences/application/load_rhythm_settings_draft.dart';
+import 'package:clock_rhythm/contexts/preferences/application/notification_sound_service.dart';
 import 'package:clock_rhythm/contexts/preferences/application/ports/auto_start_port.dart';
 import 'package:clock_rhythm/contexts/preferences/application/ports/draft_store.dart';
 import 'package:clock_rhythm/contexts/preferences/application/ports/notification_sound_file_port.dart';
@@ -12,10 +6,8 @@ import 'package:clock_rhythm/contexts/preferences/application/ports/preferences_
 import 'package:clock_rhythm/contexts/preferences/application/ports/settings_repository.dart';
 import 'package:clock_rhythm/contexts/preferences/application/ports/sound_preview_port.dart';
 import 'package:clock_rhythm/contexts/preferences/application/preferences_command_result.dart';
-import 'package:clock_rhythm/contexts/preferences/application/preview_notification_sound.dart';
-import 'package:clock_rhythm/contexts/preferences/application/save_rhythm_settings.dart';
-import 'package:clock_rhythm/contexts/preferences/application/store_rhythm_settings_draft.dart';
-import 'package:clock_rhythm/contexts/preferences/application/toggle_mute.dart';
+import 'package:clock_rhythm/contexts/preferences/application/preferences_service.dart';
+import 'package:clock_rhythm/contexts/preferences/application/rhythm_settings_service.dart';
 import 'package:clock_rhythm/contexts/preferences/domain/language_preference.dart';
 import 'package:clock_rhythm/contexts/preferences/domain/notification_sound_preference.dart';
 import 'package:clock_rhythm/contexts/preferences/domain/rhythm_settings_draft.dart';
@@ -24,12 +16,10 @@ import 'package:clock_rhythm/contexts/preferences/domain/user_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('GetPreferences returns the persisted durable object', () async {
+  test('preferences service returns the persisted durable object', () async {
     final PreferencesHarness harness = PreferencesHarness();
 
-    final UserPreferences preferences = await GetPreferences(
-      harness.repository,
-    ).execute();
+    final UserPreferences preferences = await harness.preferences.load();
 
     expect(preferences, UserPreferences.defaults());
   });
@@ -42,7 +32,7 @@ void main() {
         harness.repository.current,
       ).changeFocusMinutes(25).changeAutoStart(true);
 
-      final PreferencesCommandResult result = await harness.saveRhythm.execute(
+      final PreferencesCommandResult result = await harness.rhythmSettings.save(
         draft,
       );
 
@@ -74,7 +64,7 @@ void main() {
         harness.repository.current,
       ).changeRestMinutes(12).changeAutoStart(true);
 
-      final PreferencesCommandResult result = await harness.saveRhythm.execute(
+      final PreferencesCommandResult result = await harness.rhythmSettings.save(
         draft,
       );
 
@@ -101,10 +91,8 @@ void main() {
   test('language applies durably before requesting payload refresh', () async {
     final PreferencesHarness harness = PreferencesHarness();
 
-    final PreferencesCommandResult result = await ChangeLanguage(
-      settingsRepository: harness.repository,
-      preferencesChanged: harness.changed,
-    ).execute(LanguagePreference.english);
+    final PreferencesCommandResult result = await harness.preferences
+        .changeLanguage(LanguagePreference.english);
 
     expect(result.preferences.language, LanguagePreference.english);
     expect(harness.calls, <String>[
@@ -117,10 +105,8 @@ void main() {
   test('theme applies durably before requesting the visual effect', () async {
     final PreferencesHarness harness = PreferencesHarness();
 
-    final PreferencesCommandResult result = await ChangeTheme(
-      settingsRepository: harness.repository,
-      preferencesChanged: harness.changed,
-    ).execute(ThemePreference.nord);
+    final PreferencesCommandResult result = await harness.preferences
+        .changeTheme(ThemePreference.nord);
 
     expect(result.preferences.theme, ThemePreference.nord);
     expect(harness.calls, <String>[
@@ -137,16 +123,12 @@ void main() {
       final RhythmSettingsDraft changed = RhythmSettingsDraft.fromPreferences(
         harness.repository.current,
       ).changeFocusMinutes(35);
-      await StoreRhythmSettingsDraft(harness.draftStore).execute(changed);
+      await harness.rhythmSettings.storeDraft(changed);
 
-      final RhythmSettingsDraft loaded = await LoadRhythmSettingsDraft(
-        settingsRepository: harness.repository,
-        draftStore: harness.draftStore,
-      ).execute();
-      final RhythmSettingsDraft discarded = await DiscardRhythmSettingsDraft(
-        settingsRepository: harness.repository,
-        draftStore: harness.draftStore,
-      ).execute();
+      final RhythmSettingsDraft loaded = await harness.rhythmSettings
+          .loadDraft();
+      final RhythmSettingsDraft discarded = await harness.rhythmSettings
+          .discardDraft();
 
       expect(loaded, changed);
       expect(
@@ -159,12 +141,9 @@ void main() {
   test('preview and stop delegate to the current sound owner', () async {
     final PreferencesHarness harness = PreferencesHarness();
 
-    final SoundPreviewPlayback playback = await PreviewNotificationSound(
-      settingsRepository: harness.repository,
-      soundPreview: harness.preview,
-    ).execute();
+    final SoundPreviewPlayback playback = await harness.sound.preview();
     await playback.completed;
-    await StopNotificationSoundPreview(harness.preview).execute();
+    await harness.sound.stopPreview();
 
     expect(harness.calls, <String>[
       'repository.load',
@@ -176,10 +155,8 @@ void main() {
   test('initial setup completion is one explicit durable command', () async {
     final PreferencesHarness harness = PreferencesHarness();
 
-    final PreferencesCommandResult result = await CompleteInitialSetup(
-      settingsRepository: harness.repository,
-      preferencesChanged: harness.changed,
-    ).execute();
+    final PreferencesCommandResult result = await harness.preferences
+        .completeInitialSetup();
 
     expect(result.preferences.initialSetupCompleted, isTrue);
     expect(harness.calls, <String>[
@@ -195,12 +172,8 @@ void main() {
       final PreferencesHarness harness = PreferencesHarness();
       harness.soundFiles.selected = null;
 
-      final PreferencesCommandResult result = await ChangeNotificationSound(
-        settingsRepository: harness.repository,
-        soundFilePort: harness.soundFiles,
-        soundPreview: harness.preview,
-        preferencesChanged: harness.changed,
-      ).chooseCustom();
+      final PreferencesCommandResult result = await harness.sound
+          .chooseCustom();
 
       expect(result.preferences, UserPreferences.defaults());
       expect(harness.calls, <String>[
@@ -218,12 +191,7 @@ void main() {
       privateSource: 'sound-v1/current.mp3',
     );
 
-    final PreferencesCommandResult result = await ChangeNotificationSound(
-      settingsRepository: harness.repository,
-      soundFilePort: harness.soundFiles,
-      soundPreview: harness.preview,
-      preferencesChanged: harness.changed,
-    ).chooseCustom();
+    final PreferencesCommandResult result = await harness.sound.chooseCustom();
 
     expect(
       result.preferences.notificationSound.mode,
@@ -241,7 +209,9 @@ void main() {
   test(
     'Android mute round trip restores bundled sound and keeps notification visible',
     () async {
-      final PreferencesHarness harness = PreferencesHarness();
+      final PreferencesHarness harness = PreferencesHarness(
+        unmuteBehavior: UnmuteSoundBehavior.bundledDefault,
+      );
       harness.repository.current = harness.repository.current
           .changeNotificationSound(
             NotificationSoundPreference.custom(
@@ -249,15 +219,10 @@ void main() {
               privateSource: 'sound-v1/current.mp3',
             ),
           );
-      final ToggleMute toggle = ToggleMute(
-        settingsRepository: harness.repository,
-        soundPreview: harness.preview,
-        preferencesChanged: harness.changed,
-        unmuteBehavior: UnmuteSoundBehavior.bundledDefault,
-      );
+      final NotificationSoundService toggle = harness.sound;
 
-      await toggle.execute();
-      final PreferencesCommandResult unmuted = await toggle.execute();
+      await toggle.toggleMute();
+      final PreferencesCommandResult unmuted = await toggle.toggleMute();
 
       expect(
         unmuted.preferences.notificationSound.mode,
@@ -273,10 +238,7 @@ void main() {
   test('zero volume remains an immediate durable setting, not Mute', () async {
     final PreferencesHarness harness = PreferencesHarness();
 
-    final PreferencesCommandResult result = await ChangeVolume(
-      settingsRepository: harness.repository,
-      preferencesChanged: harness.changed,
-    ).execute(0);
+    final PreferencesCommandResult result = await harness.sound.changeVolume(0);
 
     expect(result.preferences.notificationSound.volume, 0);
     expect(
@@ -288,18 +250,32 @@ void main() {
 }
 
 final class PreferencesHarness {
-  PreferencesHarness() {
+  PreferencesHarness({
+    UnmuteSoundBehavior unmuteBehavior =
+        UnmuteSoundBehavior.restorePreviousSelection,
+  }) {
     repository = FakeSettingsRepository(calls);
     autoStart = FakeAutoStartPort(calls);
     changed = FakePreferencesChangedPort(calls);
     draftStore = FakeDraftStore(calls);
     soundFiles = FakeNotificationSoundFilePort(calls);
     preview = FakeSoundPreviewPort(calls);
-    saveRhythm = SaveRhythmSettings(
+    preferences = PreferencesService(
+      settingsRepository: repository,
+      preferencesChanged: changed,
+    );
+    rhythmSettings = RhythmSettingsService(
       settingsRepository: repository,
       autoStart: autoStart,
       preferencesChanged: changed,
       draftStore: draftStore,
+    );
+    sound = NotificationSoundService(
+      settingsRepository: repository,
+      soundFilePort: soundFiles,
+      soundPreview: preview,
+      preferencesChanged: changed,
+      unmuteBehavior: unmuteBehavior,
     );
   }
 
@@ -310,7 +286,9 @@ final class PreferencesHarness {
   late final FakeDraftStore draftStore;
   late final FakeNotificationSoundFilePort soundFiles;
   late final FakeSoundPreviewPort preview;
-  late final SaveRhythmSettings saveRhythm;
+  late final PreferencesService preferences;
+  late final RhythmSettingsService rhythmSettings;
+  late final NotificationSoundService sound;
 }
 
 final class FakeSettingsRepository implements SettingsRepository {

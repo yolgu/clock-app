@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('PreferencesViewModel', () {
+  group('Preferences state owners', () {
     test(
       'loads the durable preferences and separately restored draft',
       () async {
@@ -15,9 +15,7 @@ void main() {
         final ProviderContainer container = _container(actions);
         addTearDown(container.dispose);
 
-        final PreferencesViewState state = await container.read(
-          preferencesViewModelProvider.future,
-        );
+        final PreferencesViewState state = await _readViewState(container);
 
         expect(state.preferences.rhythmConfiguration.focusDuration.minutes, 50);
         expect(state.draft.rhythmConfiguration.focusDuration.minutes, 25);
@@ -29,15 +27,15 @@ void main() {
       final FakePreferencesActions actions = FakePreferencesActions();
       final ProviderContainer container = _container(actions);
       addTearDown(container.dispose);
-      await container.read(preferencesViewModelProvider.future);
+      await _readViewState(container);
       final RhythmSettingsDraft changed = actions.draft.changeFocusMinutes(40);
 
       await container
-          .read(preferencesViewModelProvider.notifier)
+          .read(rhythmSettingsEditorProvider.notifier)
           .updateDraft(changed);
 
       final PreferencesViewState state = container
-          .read(preferencesViewModelProvider)
+          .read(preferencesViewStateProvider)
           .requireValue;
       expect(actions.calls, contains('storeDraft'));
       expect(actions.preferences.rhythmConfiguration.focusDuration.minutes, 50);
@@ -51,14 +49,14 @@ void main() {
         final FakePreferencesActions actions = FakePreferencesActions();
         final ProviderContainer container = _container(actions);
         addTearDown(container.dispose);
-        await container.read(preferencesViewModelProvider.future);
+        await _readViewState(container);
 
         await container
-            .read(preferencesViewModelProvider.notifier)
+            .read(rhythmSettingsEditorProvider.notifier)
             .saveRhythm();
 
         final PreferencesViewState state = container
-            .read(preferencesViewModelProvider)
+            .read(preferencesViewStateProvider)
             .requireValue;
         expect(state.preferences.initialSetupCompleted, isTrue);
         expect(state.isDirty, isFalse);
@@ -72,19 +70,19 @@ void main() {
         final FakePreferencesActions actions = FakePreferencesActions();
         final ProviderContainer container = _container(actions);
         addTearDown(container.dispose);
-        await container.read(preferencesViewModelProvider.future);
+        await _readViewState(container);
         final RhythmSettingsDraft changed = actions.draft.changeRestMinutes(20);
         await container
-            .read(preferencesViewModelProvider.notifier)
+            .read(rhythmSettingsEditorProvider.notifier)
             .updateDraft(changed);
         actions.failSave = true;
 
         await container
-            .read(preferencesViewModelProvider.notifier)
+            .read(rhythmSettingsEditorProvider.notifier)
             .saveRhythm();
 
         final PreferencesViewState state = container
-            .read(preferencesViewModelProvider)
+            .read(preferencesViewStateProvider)
             .requireValue;
         expect(state.preferences, actions.preferences);
         expect(state.draft, changed);
@@ -97,18 +95,18 @@ void main() {
       final FakePreferencesActions actions = FakePreferencesActions();
       final ProviderContainer container = _container(actions);
       addTearDown(container.dispose);
-      await container.read(preferencesViewModelProvider.future);
+      await _readViewState(container);
       final RhythmSettingsDraft changed = actions.draft.changeRestMinutes(15);
       await container
-          .read(preferencesViewModelProvider.notifier)
+          .read(rhythmSettingsEditorProvider.notifier)
           .updateDraft(changed);
 
       await container
-          .read(preferencesViewModelProvider.notifier)
+          .read(preferencesDataControllerProvider.notifier)
           .changeTheme(ThemePreference.nord);
 
       final PreferencesViewState state = container
-          .read(preferencesViewModelProvider)
+          .read(preferencesViewStateProvider)
           .requireValue;
       expect(state.preferences.theme, ThemePreference.nord);
       expect(state.draft, changed);
@@ -119,14 +117,14 @@ void main() {
       final FakePreferencesActions actions = FakePreferencesActions();
       final ProviderContainer container = _container(actions);
       addTearDown(container.dispose);
-      await container.read(preferencesViewModelProvider.future);
-      final PreferencesViewModel viewModel = container.read(
-        preferencesViewModelProvider.notifier,
+      await _readViewState(container);
+      final SoundPreviewController viewModel = container.read(
+        soundPreviewControllerProvider.notifier,
       );
       await viewModel.previewSound();
       expect(
         container
-            .read(preferencesViewModelProvider)
+            .read(preferencesViewStateProvider)
             .requireValue
             .isSoundPreviewing,
         isTrue,
@@ -136,7 +134,7 @@ void main() {
 
       expect(
         container
-            .read(preferencesViewModelProvider)
+            .read(preferencesViewStateProvider)
             .requireValue
             .isSoundPreviewing,
         isFalse,
@@ -144,11 +142,60 @@ void main() {
       expect(actions.calls, containsAllInOrder(<String>['preview', 'mute']));
     });
 
+    test(
+      'preview failure does not release an in-flight settings change',
+      () async {
+        final FakePreferencesActions actions = FakePreferencesActions();
+        final ProviderContainer container = _container(actions);
+        addTearDown(container.dispose);
+        await _readViewState(container);
+        await container
+            .read(soundPreviewControllerProvider.notifier)
+            .previewSound();
+        actions.themeGate = Completer<void>();
+        final Future<void> change = container
+            .read(preferencesDataControllerProvider.notifier)
+            .changeTheme(ThemePreference.nord);
+        actions.previewCompletion.completeError(StateError('playback failed'));
+        await pumpEventQueue();
+        final PreferencesDataState pending = container
+            .read(preferencesDataControllerProvider)
+            .requireValue;
+        expect(pending.isBusy, isTrue);
+        expect(pending.failure, PreferencesFailure.preview);
+        expect(container.read(soundPreviewControllerProvider), isFalse);
+        actions.themeGate!.complete();
+        await change;
+        expect(
+          container
+              .read(preferencesDataControllerProvider)
+              .requireValue
+              .failure,
+          PreferencesFailure.preview,
+        );
+        expect(
+          container
+              .read(preferencesDataControllerProvider)
+              .requireValue
+              .feedback,
+          PreferencesFeedback.failed,
+        );
+        expect(
+          container
+              .read(preferencesDataControllerProvider)
+              .requireValue
+              .preferences
+              .theme,
+          ThemePreference.nord,
+        );
+      },
+    );
+
     test('reflects asynchronous platform repair state while mounted', () async {
       final FakePreferencesActions actions = FakePreferencesActions();
       final ProviderContainer container = _container(actions);
       addTearDown(container.dispose);
-      await container.read(preferencesViewModelProvider.future);
+      await _readViewState(container);
 
       actions.publishRepairNeeds(const <PreferencesRepairNeed>{
         PreferencesRepairNeed.sound,
@@ -156,7 +203,7 @@ void main() {
       await pumpEventQueue();
 
       expect(
-        container.read(preferencesViewModelProvider).requireValue.repairNeeds,
+        container.read(preferencesViewStateProvider).requireValue.repairNeeds,
         const <PreferencesRepairNeed>{PreferencesRepairNeed.sound},
       );
 
@@ -164,7 +211,7 @@ void main() {
       await pumpEventQueue();
 
       expect(
-        container.read(preferencesViewModelProvider).requireValue.repairNeeds,
+        container.read(preferencesViewStateProvider).requireValue.repairNeeds,
         isEmpty,
       );
     });
@@ -186,6 +233,7 @@ final class FakePreferencesActions implements PreferencesActions {
   UserPreferences preferences;
   RhythmSettingsDraft draft;
   bool failSave = false;
+  Completer<void>? themeGate;
   final List<String> calls = <String>[];
   Completer<void> previewCompletion = Completer<void>();
   final StreamController<Set<PreferencesRepairNeed>> _repairNeeds =
@@ -257,6 +305,7 @@ final class FakePreferencesActions implements PreferencesActions {
   @override
   Future<PreferencesCommandResult> changeTheme(ThemePreference theme) async {
     calls.add('theme');
+    await themeGate?.future;
     preferences = preferences.changeTheme(theme);
     return PreferencesCommandResult(preferences: preferences);
   }
@@ -323,4 +372,10 @@ final class FakePreferencesActions implements PreferencesActions {
     calls.add('repairAutoStart');
     return PreferencesCommandResult(preferences: preferences);
   }
+}
+
+Future<PreferencesViewState> _readViewState(ProviderContainer container) async {
+  await container.read(preferencesDataControllerProvider.future);
+  await container.read(rhythmSettingsEditorProvider.future);
+  return container.read(preferencesViewStateProvider).requireValue;
 }
