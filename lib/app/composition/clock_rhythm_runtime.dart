@@ -520,6 +520,7 @@ final class ClockRhythmRuntime {
         clock: clock,
       ),
       updateTodo: todo.UpdateTodo(repository: repository, clock: clock),
+      renameTodo: todo.RenameTodo(repository: repository, clock: clock),
       toggleTodoCompletion: todo.ToggleTodoCompletion(
         repository: repository,
         clock: clock,

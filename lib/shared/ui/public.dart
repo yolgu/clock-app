@@ -14,3 +14,4 @@ export 'focus_ring.dart' show FocusRing;
 export 'minimum_tap_target.dart' show MinimumTapTarget;
 export 'page_header.dart' show ClockRhythmPageHeader;
 export 'semantic_status_announcement.dart' show SemanticStatusAnnouncement;
+export 'stable_content_slot.dart' show StableContentSlot;

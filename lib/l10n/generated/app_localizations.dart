@@ -746,6 +746,30 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get todoActionEdit;
 
+  /// No description provided for @todoActionDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Todo details'**
+  String get todoActionDetails;
+
+  /// No description provided for @todoInlineEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit title. Enter saves; Escape cancels.'**
+  String get todoInlineEditHint;
+
+  /// No description provided for @rhythmSettingsSummaryClean.
+  ///
+  /// In en, this message translates to:
+  /// **'No unsaved changes'**
+  String get rhythmSettingsSummaryClean;
+
+  /// No description provided for @rhythmSettingsSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving settings…'**
+  String get rhythmSettingsSaving;
+
   /// No description provided for @todoActionDelete.
   ///
   /// In en, this message translates to:

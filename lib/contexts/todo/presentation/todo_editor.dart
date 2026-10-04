@@ -6,24 +6,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart'
     show AppLocalizations, ClockTimeFormatter, LocalDateFormatter;
-import '../../../shared/ui/public.dart' show ClockRhythmSpace;
+import '../../../shared/ui/public.dart'
+    show ClockRhythmSpace, StableContentSlot;
 import '../domain/local_calendar_date.dart';
 import '../domain/todo.dart';
 import '../domain/todo_time.dart';
 import '../domain/todo_title.dart';
 import 'todo_date_math.dart';
 import 'todo_providers.dart';
+import 'todo_title_feedback.dart';
 import 'todo_view_model.dart';
 
 enum _TodoEditorVariant { today, selectedDate, edit }
 
 final class TodoEditor extends ConsumerStatefulWidget {
-  const TodoEditor.today({required this.date, super.key})
+  const TodoEditor.today({required this.date, this.focusNode, super.key})
     : todo = null,
       onFinished = null,
       _variant = _TodoEditorVariant.today;
 
-  const TodoEditor.forDate({required this.date, super.key})
+  const TodoEditor.forDate({required this.date, this.focusNode, super.key})
     : todo = null,
       onFinished = null,
       _variant = _TodoEditorVariant.selectedDate;
@@ -31,6 +33,7 @@ final class TodoEditor extends ConsumerStatefulWidget {
   TodoEditor.edit({
     required TodoSnapshot todo,
     required this.onFinished,
+    this.focusNode,
     super.key,
   }) : todo = todo,
        date = LocalCalendarDate.parse(todo.date),
@@ -39,6 +42,7 @@ final class TodoEditor extends ConsumerStatefulWidget {
   final LocalCalendarDate date;
   final TodoSnapshot? todo;
   final VoidCallback? onFinished;
+  final FocusNode? focusNode;
   final _TodoEditorVariant _variant;
 
   @override
@@ -47,6 +51,10 @@ final class TodoEditor extends ConsumerStatefulWidget {
 
 final class _TodoEditorState extends ConsumerState<TodoEditor> {
   late final TextEditingController _titleController;
+  final FocusNode _ownedFocusNode = FocusNode(debugLabel: 'Todo title');
+  FocusNode get _titleFocusNode => widget.focusNode ?? _ownedFocusNode;
+  FocusNode? _submissionFocus;
+  bool _focusMovedDuringSubmission = false;
   late LocalCalendarDate _date;
   String? _time;
   bool _hasInteractedWithTitle = false;
@@ -78,6 +86,8 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
 
   @override
   void dispose() {
+    FocusManager.instance.removeListener(_trackSubmissionFocus);
+    _ownedFocusNode.dispose();
     _titleController.dispose();
     super.dispose();
   }
@@ -89,7 +99,7 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
       todoViewModelProvider,
     );
     final bool commandInFlight = asyncState.value?.isMutating ?? false;
-    final _TitleFeedback feedback = _titleFeedback(localizations);
+    final TodoTitleFeedback feedback = _titleFeedback(localizations);
     final String titleLabel = switch (widget._variant) {
       _TodoEditorVariant.today => localizations.todoTodayInputLabel,
       _TodoEditorVariant.selectedDate => localizations.todoTodayPlaceholder,
@@ -120,11 +130,57 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
       if (_isEditing)
         OutlinedButton.icon(
           key: const ValueKey<String>('todo-cancel'),
-          onPressed: commandInFlight ? null : widget.onFinished,
+          onPressed: commandInFlight || _isSubmitting
+              ? null
+              : widget.onFinished,
           icon: const Icon(Icons.close),
           label: Text(localizations.todoActionCancel),
         ),
     ];
+    final Widget field = TextField(
+      key: ValueKey<String>(
+        _isEditing ? 'todo-edit-title' : 'todo-create-title',
+      ),
+      controller: _titleController,
+      focusNode: _titleFocusNode,
+      autofocus: _isEditing,
+      enabled: !commandInFlight || _isSubmitting,
+      readOnly: _isSubmitting,
+      maxLines: 1,
+      textInputAction: TextInputAction.done,
+      decoration: InputDecoration(
+        labelText: titleLabel,
+        hintText: localizations.todoTodayPlaceholder,
+        errorText: _hasInteractedWithTitle ? feedback.error : null,
+      ),
+      onChanged: (String value) {
+        setState(() {
+          _hasInteractedWithTitle = true;
+        });
+      },
+      onEditingComplete: () {},
+      onSubmitted: (String value) {
+        if (feedback.isValid && !commandInFlight && !_isComposing) {
+          unawaited(_submit());
+        }
+      },
+    );
+    final Widget? counter = feedback.shouldShowCounter
+        ? Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Padding(
+              padding: const EdgeInsets.only(top: ClockRhythmSpace.space4),
+              child: Text(
+                localizations.todoValidationTitleCounter(
+                  feedback.graphemeCount,
+                  TodoTitle.maximumGraphemeLength,
+                ),
+                key: const ValueKey<String>('todo-title-counter'),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          )
+        : null;
 
     return Focus(
       onKeyEvent: (FocusNode node, KeyEvent event) {
@@ -133,93 +189,27 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
             event.logicalKey != LogicalKeyboardKey.escape) {
           return KeyEventResult.ignored;
         }
-        widget.onFinished?.call();
+        if (!commandInFlight && !_isSubmitting) {
+          widget.onFinished?.call();
+        }
         return KeyEventResult.handled;
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: ClockRhythmSpace.space8),
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            final bool inline =
-                !_isEditing &&
-                constraints.maxWidth >= 460 &&
-                MediaQuery.textScalerOf(context).scale(16) <= 20;
-            final Widget field = TextField(
-              key: ValueKey<String>(
-                _isEditing ? 'todo-edit-title' : 'todo-create-title',
-              ),
-              controller: _titleController,
-              enabled: !commandInFlight && !_isSubmitting,
-              maxLines: 1,
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                labelText: titleLabel,
-                hintText: localizations.todoTodayPlaceholder,
-                errorText: _hasInteractedWithTitle ? feedback.error : null,
-              ),
-              onChanged: (String value) {
-                setState(() {
-                  _hasInteractedWithTitle = true;
-                });
-              },
-              onSubmitted: (String value) {
-                if (feedback.isValid && !commandInFlight) {
-                  unawaited(_submit());
-                }
-              },
-            );
-            final Widget? counter = feedback.shouldShowCounter
-                ? Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        top: ClockRhythmSpace.space4,
-                      ),
-                      child: Text(
-                        localizations.todoValidationTitleCounter(
-                          feedback.graphemeCount,
-                          TodoTitle.maximumGraphemeLength,
-                        ),
-                        key: const ValueKey<String>('todo-title-counter'),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  )
-                : null;
-            if (inline) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Expanded(child: field),
-                      for (final Widget control in controls) ...<Widget>[
-                        const SizedBox(width: ClockRhythmSpace.space8),
-                        SizedBox(height: 48, child: control),
-                      ],
-                    ],
-                  ),
-                  ?counter,
-                ],
-              );
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                field,
-                ?counter,
-                const SizedBox(height: ClockRhythmSpace.space8),
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: ClockRhythmSpace.space8,
-                  runSpacing: ClockRhythmSpace.space8,
-                  children: controls,
-                ),
-              ],
-            );
-          },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            field,
+            ?counter,
+            const SizedBox(height: ClockRhythmSpace.space8),
+            Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: ClockRhythmSpace.space8,
+              runSpacing: ClockRhythmSpace.space8,
+              children: controls,
+            ),
+          ],
         ),
       ),
     );
@@ -265,106 +255,97 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
 
   Widget _buildTimeControl(AppLocalizations localizations, bool enabled) {
     final String? currentTime = _time;
-    if (currentTime == null) {
-      return OutlinedButton.icon(
-        key: const ValueKey<String>('todo-add-time'),
-        onPressed: enabled
-            ? () {
-                unawaited(_selectTime());
-              }
-            : null,
-        icon: const Icon(Icons.schedule_outlined),
-        label: Text(localizations.todoActionAddTime),
-      );
-    }
     final String semanticLabel = <String>[
       localizations.todoListEditTime,
-      currentTime,
+      currentTime ?? localizations.todoActionAddTime,
     ].join(', ');
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Semantics(
-          label: semanticLabel,
-          button: true,
-          enabled: enabled,
-          onTap: enabled
-              ? () {
-                  unawaited(_selectTime());
-                }
-              : null,
-          excludeSemantics: true,
-          child: OutlinedButton.icon(
-            key: const ValueKey<String>('todo-edit-time'),
-            onPressed: enabled
-                ? () {
-                    unawaited(_selectTime());
-                  }
-                : null,
-            icon: const Icon(Icons.schedule),
-            label: Text(currentTime),
+    return IntrinsicWidth(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Visibility(
+            visible: currentTime != null,
+            maintainState: true,
+            maintainAnimation: true,
+            maintainSize: true,
+            child: IconButton(
+              key: const ValueKey<String>('todo-clear-time'),
+              onPressed: enabled
+                  ? () {
+                      setState(() {
+                        _time = null;
+                      });
+                    }
+                  : null,
+              tooltip: localizations.timePickerClear,
+              icon: const Icon(Icons.clear),
+            ),
           ),
-        ),
-        IconButton(
-          key: const ValueKey<String>('todo-clear-time'),
-          onPressed: enabled
-              ? () {
-                  setState(() {
-                    _time = null;
-                  });
-                }
-              : null,
-          tooltip: localizations.timePickerClear,
-          icon: const Icon(Icons.clear),
-        ),
-      ],
+          Flexible(
+            child: Semantics(
+              label: semanticLabel,
+              button: true,
+              enabled: enabled,
+              onTap: enabled
+                  ? () {
+                      unawaited(_selectTime());
+                    }
+                  : null,
+              excludeSemantics: true,
+              child: OutlinedButton.icon(
+                key: ValueKey<String>(
+                  currentTime == null ? 'todo-add-time' : 'todo-edit-time',
+                ),
+                onPressed: enabled
+                    ? () {
+                        unawaited(_selectTime());
+                      }
+                    : null,
+                icon: const Icon(Icons.schedule),
+                label: StableContentSlot(
+                  labels: <String>[
+                    localizations.todoActionAddTime,
+                    const ClockTimeFormatter().formatComponents(
+                      hour: 23,
+                      minute: 59,
+                    ),
+                  ],
+                  alignment: Alignment.center,
+                  child: Text(currentTime ?? localizations.todoActionAddTime),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  _TitleFeedback _titleFeedback(AppLocalizations localizations) {
-    final String normalized = _titleController.text.trim();
-    final int graphemeCount = normalized.characters.length;
-    if (normalized.isEmpty) {
-      return _TitleFeedback(
-        error: localizations.todoValidationTitleRequired,
-        graphemeCount: graphemeCount,
-        isValid: false,
-      );
-    }
-    if (graphemeCount > TodoTitle.maximumGraphemeLength) {
-      return _TitleFeedback(
-        error: localizations.todoValidationTitleTooLong(
-          TodoTitle.maximumGraphemeLength,
-        ),
-        graphemeCount: graphemeCount,
-        isValid: false,
-      );
-    }
-    try {
-      TodoTitle.parse(_titleController.text);
-    } on ArgumentError {
-      return _TitleFeedback(
-        error: localizations.failureTodoAction,
-        graphemeCount: graphemeCount,
-        isValid: false,
-      );
-    }
-    return _TitleFeedback(graphemeCount: graphemeCount, isValid: true);
+  TodoTitleFeedback _titleFeedback(AppLocalizations localizations) {
+    return TodoTitleFeedback.evaluate(_titleController.text, localizations);
   }
+
+  bool get _isComposing =>
+      _titleController.value.composing.isValid &&
+      !_titleController.value.composing.isCollapsed;
 
   Future<void> _submit() async {
     final AppLocalizations localizations = AppLocalizations.of(context);
-    final _TitleFeedback feedback = _titleFeedback(localizations);
+    final TodoTitleFeedback feedback = _titleFeedback(localizations);
     setState(() {
       _hasInteractedWithTitle = true;
     });
-    if (!feedback.isValid || _isSubmitting) {
+    if (!feedback.isValid || _isSubmitting || _isComposing) {
       return;
     }
     TodoTime.optional(_time);
     setState(() {
       _isSubmitting = true;
     });
+    final LocalCalendarDate submittedDate = widget.date;
+    _submissionFocus = FocusManager.instance.primaryFocus;
+    _focusMovedDuringSubmission = false;
+    FocusManager.instance.addListener(_trackSubmissionFocus);
     final TodoViewModel viewModel = ref.read(todoViewModelProvider.notifier);
     final TodoSnapshot? todo = widget.todo;
     final bool succeeded = todo == null
@@ -391,7 +372,30 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
       }
     });
     if (succeeded && todo != null) {
+      FocusManager.instance.removeListener(_trackSubmissionFocus);
       widget.onFinished?.call();
+    } else if (succeeded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FocusManager.instance.removeListener(_trackSubmissionFocus);
+        if (mounted &&
+            widget.date == submittedDate &&
+            TickerMode.valuesOf(context).enabled &&
+            !_focusMovedDuringSubmission) {
+          _titleFocusNode.requestFocus();
+        }
+      });
+    } else {
+      FocusManager.instance.removeListener(_trackSubmissionFocus);
+    }
+  }
+
+  void _trackSubmissionFocus() {
+    final FocusNode? focused = FocusManager.instance.primaryFocus;
+    if (focused != null &&
+        focused is! FocusScopeNode &&
+        focused != _submissionFocus &&
+        focused != _titleFocusNode) {
+      _focusMovedDuringSubmission = true;
     }
   }
 
@@ -442,18 +446,4 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
       );
     });
   }
-}
-
-final class _TitleFeedback {
-  const _TitleFeedback({
-    required this.graphemeCount,
-    required this.isValid,
-    this.error,
-  });
-
-  final String? error;
-  final int graphemeCount;
-  final bool isValid;
-
-  bool get shouldShowCounter => graphemeCount >= TodoTitle.counterThreshold;
 }

@@ -243,7 +243,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey<String>('todo-edit-todo-1')));
-      await tester.pump();
+      await tester.pumpAndSettle();
       final Finder title = find.byKey(
         const ValueKey<String>('todo-edit-title'),
       );
@@ -253,16 +253,20 @@ void main() {
       expect(cancel, findsOneWidget);
 
       await tester.enterText(title, 'Discarded');
-      await tester.tap(cancel);
       await tester.pump();
+      await tester.ensureVisible(cancel);
+      await tester.tap(cancel);
+      await tester.pumpAndSettle();
       expect(repository.todos.single.title.text, 'Before');
       expect(repository.mutateCalls, 0);
 
       await tester.tap(find.byKey(const ValueKey<String>('todo-edit-todo-1')));
-      await tester.pump();
+      await tester.pumpAndSettle();
       await tester.enterText(title, 'After');
       final int mutationsBeforeSave = repository.mutateCalls;
 
+      await tester.pump();
+      await tester.ensureVisible(save);
       await tester.tap(save);
       await tester.pumpAndSettle();
 
@@ -290,14 +294,14 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey<String>('todo-edit-todo-1')));
-    await tester.pump();
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const ValueKey<String>('todo-edit-title')),
       'Cancelled',
     );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey<String>('todo-edit-title')), findsNothing);
     expect(repository.todos.single.title.text, 'Before');
@@ -319,6 +323,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final Rect timeBefore = tester.getRect(
+      find.byKey(const ValueKey<String>('todo-add-time')),
+    );
+    final Rect addBefore = tester.getRect(
+      find.byKey(const ValueKey<String>('todo-add')),
+    );
     await tester.tap(find.byKey(const ValueKey<String>('todo-add-time')));
     await tester.pumpAndSettle();
     final Finder picker = find.byType(TimePickerDialog);
@@ -331,6 +341,11 @@ void main() {
       const ValueKey<String>('todo-edit-time'),
     );
     expect(editTime, findsOneWidget);
+    expect(tester.getRect(editTime), timeBefore);
+    expect(
+      tester.getRect(find.byKey(const ValueKey<String>('todo-add'))),
+      addBefore,
+    );
     expect(
       find.byWidgetPredicate(
         (Widget widget) =>
@@ -343,6 +358,14 @@ void main() {
     await tester.tap(find.byKey(const ValueKey<String>('todo-clear-time')));
     await tester.pump();
     expect(find.byKey(const ValueKey<String>('todo-add-time')), findsOneWidget);
+    expect(
+      tester.getRect(find.byKey(const ValueKey<String>('todo-add-time'))),
+      timeBefore,
+    );
+    expect(
+      tester.getRect(find.byKey(const ValueKey<String>('todo-add'))),
+      addBefore,
+    );
   });
 
   testWidgets('LB-025 normalizes picker time when adding and editing a Todo', (
@@ -371,7 +394,7 @@ void main() {
 
     expect(repository.todos.single.time?.text, '14:30');
     await tester.tap(find.byKey(const ValueKey<String>('todo-edit-created-1')));
-    await tester.pump();
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey<String>('todo-edit-time')));
     await _enterPickerTime(tester, hour: '9', minute: '05');
     await tester.tap(find.byKey(const ValueKey<String>('todo-save')));
@@ -436,7 +459,7 @@ void main() {
       await tester.pumpAndSettle();
       final Finder reorderB = find.bySemanticsLabel('Reorder B');
       final SemanticsData reorderData = tester
-          .getSemantics(find.text('B'))
+          .getSemantics(find.byKey(const ValueKey<String>('b')))
           .getSemanticsData();
       final List<String?> actionLabels = reorderData.customSemanticsActionIds!
           .map(

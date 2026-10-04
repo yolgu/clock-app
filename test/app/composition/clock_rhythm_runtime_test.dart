@@ -60,10 +60,12 @@ void main() {
       findsOneWidget,
     );
     final ScrollableState clockScroll = tester.state<ScrollableState>(
-      find.descendant(
-        of: find.byKey(const PageStorageKey<String>('clock-page-scroll')),
-        matching: find.byType(Scrollable),
-      ).first,
+      find
+          .descendant(
+            of: find.byKey(const PageStorageKey<String>('clock-page-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
     expect(clockScroll.position.pixels, 0, reason: 'opens at the clock face');
     expect(

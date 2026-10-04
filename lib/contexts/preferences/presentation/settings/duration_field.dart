@@ -48,6 +48,7 @@ final class DurationField extends StatelessWidget {
             key: ValueKey<String>('duration-$label'),
             controller: controller,
             enabled: enabled,
+            textAlign: TextAlign.center,
             keyboardType: TextInputType.number,
             inputFormatters: <TextInputFormatter>[
               FilteringTextInputFormatter.digitsOnly,

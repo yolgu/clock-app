@@ -7,8 +7,7 @@ import '../../../../shared/ui/public.dart'
         ClockRhythmCard,
         ClockRhythmLayout,
         ClockRhythmRadius,
-        ClockRhythmSpace,
-        SemanticStatusAnnouncement;
+        ClockRhythmSpace;
 import '../../../rhythm/public_model.dart';
 import '../../application/preferences_command_result.dart';
 import '../../domain/language_preference.dart';
@@ -361,24 +360,6 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                   ),
                 ],
               ),
-              if (state.feedback == PreferencesFeedback.saved)
-                SemanticStatusAnnouncement(
-                  message: copy.announcementPreferencesSaved,
-                  child: Text(
-                    copy.messagePreferencesSaved,
-                    key: const ValueKey<String>('preferences-saved-feedback'),
-                  ),
-                ),
-              if (state.failure == PreferencesFailure.rhythmSave ||
-                  state.failure == PreferencesFailure.draftStore ||
-                  state.failure == PreferencesFailure.language)
-                SemanticStatusAnnouncement(
-                  message: copy.failurePreferencesSave,
-                  child: Text(
-                    copy.failurePreferencesSave,
-                    key: const ValueKey<String>('preferences-failed-feedback'),
-                  ),
-                ),
               if (state.repairNeeds.contains(PreferencesRepairNeed.draft))
                 ListTile(
                   key: const ValueKey<String>('draft-reset-repair'),

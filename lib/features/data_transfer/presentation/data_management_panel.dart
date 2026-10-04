@@ -119,7 +119,10 @@ final class DataManagementPanel extends ConsumerWidget {
                 ),
               ],
             ),
-            if (state.isBusy) const LinearProgressIndicator(),
+            SizedBox(
+              height: ClockRhythmSpace.space4,
+              child: state.isBusy ? const LinearProgressIndicator() : null,
+            ),
             if (state.success == DataTransferSuccess.exported)
               SemanticStatusAnnouncement(
                 message: copy.messageBackupExported,

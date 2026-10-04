@@ -9,52 +9,73 @@ import '../../../shared/ui/public.dart'
 import '../domain/completion_group.dart';
 import '../domain/local_calendar_date.dart';
 import '../domain/todo.dart';
+import 'todo_inline_edit_session.dart';
 import 'todo_providers.dart';
 import 'todo_row.dart';
+import 'todo_status_message.dart';
 import 'todo_view_model.dart';
 
 final class TodoListPanel extends ConsumerStatefulWidget {
-  TodoListPanel({required Iterable<TodoSnapshot> todos, super.key})
-    : todos = List<TodoSnapshot>.unmodifiable(todos);
+  TodoListPanel({
+    required Iterable<TodoSnapshot> todos,
+    this.onEditedRowRemoved,
+    super.key,
+  }) : todos = List<TodoSnapshot>.unmodifiable(todos);
 
   final List<TodoSnapshot> todos;
+  final VoidCallback? onEditedRowRemoved;
 
   @override
   ConsumerState<TodoListPanel> createState() => _TodoListPanelState();
 }
 
 final class _TodoListPanelState extends ConsumerState<TodoListPanel> {
-  String? _editingTodoId;
+  late final TodoInlineEditSession _editSession = TodoInlineEditSession(
+    rename: (String id, String title) => ref
+        .read(todoViewModelProvider.notifier)
+        .renameTodo(id: id, title: title),
+  );
 
   @override
   void didUpdateWidget(covariant TodoListPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final String? editingTodoId = _editingTodoId;
+    final String? editingTodoId = _editSession.todoId;
     if (editingTodoId != null &&
         !widget.todos.any((TodoSnapshot todo) => todo.id == editingTodoId)) {
-      _editingTodoId = null;
+      _editSession.cancel();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations localizations = AppLocalizations.of(context);
-    if (widget.todos.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: ClockRhythmSpace.space20),
-        child: Text(
-          localizations.todoListEmpty,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
+    final Widget content = ListenableBuilder(
+      listenable: _editSession,
+      builder: (BuildContext context, Widget? child) => _buildList(context),
+    );
+    if (Router.maybeOf(context)?.backButtonDispatcher == null) {
+      return content;
     }
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        if (!TickerMode.valuesOf(context).enabled ||
+            _editSession.todoId == null ||
+            ModalRoute.of(context)?.isCurrent == false) {
+          return false;
+        }
+        _editSession.cancel();
+        return true;
+      },
+      child: content,
+    );
+  }
+
+  Widget _buildList(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context);
     final AsyncValue<TodoViewState> asyncState = ref.watch(
       todoViewModelProvider,
     );
-    final bool enabled = !(asyncState.value?.isMutating ?? true);
+    final bool enabled =
+        !(asyncState.value?.isMutating ?? true) || _editSession.isSaving;
     final List<TodoSnapshot> incomplete = widget.todos
         .where((TodoSnapshot todo) => !todo.completed)
         .toList(growable: false);
@@ -64,14 +85,31 @@ final class _TodoListPanelState extends ConsumerState<TodoListPanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
+        TodoStatusMessage(
+          message: asyncState.value?.message,
+          messageSerial: asyncState.value?.messageSerial ?? 0,
+          validationError: _editSession.error,
+        ),
+        if (widget.todos.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: ClockRhythmSpace.space20,
+            ),
+            child: Text(
+              localizations.todoListEmpty,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
         if (incomplete.isNotEmpty)
           _TodoGroupList(
             group: CompletionGroup.incomplete,
             todos: incomplete,
             enabled: enabled,
-            editingTodoId: _editingTodoId,
-            onStartEditing: _startEditing,
-            onFinishEditing: _finishEditing,
+            editSession: _editSession,
+            onEditedRowRemoved: widget.onEditedRowRemoved,
           ),
         if (incomplete.isNotEmpty && completed.isNotEmpty)
           const SizedBox(height: ClockRhythmSpace.space16),
@@ -80,24 +118,17 @@ final class _TodoListPanelState extends ConsumerState<TodoListPanel> {
             group: CompletionGroup.completed,
             todos: completed,
             enabled: enabled,
-            editingTodoId: _editingTodoId,
-            onStartEditing: _startEditing,
-            onFinishEditing: _finishEditing,
+            editSession: _editSession,
+            onEditedRowRemoved: widget.onEditedRowRemoved,
           ),
       ],
     );
   }
 
-  void _startEditing(String id) {
-    setState(() {
-      _editingTodoId = id;
-    });
-  }
-
-  void _finishEditing() {
-    setState(() {
-      _editingTodoId = null;
-    });
+  @override
+  void dispose() {
+    _editSession.dispose();
+    super.dispose();
   }
 }
 
@@ -106,17 +137,15 @@ final class _TodoGroupList extends ConsumerWidget {
     required this.group,
     required this.todos,
     required this.enabled,
-    required this.editingTodoId,
-    required this.onStartEditing,
-    required this.onFinishEditing,
+    required this.editSession,
+    this.onEditedRowRemoved,
   });
 
   final CompletionGroup group;
   final List<TodoSnapshot> todos;
   final bool enabled;
-  final String? editingTodoId;
-  final void Function(String id) onStartEditing;
-  final VoidCallback onFinishEditing;
+  final TodoInlineEditSession editSession;
+  final VoidCallback? onEditedRowRemoved;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -198,20 +227,35 @@ final class _TodoGroupList extends ConsumerWidget {
                 reorderIndex: index,
                 groupPosition: index,
                 groupLength: todos.length,
-                isEditing: editingTodoId == todo.id,
+                editSession: editSession,
                 enabled: enabled,
-                onToggle: () => viewModel.toggleTodo(todo),
-                onDelete: () => viewModel.deleteTodo(todo),
-                onStartEditing: () => onStartEditing(todo.id),
-                onFinishEditing: onFinishEditing,
-                onMoveUp: () => viewModel.moveTodoUp(todo),
-                onMoveDown: () => viewModel.moveTodoDown(todo),
+                onToggle: () =>
+                    _afterTitleSaved(context, () => viewModel.toggleTodo(todo)),
+                onDelete: () =>
+                    _afterTitleSaved(context, () => viewModel.deleteTodo(todo)),
+                onRowRemoved: onEditedRowRemoved,
+                onMoveUp: () =>
+                    _afterTitleSaved(context, () => viewModel.moveTodoUp(todo)),
+                onMoveDown: () => _afterTitleSaved(
+                  context,
+                  () => viewModel.moveTodoDown(todo),
+                ),
               ),
             );
           },
         ),
       ],
     );
+  }
+
+  Future<bool> _afterTitleSaved(
+    BuildContext context,
+    Future<bool> Function() action,
+  ) async {
+    if (!await editSession.commit(AppLocalizations.of(context))) {
+      return false;
+    }
+    return action();
   }
 
   void _reorder(WidgetRef ref, int oldIndex, int newIndex) {

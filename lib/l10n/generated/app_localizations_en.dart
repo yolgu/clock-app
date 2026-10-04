@@ -366,6 +366,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoActionEdit => 'Edit';
 
   @override
+  String get todoActionDetails => 'Edit Todo details';
+
+  @override
+  String get todoInlineEditHint => 'Edit title. Enter saves; Escape cancels.';
+
+  @override
+  String get rhythmSettingsSummaryClean => 'No unsaved changes';
+
+  @override
+  String get rhythmSettingsSaving => 'Saving settings…';
+
+  @override
   String get todoActionDelete => 'Delete';
 
   @override

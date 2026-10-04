@@ -62,10 +62,24 @@ final class TodayTodoPanel extends ConsumerWidget {
   }
 }
 
-final class _TodayTodoContent extends StatelessWidget {
+final class _TodayTodoContent extends StatefulWidget {
   const _TodayTodoContent({required this.state});
 
   final TodoViewState state;
+
+  @override
+  State<_TodayTodoContent> createState() => _TodayTodoContentState();
+}
+
+final class _TodayTodoContentState extends State<_TodayTodoContent> {
+  final FocusNode _composerFocus = FocusNode(debugLabel: 'Today composer');
+  TodoViewState get state => widget.state;
+
+  @override
+  void dispose() {
+    _composerFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,14 +103,16 @@ final class _TodayTodoContent extends StatelessWidget {
         TodoEditor.today(
           key: const ValueKey<String>('today-todo-editor'),
           date: state.todayDate,
-        ),
-        TodoStatusMessage(
-          message: state.message,
-          messageSerial: state.messageSerial,
+          focusNode: _composerFocus,
         ),
         TodoListPanel(
           key: const ValueKey<String>('today-todo-list'),
           todos: state.todayTodos,
+          onEditedRowRemoved: () {
+            if (mounted && TickerMode.valuesOf(context).enabled) {
+              _composerFocus.requestFocus();
+            }
+          },
         ),
       ],
     );

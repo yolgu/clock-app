@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../application/create_todo.dart';
+import '../application/rename_todo.dart';
 import '../application/reorder_todos.dart';
 import '../application/update_todo.dart';
 import '../domain/completion_group.dart';
@@ -167,6 +168,15 @@ final class TodoViewModel extends AsyncNotifier<TodoViewState> {
         CreateTodoCommand(title: title, date: date.text, time: time),
       );
       return TodoUiMessage.added;
+    });
+  }
+
+  Future<bool> renameTodo({required String id, required String title}) {
+    return _runMutation((TodoViewState current) async {
+      await _dependencies.renameTodo.execute(
+        RenameTodoCommand(id: id, title: title),
+      );
+      return TodoUiMessage.updated;
     });
   }
 

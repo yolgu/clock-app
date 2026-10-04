@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/i18n/public.dart';
+import '../../../../shared/ui/public.dart'
+    show StableContentSlot, SemanticStatusAnnouncement;
 import '../../application/preview_rhythm_settings.dart';
 import '../../domain/notification_sound_preference.dart';
 import '../preferences_view_state.dart';
@@ -43,13 +45,30 @@ final class RhythmSettingsSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            copy.rhythmSettingsSummary(
-              state.draft.rhythmConfiguration.focusDuration.minutes,
-              state.draft.rhythmConfiguration.restDuration.minutes,
-              state.draft.rhythmConfiguration.dailyRhythm.start.text,
-              state.draft.rhythmConfiguration.dailyRhythm.end.text,
-              soundSummary,
+          StableContentSlot(
+            labels: <String>[
+              for (final String soundLabel in <String>[
+                copy.soundDefaultLabel,
+                copy.rhythmSettingsSummaryMuted,
+                copy.rhythmSettingsSummaryZeroVolume,
+                sound.customFileName ?? copy.soundCustomFallback,
+              ])
+                copy.rhythmSettingsSummary(
+                  state.draft.rhythmConfiguration.focusDuration.minutes,
+                  state.draft.rhythmConfiguration.restDuration.minutes,
+                  state.draft.rhythmConfiguration.dailyRhythm.start.text,
+                  state.draft.rhythmConfiguration.dailyRhythm.end.text,
+                  soundLabel,
+                ),
+            ],
+            child: Text(
+              copy.rhythmSettingsSummary(
+                state.draft.rhythmConfiguration.focusDuration.minutes,
+                state.draft.rhythmConfiguration.restDuration.minutes,
+                state.draft.rhythmConfiguration.dailyRhythm.start.text,
+                state.draft.rhythmConfiguration.dailyRhythm.end.text,
+                soundSummary,
+              ),
             ),
           ),
           if (preview case final RhythmSettingsPreview value)
@@ -68,22 +87,88 @@ final class RhythmSettingsSummary extends StatelessWidget {
                 'rhythm-settings-next-event-unavailable',
               ),
             ),
-          if (preview?.isOutsideDailyRhythm ?? false)
-            Text(
-              copy.rhythmSettingsSummaryOutsideDailyRhythm,
-              key: const ValueKey<String>('rhythm-summary-outside-window'),
-            ),
-          if (state.isDirty)
-            Text(
-              copy.rhythmSettingsSummaryDirty,
-              key: const ValueKey<String>('rhythm-summary-dirty'),
-            ),
-          if (hasInvalidInput)
-            Text(
-              copy.rhythmSettingsSummaryInvalid,
-              key: const ValueKey<String>('rhythm-summary-invalid'),
-            ),
+          StableContentSlot(
+            labels: <String>[copy.rhythmSettingsSummaryOutsideDailyRhythm],
+            child: (preview?.isOutsideDailyRhythm ?? false)
+                ? Text(
+                    copy.rhythmSettingsSummaryOutsideDailyRhythm,
+                    key: const ValueKey<String>(
+                      'rhythm-summary-outside-window',
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          _buildSaveStatus(context, copy),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSaveStatus(BuildContext context, AppLocalizations copy) {
+    final bool failed =
+        state.failure == PreferencesFailure.rhythmSave ||
+        state.failure == PreferencesFailure.draftStore ||
+        state.failure == PreferencesFailure.language;
+    final bool saving = state.operation == PreferencesOperation.savingRhythm;
+    final String message = failed
+        ? copy.failurePreferencesSave
+        : hasInvalidInput
+        ? <String>[
+            if (state.isDirty) copy.rhythmSettingsSummaryDirty,
+            copy.rhythmSettingsSummaryInvalid,
+          ].join('\n')
+        : saving
+        ? copy.rhythmSettingsSaving
+        : state.isDirty
+        ? copy.rhythmSettingsSummaryDirty
+        : state.feedback == PreferencesFeedback.saved
+        ? copy.messagePreferencesSaved
+        : copy.rhythmSettingsSummaryClean;
+    return StableContentSlot(
+      labels: <String>[
+        copy.rhythmSettingsSummaryClean,
+        copy.rhythmSettingsSaving,
+        copy.messagePreferencesSaved,
+        copy.failurePreferencesSave,
+        <String>[
+          copy.rhythmSettingsSummaryDirty,
+          copy.rhythmSettingsSummaryInvalid,
+        ].join('\n'),
+      ],
+      child: SemanticStatusAnnouncement(
+        message: message,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            if (hasInvalidInput && !failed) ...<Widget>[
+              if (state.isDirty)
+                Text(
+                  copy.rhythmSettingsSummaryDirty,
+                  key: const ValueKey<String>('rhythm-summary-dirty'),
+                ),
+              Text(
+                copy.rhythmSettingsSummaryInvalid,
+                key: const ValueKey<String>('rhythm-summary-invalid'),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ] else
+              Text(
+                message,
+                key: ValueKey<String>(
+                  failed
+                      ? 'preferences-failed-feedback'
+                      : state.isDirty
+                      ? 'rhythm-summary-dirty'
+                      : state.feedback == PreferencesFeedback.saved
+                      ? 'preferences-saved-feedback'
+                      : 'rhythm-summary-status',
+                ),
+                style: failed
+                    ? TextStyle(color: Theme.of(context).colorScheme.error)
+                    : null,
+              ),
+          ],
+        ),
       ),
     );
   }

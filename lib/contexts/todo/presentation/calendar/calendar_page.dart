@@ -214,10 +214,6 @@ final class _CalendarPageContent extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        TodoStatusMessage(
-          message: state.message,
-          messageSerial: state.messageSerial,
-        ),
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
             final double scaledBody = MediaQuery.textScalerOf(
@@ -250,10 +246,24 @@ final class _CalendarPageContent extends ConsumerWidget {
   }
 }
 
-final class _SelectedDatePanel extends StatelessWidget {
+final class _SelectedDatePanel extends StatefulWidget {
   const _SelectedDatePanel({required this.state});
 
   final TodoViewState state;
+
+  @override
+  State<_SelectedDatePanel> createState() => _SelectedDatePanelState();
+}
+
+final class _SelectedDatePanelState extends State<_SelectedDatePanel> {
+  final FocusNode _composerFocus = FocusNode(debugLabel: 'Calendar composer');
+  TodoViewState get state => widget.state;
+
+  @override
+  void dispose() {
+    _composerFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -296,10 +306,16 @@ final class _SelectedDatePanel extends StatelessWidget {
                 'calendar-editor-${state.selectedDate.text}',
               ),
               date: state.selectedDate,
+              focusNode: _composerFocus,
             ),
             TodoListPanel(
               key: ValueKey<String>('calendar-list-${state.selectedDate.text}'),
               todos: state.selectedDateTodos,
+              onEditedRowRemoved: () {
+                if (mounted && TickerMode.valuesOf(context).enabled) {
+                  _composerFocus.requestFocus();
+                }
+              },
             ),
           ],
         ),

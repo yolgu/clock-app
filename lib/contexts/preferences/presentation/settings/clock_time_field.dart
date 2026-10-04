@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../shared/i18n/public.dart' show ClockTimeFormatter;
+import '../../../../shared/ui/public.dart'
+    show ClockRhythmLayout, ClockRhythmSpace;
 
 final class ClockTimeField extends StatelessWidget {
   const ClockTimeField({
@@ -27,6 +29,7 @@ final class ClockTimeField extends StatelessWidget {
       key: ValueKey<String>('clock-time-$label'),
       controller: controller,
       enabled: enabled,
+      textAlign: TextAlign.center,
       keyboardType: TextInputType.datetime,
       inputFormatters: <TextInputFormatter>[
         LengthLimitingTextInputFormatter(5),
@@ -34,6 +37,15 @@ final class ClockTimeField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         errorText: errorText,
+        // Balance the trailing picker without moving the floating label.
+        prefix: const SizedBox(
+          width:
+              ClockRhythmLayout.minimumInteractiveDimension -
+              ClockRhythmSpace.space16,
+        ),
+        suffixIconConstraints: const BoxConstraints.tightFor(
+          width: ClockRhythmLayout.minimumInteractiveDimension,
+        ),
         suffixIcon: IconButton(
           key: ValueKey<String>('clock-time-picker-$label'),
           tooltip: pickerTooltip,

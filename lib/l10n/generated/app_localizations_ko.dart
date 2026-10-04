@@ -355,6 +355,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get todoActionEdit => '수정';
 
   @override
+  String get todoActionDetails => '할 일 상세 수정';
+
+  @override
+  String get todoInlineEditHint => '제목 수정. Enter로 저장, Esc로 취소합니다.';
+
+  @override
+  String get rhythmSettingsSummaryClean => '저장된 설정';
+
+  @override
+  String get rhythmSettingsSaving => '설정 저장 중…';
+
+  @override
   String get todoActionDelete => '삭제';
 
   @override

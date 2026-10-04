@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart';
 import '../../../shared/ui/public.dart'
-    show ClockRhythmSpace, SemanticStatusAnnouncement;
+    show ClockRhythmSpace, SemanticStatusAnnouncement, StableContentSlot;
 import '../application/ports/legacy_coexistence_warning.dart';
 import '../application/ports/rhythm_start_capability.dart';
 import '../domain/rhythm_session.dart';
@@ -81,6 +81,10 @@ final class _RhythmControlsState extends ConsumerState<RhythmControls> {
       RhythmSessionStatus.running => _RoundControl(
         controlKey: const ValueKey<String>('pause-rhythm'),
         label: copy.rhythmControlPause,
+        alternateLabels: <String>[
+          copy.rhythmControlStart,
+          copy.rhythmControlResume,
+        ],
         tone: _RoundTone.tinted(_pauseOrange, colors),
         onPressed: !state.isBusy && canPause
             ? () => ref.read(rhythmViewModelProvider.notifier).pause()
@@ -89,6 +93,10 @@ final class _RhythmControlsState extends ConsumerState<RhythmControls> {
       RhythmSessionStatus.paused => _RoundControl(
         controlKey: const ValueKey<String>('resume-rhythm'),
         label: copy.rhythmControlResume,
+        alternateLabels: <String>[
+          copy.rhythmControlStart,
+          copy.rhythmControlPause,
+        ],
         tone: _RoundTone.tinted(colors.secondary, colors),
         onPressed: !state.isBusy && canResume
             ? () => ref.read(rhythmViewModelProvider.notifier).resume()
@@ -98,6 +106,10 @@ final class _RhythmControlsState extends ConsumerState<RhythmControls> {
       RhythmSessionStatus.stoppedForToday => _RoundControl(
         controlKey: const ValueKey<String>('start-rhythm'),
         label: copy.rhythmControlStart,
+        alternateLabels: <String>[
+          copy.rhythmControlPause,
+          copy.rhythmControlResume,
+        ],
         tone: _RoundTone.tinted(colors.secondary, colors),
         onPressed: !state.isBusy && !_isPreparingStart && canStart
             ? _startRhythm
@@ -296,6 +308,7 @@ final class _RoundControl extends StatelessWidget {
     required this.label,
     required this.tone,
     required this.onPressed,
+    this.alternateLabels = const <String>[],
   });
 
   static const double diameter = 84;
@@ -304,6 +317,7 @@ final class _RoundControl extends StatelessWidget {
   final String label;
   final _RoundTone tone;
   final VoidCallback? onPressed;
+  final List<String> alternateLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -340,12 +354,16 @@ final class _RoundControl extends StatelessWidget {
               tone.label.withValues(alpha: enabled ? 1 : 0.55),
             ),
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          child: StableContentSlot(
+            labels: <String>[label, ...alternateLabels],
+            alignment: Alignment.center,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
         ),
       ),

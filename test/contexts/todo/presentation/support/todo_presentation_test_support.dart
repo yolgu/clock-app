@@ -17,6 +17,7 @@ final class TestTodoRepository implements TodoRepository {
   int mutateCalls = 0;
   int saveAllCalls = 0;
   bool failMutations = false;
+  Completer<void>? mutationGate;
 
   @override
   Future<List<Todo>> getAll() async {
@@ -33,6 +34,7 @@ final class TestTodoRepository implements TodoRepository {
   @override
   Future<T> mutate<T extends Object?>(TodoMutation<T> mutation) async {
     mutateCalls += 1;
+    await mutationGate?.future;
     if (failMutations) {
       throw StateError('injected Todo mutation failure');
     }
@@ -101,6 +103,7 @@ TodoPresentationDependencies createTodoPresentationDependencies({
       clock: clock,
     ),
     updateTodo: UpdateTodo(repository: repository, clock: clock),
+    renameTodo: RenameTodo(repository: repository, clock: clock),
     toggleTodoCompletion: ToggleTodoCompletion(
       repository: repository,
       clock: clock,

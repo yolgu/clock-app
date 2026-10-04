@@ -15,6 +15,10 @@ void main() {
     await tester.pumpWidget(_testApp(actions, const RhythmControls()));
     await tester.pumpAndSettle();
 
+    final Rect startBounds = tester.getRect(
+      find.byKey(const ValueKey<String>('start-rhythm')),
+    );
+
     expect(_enabled(tester, 'start-rhythm'), isTrue);
     expect(_enabled(tester, 'pause-rhythm'), isFalse);
     expect(_enabled(tester, 'resume-rhythm'), isFalse);
@@ -26,11 +30,19 @@ void main() {
     expect(_enabled(tester, 'pause-rhythm'), isTrue);
     expect(_enabled(tester, 'resume-rhythm'), isFalse);
     expect(_enabled(tester, 'stop-rhythm-for-today'), isTrue);
+    expect(
+      tester.getRect(find.byKey(const ValueKey<String>('pause-rhythm'))),
+      startBounds,
+    );
 
     await tester.tap(find.byKey(const ValueKey<String>('pause-rhythm')));
     await tester.pumpAndSettle();
     expect(_enabled(tester, 'pause-rhythm'), isFalse);
     expect(_enabled(tester, 'resume-rhythm'), isTrue);
+    expect(
+      tester.getRect(find.byKey(const ValueKey<String>('resume-rhythm'))),
+      startBounds,
+    );
     expect(_enabled(tester, 'stop-rhythm-for-today'), isTrue);
   });
 

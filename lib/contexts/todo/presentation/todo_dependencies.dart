@@ -7,6 +7,7 @@ import '../application/create_todo.dart';
 import '../application/delete_todo.dart';
 import '../application/list_month_summary.dart';
 import '../application/list_todos_for_date.dart';
+import '../application/rename_todo.dart';
 import '../application/reorder_todos.dart';
 import '../application/toggle_todo_completion.dart';
 import '../application/update_todo.dart';
@@ -15,6 +16,7 @@ final class TodoPresentationDependencies {
   const TodoPresentationDependencies({
     required this.createTodo,
     required this.updateTodo,
+    required this.renameTodo,
     required this.toggleTodoCompletion,
     required this.reorderTodos,
     required this.deleteTodo,
@@ -24,6 +26,7 @@ final class TodoPresentationDependencies {
 
   final CreateTodo createTodo;
   final UpdateTodo updateTodo;
+  final RenameTodo renameTodo;
   final ToggleTodoCompletion toggleTodoCompletion;
   final ReorderTodos reorderTodos;
   final DeleteTodo deleteTodo;

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../shared/i18n/public.dart';
-import '../../../shared/ui/public.dart' show ClockRhythmSpace;
+import '../../../shared/ui/public.dart'
+    show ClockRhythmSpace, StableContentSlot;
 import '../application/backup_failure.dart';
 import '../application/backup_preview.dart';
 import 'backup_failure_copy.dart';
@@ -118,12 +119,16 @@ final class BackupImportPreviewDialog extends StatelessWidget {
             FilledButton(
               key: const ValueKey<String>('confirm-backup-import'),
               onPressed: confirming ? null : onConfirm,
-              child: confirming
-                  ? const SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(copy.backupConfirmImport),
+              child: StableContentSlot(
+                labels: <String>[copy.backupConfirmImport],
+                alignment: Alignment.center,
+                child: confirming
+                    ? const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(copy.backupConfirmImport),
+              ),
             ),
           ],
         ),

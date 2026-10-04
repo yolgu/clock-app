@@ -7,7 +7,9 @@ import '../../../shared/i18n/public.dart' show AppLocalizations;
 import '../../../shared/ui/public.dart'
     show ClockRhythmRadius, ClockRhythmSpace, FocusRing, MinimumTapTarget;
 import '../domain/todo.dart';
-import 'todo_editor.dart';
+import 'todo_details_button.dart';
+import 'todo_inline_edit_session.dart';
+import 'todo_inline_title.dart';
 
 final class TodoRow extends StatelessWidget {
   const TodoRow({
@@ -15,12 +17,11 @@ final class TodoRow extends StatelessWidget {
     required this.reorderIndex,
     required this.groupPosition,
     required this.groupLength,
-    required this.isEditing,
+    required this.editSession,
     required this.enabled,
     required this.onToggle,
     required this.onDelete,
-    required this.onStartEditing,
-    required this.onFinishEditing,
+    this.onRowRemoved,
     required this.onMoveUp,
     required this.onMoveDown,
     super.key,
@@ -30,12 +31,12 @@ final class TodoRow extends StatelessWidget {
   final int reorderIndex;
   final int groupPosition;
   final int groupLength;
-  final bool isEditing;
+  final TodoInlineEditSession editSession;
+  bool get isEditing => editSession.todoId == todo.id;
   final bool enabled;
   final Future<bool> Function() onToggle;
   final Future<bool> Function() onDelete;
-  final VoidCallback onStartEditing;
-  final VoidCallback onFinishEditing;
+  final VoidCallback? onRowRemoved;
   final Future<bool> Function() onMoveUp;
   final Future<bool> Function() onMoveDown;
 
@@ -50,34 +51,18 @@ final class TodoRow extends StatelessWidget {
       type: MaterialType.transparency,
       borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
       child: Padding(
-        padding: EdgeInsets.symmetric(
-          vertical: isEditing
-              ? ClockRhythmSpace.space8
-              : ClockRhythmSpace.space4,
+        padding: const EdgeInsets.symmetric(vertical: ClockRhythmSpace.space4),
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final double scaledBody = MediaQuery.textScalerOf(
+              context,
+            ).scale(16);
+            final bool useStackedActions =
+                constraints.maxWidth < 380 || scaledBody > 24;
+            return _buildDisplayRow(context, useStackedActions);
+          },
         ),
-        child: isEditing
-            ? _buildEditingRow(context)
-            : LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  final double scaledBody = MediaQuery.textScalerOf(
-                    context,
-                  ).scale(16);
-                  final bool useStackedActions =
-                      constraints.maxWidth < 380 || scaledBody > 24;
-                  return _buildDisplayRow(context, useStackedActions);
-                },
-              ),
       ),
-    );
-  }
-
-  Widget _buildEditingRow(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        _buildLeadingContent(context),
-        TodoEditor.edit(todo: todo, onFinished: onFinishEditing),
-      ],
     );
   }
 
@@ -107,22 +92,11 @@ final class TodoRow extends StatelessWidget {
     );
   }
 
-  Widget _buildLeadingContent(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        _buildReorderHandle(context),
-        _buildCompletionControl(context),
-        const SizedBox(width: ClockRhythmSpace.space4),
-        Expanded(child: _buildTodoCopy(context)),
-      ],
-    );
-  }
-
   Widget _buildReorderHandle(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context);
     return ReorderableDragStartListener(
       index: reorderIndex,
-      enabled: enabled && !isEditing,
+      enabled: enabled && editSession.todoId == null,
       child: _TodoReorderHandle(
         label: localizations.todoActionReorder(todo.title),
         canMoveUp: _canMoveUp && !isEditing,
@@ -164,10 +138,10 @@ final class TodoRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          todo.title,
-          key: ValueKey<String>('todo-title-${todo.id}'),
-          overflow: TextOverflow.visible,
+        TodoInlineTitle(
+          todo: todo,
+          session: editSession,
+          enabled: enabled,
           style: textTheme.bodyLarge?.copyWith(
             decoration: todo.completed ? TextDecoration.lineThrough : null,
             fontWeight: todo.completed ? FontWeight.w400 : FontWeight.w500,
@@ -191,10 +165,6 @@ final class TodoRow extends StatelessWidget {
 
   Widget _buildActions(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context);
-    final String editLabel = <String>[
-      localizations.todoActionEdit,
-      todo.title,
-    ].join(', ');
     final String deleteLabel = <String>[
       localizations.todoActionDelete,
       todo.title,
@@ -202,19 +172,11 @@ final class TodoRow extends StatelessWidget {
     return Wrap(
       spacing: ClockRhythmSpace.space4,
       children: <Widget>[
-        Semantics(
-          label: editLabel,
-          button: true,
+        TodoDetailsButton(
+          todo: todo,
           enabled: enabled,
-          onTap: enabled ? onStartEditing : null,
-          excludeSemantics: true,
-          child: IconButton(
-            key: ValueKey<String>('todo-edit-${todo.id}'),
-            onPressed: enabled ? onStartEditing : null,
-            tooltip: localizations.todoActionEdit,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            icon: const Icon(Icons.edit_outlined, size: 20),
-          ),
+          session: editSession,
+          onRowRemoved: onRowRemoved,
         ),
         Semantics(
           label: deleteLabel,

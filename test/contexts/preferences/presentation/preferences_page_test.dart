@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show Tristate;
 
 import 'package:clock_rhythm/contexts/preferences/public.dart';
 import 'package:clock_rhythm/contexts/preferences/public_presentation.dart';
@@ -9,6 +10,259 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('all four rhythm values are centered within their input boxes', (
+    WidgetTester tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    for (final double width in <double>[360, 720, 1280]) {
+      for (final Locale locale in <Locale>[
+        const Locale('ko'),
+        const Locale('en'),
+      ]) {
+        tester.view.physicalSize = Size(width, 1800);
+        await tester.pumpWidget(
+          _testApp(
+            actions: FakeWidgetPreferencesActions(),
+            capabilities: PreferencesPlatformCapabilities.windows,
+            locale: locale,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final Finder fields = find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is TextField &&
+              widget.key is ValueKey<String> &&
+              ((widget.key! as ValueKey<String>).value.startsWith(
+                    'duration-',
+                  ) ||
+                  (widget.key! as ValueKey<String>).value.startsWith(
+                    'clock-time-',
+                  )),
+        );
+        expect(fields, findsNWidgets(4));
+        for (int index = 0; index < 4; index += 1) {
+          final Finder field = fields.at(index);
+          final TextField widget = tester.widget<TextField>(field);
+          expect(widget.textAlign, TextAlign.center);
+          final Finder editable = find.descendant(
+            of: field,
+            matching: find.byType(EditableText),
+          );
+          expect(
+            tester.getCenter(editable).dx,
+            closeTo(tester.getCenter(field).dx, 0.01),
+          );
+        }
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      }
+    }
+  });
+
+  testWidgets(
+    'sound actions stay in one responsive row without scrolling across states',
+    (WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      for (final double width in <double>[360, 390, 720, 1280]) {
+        for (final double scale in <double>[1, 2]) {
+          for (final Locale locale in <Locale>[
+            const Locale('ko'),
+            const Locale('en'),
+          ]) {
+            for (final PreferencesPlatformCapabilities capabilities
+                in <PreferencesPlatformCapabilities>[
+                  PreferencesPlatformCapabilities.windows,
+                  PreferencesPlatformCapabilities.android,
+                ]) {
+              tester.view.physicalSize = Size(width, 1600);
+              await tester.pumpWidget(
+                _testApp(
+                  actions: FakeWidgetPreferencesActions(),
+                  capabilities: capabilities,
+                  locale: locale,
+                  textScaler: TextScaler.linear(scale),
+                  home: const SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: NotificationSoundPanel(),
+                    ),
+                  ),
+                ),
+              );
+              await tester.pumpAndSettle();
+              final List<String> keys = <String>[
+                'sound-preview-control',
+                'use-default-sound',
+                if (capabilities.showsCustomSound) 'choose-custom-sound',
+                'toggle-mute',
+              ];
+              final Map<String, Rect> before = <String, Rect>{
+                for (final String key in keys)
+                  key: tester.getRect(find.byKey(ValueKey<String>(key))),
+              };
+              final Rect first = before.values.first;
+              final Rect panel = tester.getRect(
+                find.byType(NotificationSoundPanel),
+              );
+              for (final Rect bounds in before.values) {
+                expect(bounds.top, first.top);
+                expect(bounds.height, first.height);
+                expect(bounds.width, closeTo(first.width, 0.01));
+                expect(bounds.width, greaterThanOrEqualTo(48));
+                expect(bounds.height, greaterThanOrEqualTo(48));
+                expect(bounds.left, greaterThanOrEqualTo(panel.left));
+                expect(bounds.right, lessThanOrEqualTo(panel.right));
+              }
+              expect(
+                find.byWidgetPredicate(
+                  (Widget widget) =>
+                      widget is Scrollable &&
+                      axisDirectionToAxis(widget.axisDirection) ==
+                          Axis.horizontal,
+                ),
+                findsNothing,
+              );
+              for (final String key in <String>[
+                'sound-preview-control',
+                'sound-preview-control',
+                if (capabilities.showsCustomSound) 'choose-custom-sound',
+                'use-default-sound',
+                'toggle-mute',
+                'toggle-mute',
+              ]) {
+                await tester.tap(find.byKey(ValueKey<String>(key)));
+                await tester.pumpAndSettle();
+                for (final String action in keys) {
+                  expect(
+                    tester.getRect(find.byKey(ValueKey<String>(action))),
+                    before[action],
+                    reason: '$width / $scale / $locale / $key',
+                  );
+                }
+                expect(tester.takeException(), isNull);
+              }
+              await tester.pumpWidget(const SizedBox.shrink());
+              await tester.pump();
+            }
+          }
+        }
+      }
+    },
+  );
+
+  testWidgets(
+    'autostart dirty and saved states keep the settings card geometry',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1000, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final FakeWidgetPreferencesActions actions =
+          FakeWidgetPreferencesActions();
+      _replacePreferences(
+        actions,
+        UserPreferences.defaults().completeInitialSetup(),
+      );
+      await tester.pumpWidget(
+        _testApp(
+          actions: actions,
+          capabilities: PreferencesPlatformCapabilities.windows,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final Finder panel = find.byKey(
+        const ValueKey<String>('rhythm-settings-panel'),
+      );
+      final Finder sound = find.byKey(
+        const ValueKey<String>('notification-sound-panel'),
+      );
+      final Rect before = tester.getRect(panel);
+      final Offset soundBefore = tester.getTopLeft(sound);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('auto-start-control')),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getRect(panel), before);
+      expect(tester.getTopLeft(sound), soundBefore);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('save-rhythm-settings')),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getRect(panel), before);
+      expect(tester.getTopLeft(sound), soundBefore);
+    },
+  );
+
+  testWidgets('sound preview and mute keep all action bounds unchanged', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    tester.view.physicalSize = const Size(900, 1800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      _testApp(
+        actions: FakeWidgetPreferencesActions(),
+        capabilities: PreferencesPlatformCapabilities.windows,
+      ),
+    );
+    await tester.pumpAndSettle();
+    const List<String> keys = <String>[
+      'sound-preview-control',
+      'use-default-sound',
+      'choose-custom-sound',
+      'toggle-mute',
+    ];
+    final Map<String, Rect> before = <String, Rect>{
+      for (final String key in keys)
+        key: tester.getRect(find.byKey(ValueKey<String>(key))),
+    };
+    expect(
+      tester
+          .getSemantics(find.byKey(const ValueKey<String>('use-default-sound')))
+          .getSemanticsData()
+          .flagsCollection
+          .isSelected,
+      Tristate.isTrue,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('sound-preview-control')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getSemantics(
+            find.byKey(const ValueKey<String>('sound-preview-control')),
+          )
+          .getSemanticsData()
+          .flagsCollection
+          .isToggled,
+      Tristate.isTrue,
+    );
+    for (final String key in keys) {
+      expect(tester.getRect(find.byKey(ValueKey<String>(key))), before[key]);
+    }
+    await tester.tap(find.byKey(const ValueKey<String>('toggle-mute')));
+    await tester.pumpAndSettle();
+    for (final String key in keys) {
+      expect(tester.getRect(find.byKey(ValueKey<String>(key))), before[key]);
+    }
+    expect(
+      tester
+          .getSemantics(find.byKey(const ValueKey<String>('toggle-mute')))
+          .getSemanticsData()
+          .flagsCollection
+          .isToggled,
+      Tristate.isTrue,
+    );
+    semantics.dispose();
+  });
+
   testWidgets(
     'LB-003 disclosure toggles editable Rhythm Settings while sound controls remain available',
     (WidgetTester tester) async {
