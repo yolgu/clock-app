@@ -3,6 +3,9 @@ typedef ClockTimeParts = ({int hour, int minute});
 final class ClockTimeFormatter {
   const ClockTimeFormatter();
 
+  /// What stands between the hour and the minute of an `HH:mm` time.
+  static const String separator = ':';
+
   static final RegExp _exactTextPattern = RegExp(
     r'^(?<hour>[01]\d|2[0-3]):(?<minute>[0-5]\d)$',
   );
@@ -11,7 +14,7 @@ final class ClockTimeFormatter {
     _validateComponents(hour: hour, minute: minute);
     final String hourText = hour.toString().padLeft(2, '0');
     final String minuteText = minute.toString().padLeft(2, '0');
-    return '$hourText:$minuteText';
+    return '$hourText$separator$minuteText';
   }
 
   String formatLocalDateTime(DateTime dateTime) {

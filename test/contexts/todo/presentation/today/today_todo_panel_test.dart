@@ -332,10 +332,16 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey<String>('todo-add-time')));
     await tester.pumpAndSettle();
-    final Finder picker = find.byType(TimePickerDialog);
-    expect(picker, findsOneWidget);
-    expect(MediaQuery.of(tester.element(picker)).alwaysUse24HourFormat, isTrue);
-    await tester.tap(find.text('OK'));
+    for (final String part in <String>['hour', 'minute']) {
+      expect(
+        tester
+            .widget<TextField>(find.byKey(ValueKey<String>('todo-time-$part')))
+            .controller!
+            .text,
+        matches(r'^\d{2}$'),
+      );
+    }
+    await tester.tap(find.byKey(const ValueKey<String>('todo-time-confirm')));
     await tester.pumpAndSettle();
 
     final Finder editTime = find.byKey(
@@ -590,28 +596,15 @@ Future<void> _enterPickerTime(
   required String minute,
 }) async {
   await tester.pumpAndSettle();
-  final Finder picker = find.byType(TimePickerDialog);
-  expect(picker, findsOneWidget);
-  expect(MediaQuery.of(tester.element(picker)).alwaysUse24HourFormat, isTrue);
-
-  await tester.tap(
-    find.descendant(of: picker, matching: find.byIcon(Icons.keyboard_outlined)),
+  await tester.enterText(
+    find.byKey(const ValueKey<String>('todo-time-hour')),
+    hour,
   );
-  await tester.pumpAndSettle();
-  final Finder fields = find.descendant(
-    of: picker,
-    matching: find.byType(TextFormField),
+  await tester.enterText(
+    find.byKey(const ValueKey<String>('todo-time-minute')),
+    minute,
   );
-  expect(fields, findsNWidgets(2));
-
-  await tester.enterText(fields.at(0), hour);
-  await tester.enterText(fields.at(1), minute);
-  await tester.tap(
-    find.descendant(
-      of: picker,
-      matching: find.widgetWithText(TextButton, 'OK'),
-    ),
-  );
+  await tester.tap(find.byKey(const ValueKey<String>('todo-time-confirm')));
   await tester.pumpAndSettle();
 }
 

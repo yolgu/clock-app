@@ -5,7 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart'
-    show AppLocalizations, ClockTimeFormatter, LocalDateFormatter;
+    show
+        AppLocalizations,
+        ClockTimeFormatter,
+        ClockTimeParts,
+        LocalDateFormatter;
 import '../../../shared/ui/public.dart'
     show ClockRhythmSpace, LineGlyph, LineIcon, StableContentSlot;
 import '../domain/local_calendar_date.dart';
@@ -16,6 +20,7 @@ import 'todo_date_math.dart';
 import 'todo_date_panel.dart';
 import 'todo_picker_field.dart';
 import 'todo_providers.dart';
+import 'todo_time_dialog.dart';
 import 'todo_time_panel.dart';
 import 'todo_title_feedback.dart';
 
@@ -638,31 +643,16 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
   }
 
   Future<void> _selectTime() async {
-    final ClockTimeFormatter formatter = const ClockTimeFormatter();
-    final String? currentTime = _time;
-    final TimeOfDay initialTime;
-    if (currentTime == null) {
-      initialTime = TimeOfDay.now();
-    } else {
-      final ({int hour, int minute}) parts = formatter.parse(currentTime);
-      initialTime = TimeOfDay(hour: parts.hour, minute: parts.minute);
-    }
-    final TimeOfDay? selected = await showTimePicker(
+    final TimeOfDay now = TimeOfDay.now();
+    final ClockTimeParts? selected = await showTodoTimeDialog(
       context: context,
-      initialTime: initialTime,
-      helpText: AppLocalizations.of(context).todoListEditTime,
-      builder: (BuildContext context, Widget? child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
+      initialTime: _currentTimeParts() ?? (hour: now.hour, minute: now.minute),
     );
     if (selected == null || !mounted) {
       return;
     }
     setState(() {
-      _time = formatter.formatComponents(
+      _time = const ClockTimeFormatter().formatComponents(
         hour: selected.hour,
         minute: selected.minute,
       );
