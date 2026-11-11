@@ -6,12 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/i18n/public.dart'
     show AppLocalizations, LocalDateFormatter;
 import '../../../../shared/ui/public.dart'
-    show
-        ClockRhythmCard,
-        ClockRhythmLayout,
-        ClockRhythmPageHeader,
-        ClockRhythmSpace;
+    show ClockRhythmCard, ClockRhythmLayout, ClockRhythmPage, ClockRhythmSpace;
 import '../../domain/local_calendar_date.dart';
+import '../../domain/todo_collection.dart' show TodoDaySummary;
 import '../todo_date_math.dart';
 import '../todo_editor.dart';
 import '../todo_list_panel.dart';
@@ -72,42 +69,47 @@ final class _CalendarPageState extends ConsumerState<CalendarPage>
     final AsyncValue<TodoViewState> asyncState = ref.watch(
       todoViewStateProvider,
     );
+    final TodoViewState? loaded = asyncState.value;
     return SafeArea(
-      child: SingleChildScrollView(
-        key: const PageStorageKey<String>('calendar-page-scroll'),
-        controller: _scrollController,
-        padding: ClockRhythmLayout.pageInsetsFor(
-          MediaQuery.sizeOf(context).width,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            ClockRhythmPageHeader(
-              eyebrow: localizations.calendarEyebrow,
-              title: localizations.calendarTitle,
-            ),
-            asyncState.when<Widget>(
-              data: (TodoViewState state) {
-                _scheduleRestoredScrollOffset();
-                return _CalendarPageContent(
-                  state: state,
-                  onSelectedDateChanged: widget.onSelectedDateChanged,
-                );
-              },
-              error: (Object error, StackTrace stackTrace) => TodoLoadFailure(
-                onRetry: () {
-                  ref.invalidate(todoDataControllerProvider);
-                  _scheduleRouteDateSynchronization();
+      child: ClockRhythmPage(
+        section: localizations.calendarEyebrow,
+        title: localizations.calendarTitle,
+        trailing: loaded != null && ClockRhythmPage.usesToolbar(context)
+            ? _MonthSummary(state: loaded)
+            : null,
+        builder: (BuildContext context, Widget lead) => SingleChildScrollView(
+          key: const PageStorageKey<String>('calendar-page-scroll'),
+          controller: _scrollController,
+          padding: ClockRhythmLayout.pageInsetsFor(
+            MediaQuery.sizeOf(context).width,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              lead,
+              asyncState.when<Widget>(
+                data: (TodoViewState state) {
+                  _scheduleRestoredScrollOffset();
+                  return _CalendarPageContent(
+                    state: state,
+                    onSelectedDateChanged: widget.onSelectedDateChanged,
+                  );
                 },
-              ),
-              loading: () => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(ClockRhythmSpace.space32),
-                  child: CircularProgressIndicator(),
+                error: (Object error, StackTrace stackTrace) => TodoLoadFailure(
+                  onRetry: () {
+                    ref.invalidate(todoDataControllerProvider);
+                    _scheduleRouteDateSynchronization();
+                  },
+                ),
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(ClockRhythmSpace.space32),
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -200,7 +202,7 @@ final class _CalendarPageContent extends ConsumerWidget {
                 onSelectedDateChanged?.call(state.todayDate);
               },
             ),
-            const SizedBox(height: ClockRhythmSpace.space12),
+            const SizedBox(height: ClockRhythmSpace.space16),
             CalendarGrid(
               state: state,
               onSelectDate: (LocalCalendarDate date) async {
@@ -222,13 +224,13 @@ final class _CalendarPageContent extends ConsumerWidget {
               context,
             ).scale(16);
             final bool useTwoColumns =
-                constraints.maxWidth >= 900 && scaledBody <= 24;
+                constraints.maxWidth >= 800 && scaledBody <= 24;
             if (!useTwoColumns) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   calendarBoard,
-                  const SizedBox(height: ClockRhythmSpace.space16),
+                  const SizedBox(height: ClockRhythmSpace.space12),
                   selectedDatePanel,
                 ],
               );
@@ -287,11 +289,9 @@ final class _SelectedDatePanelState extends State<_SelectedDatePanel> {
           children: <Widget>[
             Text(
               localizations.calendarSelectedEyebrow,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: Theme.of(context).textTheme.labelSmall,
             ),
-            const SizedBox(height: ClockRhythmSpace.space4),
+            const SizedBox(height: 2),
             Semantics(
               header: true,
               label: localizations.calendarSelectedDateLabel(formattedDate),
@@ -299,7 +299,7 @@ final class _SelectedDatePanelState extends State<_SelectedDatePanel> {
               child: Text(
                 formattedDate,
                 key: const ValueKey<String>('calendar-selected-date'),
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
             const SizedBox(height: ClockRhythmSpace.space12),
@@ -322,6 +322,28 @@ final class _SelectedDatePanelState extends State<_SelectedDatePanel> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// How many Todos the visible month holds and how many are done.
+final class _MonthSummary extends StatelessWidget {
+  const _MonthSummary({required this.state});
+
+  final TodoViewState state;
+
+  @override
+  Widget build(BuildContext context) {
+    int total = 0;
+    int completed = 0;
+    for (final TodoDaySummary day in state.monthSummary.values) {
+      total += day.total;
+      completed += day.completed;
+    }
+    return Text(
+      AppLocalizations.of(context).calendarMonthSummary(total, completed),
+      key: const ValueKey<String>('calendar-month-summary'),
+      style: Theme.of(context).textTheme.bodySmall,
     );
   }
 }

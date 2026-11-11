@@ -1,7 +1,7 @@
-import 'package:clock_rhythm/app/presentation/android_bottom_navigation.dart';
 import 'package:clock_rhythm/app/presentation/app_navigation_copy.dart';
+import 'package:clock_rhythm/app/presentation/bottom_tab_navigation.dart';
 import 'package:clock_rhythm/app/presentation/clock_page.dart';
-import 'package:clock_rhythm/app/presentation/windows_top_navigation.dart';
+import 'package:clock_rhythm/app/presentation/side_navigation.dart';
 import 'package:clock_rhythm/contexts/preferences/public.dart';
 import 'package:clock_rhythm/contexts/preferences/public_presentation.dart';
 import 'package:clock_rhythm/contexts/rhythm/public_presentation.dart';
@@ -57,9 +57,7 @@ void main() {
     );
   });
 
-  testWidgets('wide English calendar in Neon Dusk', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('wide English calendar in Aurora', (WidgetTester tester) async {
     _setViewport(tester, const Size(1280, 800));
     final TestTodoRepository repository = TestTodoRepository(<Todo>[
       createTestTodo(id: 'open', title: 'Prepare release evidence'),
@@ -92,66 +90,75 @@ void main() {
 
     await expectLater(
       find.byKey(const ValueKey<String>('golden-surface')),
-      matchesGoldenFile('baselines/wide_calendar_en_neon_dusk.png'),
+      matchesGoldenFile('baselines/wide_calendar_en_aurora.png'),
     );
   });
 
-  testWidgets('wide Windows Clock uses the current design tokens', (
-    WidgetTester tester,
-  ) async {
-    _setViewport(tester, const Size(1280, 800));
-    final _GoldenPreferencesActions preferences = _GoldenPreferencesActions();
+  for (final (Brightness brightness, String baseline) in <(Brightness, String)>[
+    (Brightness.dark, 'baselines/windows_clock_en_current.png'),
+    (Brightness.light, 'baselines/windows_clock_en_current_light.png'),
+  ]) {
+    testWidgets(
+      'wide Windows Clock uses the current ${brightness.name} design tokens',
+      (WidgetTester tester) async {
+        _setViewport(tester, const Size(1280, 800));
+        final _GoldenPreferencesActions preferences =
+            _GoldenPreferencesActions();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          preferencesActionsProvider.overrideWithValue(preferences),
-          preferencesPlatformCapabilitiesProvider.overrideWithValue(
-            PreferencesPlatformCapabilities.windows,
-          ),
-          rhythmActionsProvider.overrideWithValue(FakeRhythmActions()),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          theme: ClockRhythmTheme.build(
-            ThemeCatalog.resolve(ThemePreference.current),
-            platform: TargetPlatform.windows,
-          ),
-          home: Builder(
-            builder: (BuildContext context) {
-              return RepaintBoundary(
-                key: const ValueKey<String>('golden-surface'),
-                child: Scaffold(
-                  body: Column(
-                    children: <Widget>[
-                      WindowsTopNavigation(
-                        selectedIndex: 0,
-                        onDestinationSelected: (_) {},
-                        copy: AppNavigationCopy.fromContext(context),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              preferencesActionsProvider.overrideWithValue(preferences),
+              preferencesPlatformCapabilitiesProvider.overrideWithValue(
+                PreferencesPlatformCapabilities.windows,
+              ),
+              rhythmActionsProvider.overrideWithValue(FakeRhythmActions()),
+            ],
+            child: MaterialApp(
+              locale: const Locale('en'),
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              theme: ClockRhythmTheme.build(
+                ThemeCatalog.resolve(ThemePreference.current),
+                brightness: brightness,
+                platform: TargetPlatform.windows,
+              ),
+              home: Builder(
+                builder: (BuildContext context) {
+                  return RepaintBoundary(
+                    key: const ValueKey<String>('golden-surface'),
+                    child: Scaffold(
+                      body: Row(
+                        children: <Widget>[
+                          SideNavigation(
+                            selectedIndex: 0,
+                            onDestinationSelected: (_) {},
+                            copy: AppNavigationCopy.fromContext(context),
+                            shortcutModifierLabel: 'Ctrl+',
+                          ),
+                          Expanded(
+                            child: ClockPage(
+                              now: () => DateTime(2026, 6, 2, 9, 41),
+                            ),
+                          ),
+                        ],
                       ),
-                      Expanded(
-                        child: ClockPage(
-                          now: () => DateTime(2026, 6, 2, 9, 41),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-    await expectLater(
-      find.byKey(const ValueKey<String>('golden-surface')),
-      matchesGoldenFile('baselines/windows_clock_en_current.png'),
+        await expectLater(
+          find.byKey(const ValueKey<String>('golden-surface')),
+          matchesGoldenFile(baseline),
+        );
+      },
     );
-  });
+  }
 
   testWidgets('compact Android Theme uses the current design tokens', (
     WidgetTester tester,
@@ -181,7 +188,7 @@ void main() {
                 key: const ValueKey<String>('golden-surface'),
                 child: Scaffold(
                   body: const ThemePage(),
-                  bottomNavigationBar: AndroidBottomNavigation(
+                  bottomNavigationBar: BottomTabNavigation(
                     selectedIndex: 3,
                     onDestinationSelected: (_) {},
                     copy: AppNavigationCopy.fromContext(context),
@@ -259,6 +266,14 @@ final class _GoldenPreferencesActions implements PreferencesActions {
   @override
   Future<PreferencesCommandResult> changeTheme(ThemePreference theme) async {
     preferences = preferences.changeTheme(theme);
+    return _result;
+  }
+
+  @override
+  Future<PreferencesCommandResult> changeAppearance(
+    AppearancePreference appearance,
+  ) async {
+    preferences = preferences.changeAppearance(appearance);
     return _result;
   }
 

@@ -52,7 +52,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey<String>('rhythm-status-panel')),
+      find.byKey(const ValueKey<String>('rhythm-status-chip')),
       findsOneWidget,
     );
     expect(
@@ -279,7 +279,12 @@ void main() {
       expect(delivery.cancelCount, 0);
       expect(delivery.scheduleCount, 0);
 
-      await tester.tap(find.byKey(const ValueKey<String>('start-rhythm')));
+      final Finder startButton = find.byKey(
+        const ValueKey<String>('start-rhythm'),
+      );
+      await tester.ensureVisible(startButton);
+      await tester.pumpAndSettle();
+      await tester.tap(startButton);
       await tester.pumpAndSettle();
 
       expect(

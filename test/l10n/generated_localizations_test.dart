@@ -36,20 +36,20 @@ void main() {
     final AppLocalizations korean = lookupAppLocalizations(const Locale('ko'));
     final AppLocalizations english = lookupAppLocalizations(const Locale('en'));
 
-    expect(korean.backupSummaryTheme('Neon Dusk'), '테마: Neon Dusk');
-    expect(english.backupSummaryTheme('Neon Dusk'), 'Theme: Neon Dusk');
+    expect(korean.backupSummaryTheme('Aurora'), '테마: Aurora');
+    expect(english.backupSummaryTheme('Aurora'), 'Theme: Aurora');
     expect(korean.todoValidationTitleCounter(12, 160), '12/160');
     expect(english.todoValidationTitleCounter(12, 160), '12/160');
   });
 
-  test('generates the accepted compatibility theme names for both locales', () {
+  test('generates the original theme names for both locales', () {
     final AppLocalizations korean = lookupAppLocalizations(const Locale('ko'));
     final AppLocalizations english = lookupAppLocalizations(const Locale('en'));
 
-    expect(korean.themeDraculaName, 'Dracula');
-    expect(korean.themeNeonDuskName, 'Neon Dusk');
-    expect(english.themeDraculaName, 'Dracula');
-    expect(english.themeNeonDuskName, 'Neon Dusk');
+    expect(korean.themeOrchidName, 'Orchid');
+    expect(korean.themeAuroraName, 'Aurora');
+    expect(english.themeOrchidName, 'Orchid');
+    expect(english.themeAuroraName, 'Aurora');
   });
 
   test(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/ui/public.dart' show StableContentSlot;
+import '../../../../shared/ui/public.dart' show LineGlyph, StableContentSlot;
 import 'sound_action_content.dart';
 
 final class SoundPreviewButton extends StatelessWidget {
@@ -33,7 +33,7 @@ final class SoundPreviewButton extends StatelessWidget {
           onPressed: enabled ? (isPreviewing ? onStop : onPreview) : null,
           child: SoundActionContent(
             stacked: stacked,
-            icon: isPreviewing ? Icons.stop_rounded : Icons.play_arrow_rounded,
+            icon: isPreviewing ? LineGlyph.stop : LineGlyph.play,
             label: StableContentSlot(
               labels: <String>[previewLabel, stopLabel],
               alignment: Alignment.center,

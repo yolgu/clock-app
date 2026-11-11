@@ -1,4 +1,5 @@
 import '../../rhythm/public_model.dart';
+import 'appearance_preference.dart';
 import 'language_preference.dart';
 import 'notification_sound_preference.dart';
 import 'theme_preference.dart';
@@ -14,6 +15,7 @@ final class UserPreferencesSnapshot {
     required this.language,
     required this.theme,
     required this.initialSetupCompleted,
+    this.appearance = AppearancePreference.standard,
   });
 
   final int focusMinutes;
@@ -24,6 +26,7 @@ final class UserPreferencesSnapshot {
   final NotificationSoundSnapshot notificationSound;
   final LanguagePreference language;
   final ThemePreference theme;
+  final AppearancePreference appearance;
   final bool initialSetupCompleted;
 
   Map<String, Object?> toJsonLikeMap() {
@@ -36,6 +39,7 @@ final class UserPreferencesSnapshot {
       'notificationSound': notificationSound.toJsonLikeMap(),
       'language': language.id,
       'theme': theme.id,
+      'appearance': appearance.id,
       'initialSetupCompleted': initialSetupCompleted,
     };
   }
@@ -48,6 +52,7 @@ final class UserPreferences {
     required this.notificationSound,
     required this.language,
     required this.theme,
+    required this.appearance,
     required this.initialSetupCompleted,
   });
 
@@ -56,6 +61,7 @@ final class UserPreferences {
   final NotificationSoundPreference notificationSound;
   final LanguagePreference language;
   final ThemePreference theme;
+  final AppearancePreference appearance;
   final bool initialSetupCompleted;
 
   factory UserPreferences.defaults() {
@@ -65,6 +71,7 @@ final class UserPreferences {
       notificationSound: NotificationSoundPreference.bundledDefault(),
       language: LanguagePreference.korean,
       theme: ThemePreference.current,
+      appearance: AppearancePreference.standard,
       initialSetupCompleted: false,
     );
   }
@@ -85,6 +92,7 @@ final class UserPreferences {
       ),
       language: snapshot.language,
       theme: snapshot.theme,
+      appearance: snapshot.appearance,
       initialSetupCompleted: snapshot.initialSetupCompleted,
     );
   }
@@ -110,6 +118,10 @@ final class UserPreferences {
 
   UserPreferences changeTheme(ThemePreference nextTheme) {
     return _copyWith(theme: nextTheme);
+  }
+
+  UserPreferences changeAppearance(AppearancePreference nextAppearance) {
+    return _copyWith(appearance: nextAppearance);
   }
 
   UserPreferences changeNotificationSound(
@@ -140,6 +152,7 @@ final class UserPreferences {
       notificationSound: notificationSound.snapshot(),
       language: language,
       theme: theme,
+      appearance: appearance,
       initialSetupCompleted: initialSetupCompleted,
     );
   }
@@ -150,6 +163,7 @@ final class UserPreferences {
     NotificationSoundPreference? notificationSound,
     LanguagePreference? language,
     ThemePreference? theme,
+    AppearancePreference? appearance,
     bool? initialSetupCompleted,
   }) {
     return UserPreferences._(
@@ -158,6 +172,7 @@ final class UserPreferences {
       notificationSound: notificationSound ?? this.notificationSound,
       language: language ?? this.language,
       theme: theme ?? this.theme,
+      appearance: appearance ?? this.appearance,
       initialSetupCompleted:
           initialSetupCompleted ?? this.initialSetupCompleted,
     );
@@ -172,6 +187,7 @@ final class UserPreferences {
             notificationSound == other.notificationSound &&
             language == other.language &&
             theme == other.theme &&
+            appearance == other.appearance &&
             initialSetupCompleted == other.initialSetupCompleted;
   }
 
@@ -183,6 +199,7 @@ final class UserPreferences {
       notificationSound,
       language,
       theme,
+      appearance,
       initialSetupCompleted,
     );
   }

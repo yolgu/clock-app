@@ -31,6 +31,7 @@ final class CalendarGrid extends StatefulWidget {
 final class _CalendarGridState extends State<CalendarGrid> {
   static const double _cellSpacing = ClockRhythmSpace.space4;
   static const double _minimumCellWidth = 56;
+  static const double _roomyCellMinimumWidth = 80;
 
   late final List<FocusNode> _focusNodes = List<FocusNode>.generate(
     CalendarCells.fixedCellCount,
@@ -67,7 +68,6 @@ final class _CalendarGridState extends State<CalendarGrid> {
       TodoDateMath.toLocalDateTime(widget.state.visibleMonth),
     );
     final double scale = MediaQuery.textScalerOf(context).scale(1);
-    final double cellHeight = 64 + math.max(0, scale - 1) * 28;
 
     return Semantics(
       container: true,
@@ -80,8 +80,14 @@ final class _CalendarGridState extends State<CalendarGrid> {
             constraints.maxWidth,
             minimumGridWidth,
           );
-          final double gridHeight = cellHeight * 6 + _cellSpacing * 5;
           final double cellWidth = (gridWidth - _cellSpacing * 6) / 7;
+          // Roomy cells read like a planner: the date at the top-left and
+          // the day's Todo count beneath it. Compact cells centre the date
+          // over a dot.
+          final bool compact = cellWidth < _roomyCellMinimumWidth;
+          final double cellHeight =
+              (compact ? 52 : 72) + math.max(0, scale - 1) * 44;
+          final double gridHeight = cellHeight * 6 + _cellSpacing * 5;
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: SizedBox(
@@ -98,12 +104,17 @@ final class _CalendarGridState extends State<CalendarGrid> {
                                 ? 0
                                 : _cellSpacing,
                           ),
-                          child: SizedBox(
+                          child: Container(
                             width: cellWidth,
+                            padding: EdgeInsetsDirectional.only(
+                              start: compact ? 0 : ClockRhythmSpace.space8,
+                            ),
                             child: ExcludeSemantics(
                               child: Text(
                                 weekdays[index],
-                                textAlign: TextAlign.center,
+                                textAlign: compact
+                                    ? TextAlign.center
+                                    : TextAlign.start,
                                 style: Theme.of(context).textTheme.labelSmall,
                               ),
                             ),
@@ -142,6 +153,7 @@ final class _CalendarGridState extends State<CalendarGrid> {
                             isSelected: widget.state.selectedDate == date,
                             isToday: widget.state.todayDate == date,
                             enabled: !widget.state.isMutating,
+                            compact: compact,
                             onTap: () {
                               _focusNodes[index].requestFocus();
                               unawaited(widget.onSelectDate(date));
@@ -223,6 +235,7 @@ final class _CalendarDayCell extends StatelessWidget {
     required this.isSelected,
     required this.isToday,
     required this.enabled,
+    required this.compact,
     required this.onTap,
   });
 
@@ -232,6 +245,7 @@ final class _CalendarDayCell extends StatelessWidget {
   final bool isSelected;
   final bool isToday;
   final bool enabled;
+  final bool compact;
   final VoidCallback onTap;
 
   @override
@@ -253,121 +267,94 @@ final class _CalendarDayCell extends StatelessWidget {
       if (isToday) localizations.calendarToday,
       if (isSelected) localizations.accessibilitySelected,
     ];
-    final String semanticsLabel = semanticsParts.join(', ');
-    final String? visualSummary = daySummary == null
-        ? null
-        : '${daySummary.completed}/${daySummary.total}';
     final ColorScheme colors = theme.colorScheme;
-    final Color numberColor = isSelected
-        ? colors.onPrimary
-        : isToday
-        ? colors.error
-        : colors.onSurface;
-    final Color cellColor = daySummary != null
-        ? colors.surfaceContainerHigh
-        : Colors.transparent;
+    final double numberSize = compact ? 28 : 26;
+    final Widget number = Container(
+      constraints: BoxConstraints(minWidth: numberSize, minHeight: numberSize),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: isToday ? colors.primary : null,
+        borderRadius: BorderRadius.circular(ClockRhythmRadius.pill),
+      ),
+      child: Center(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text(
+          day.toString(),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: isToday ? colors.onPrimary : colors.onSurface,
+            fontWeight: FontWeight.w600,
+            fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+          ),
+        ),
+      ),
+    );
+    final Widget body = compact
+        ? Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              number,
+              const SizedBox(height: 3),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: daySummary == null ? null : colors.secondary,
+                  shape: BoxShape.circle,
+                ),
+                child: const SizedBox.square(dimension: 4),
+              ),
+            ],
+          )
+        : Padding(
+            padding: const EdgeInsets.all(6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                number,
+                if (daySummary != null)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 4),
+                    child: Text(
+                      localizations.calendarDayTodoCount(daySummary.total),
+                      key: ValueKey<String>('calendar-summary-${date.text}'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontFeatures: const <FontFeature>[
+                          FontFeature.tabularFigures(),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
 
     return Semantics(
       key: ValueKey<String>('calendar-day-${date.text}'),
-      label: semanticsLabel,
+      label: semanticsParts.join(', '),
       button: true,
       enabled: enabled,
       selected: isSelected,
       onTap: enabled ? onTap : null,
       excludeSemantics: true,
       child: Material(
-        color: cellColor,
+        color: isSelected
+            ? Color.lerp(colors.surface, colors.primary, 0.2)
+            : Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
+          borderRadius: BorderRadius.circular(
+            compact ? ClockRhythmRadius.control + 2 : ClockRhythmRadius.control,
+          ),
           side: isSelected
-              ? BorderSide(color: colors.primary.withValues(alpha: 0.5))
+              ? BorderSide(color: colors.primary)
               : BorderSide.none,
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           canRequestFocus: false,
           onTap: enabled ? onTap : null,
-          child: Padding(
-            padding: const EdgeInsets.all(5),
-            child: Stack(
-              children: <Widget>[
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    constraints: const BoxConstraints(
-                      minWidth: 30,
-                      minHeight: 30,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? colors.primary
-                          : isToday
-                          ? colors.error.withValues(alpha: 0.16)
-                          : null,
-                      borderRadius: BorderRadius.circular(
-                        ClockRhythmRadius.pill,
-                      ),
-                    ),
-                    child: Center(
-                      widthFactor: 1,
-                      heightFactor: 1,
-                      child: Text(
-                        day.toString(),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: numberColor,
-                          fontWeight: isSelected || isToday
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          fontFeatures: const <FontFeature>[
-                            FontFeature.tabularFigures(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                if (isSelected)
-                  Align(
-                    alignment: AlignmentDirectional.topEnd,
-                    child: Icon(Icons.check, size: 12, color: colors.primary),
-                  )
-                else if (isToday)
-                  Align(
-                    alignment: AlignmentDirectional.topEnd,
-                    child: Icon(
-                      Icons.today_outlined,
-                      size: 12,
-                      color: colors.error,
-                    ),
-                  ),
-                if (daySummary != null && visualSummary != null)
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Icon(
-                          Icons.checklist,
-                          size: 12,
-                          color: colors.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 3),
-                        Flexible(
-                          child: Text(
-                            visualSummary,
-                            key: ValueKey<String>(
-                              'calendar-summary-${date.text}',
-                            ),
-                            style: theme.textTheme.labelSmall,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          child: body,
         ),
       ),
     );

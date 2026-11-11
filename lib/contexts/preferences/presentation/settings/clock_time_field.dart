@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../shared/i18n/public.dart' show ClockTimeFormatter;
 import '../../../../shared/ui/public.dart'
-    show ClockRhythmLayout, ClockRhythmSpace;
+    show ClockRhythmLayout, ClockRhythmSpace, LineGlyph, LineIcon;
 
 final class ClockTimeField extends StatelessWidget {
   const ClockTimeField({
@@ -50,7 +50,7 @@ final class ClockTimeField extends StatelessWidget {
           key: ValueKey<String>('clock-time-picker-$label'),
           tooltip: pickerTooltip,
           onPressed: enabled ? () => _selectTime(context) : null,
-          icon: const Icon(Icons.schedule_rounded),
+          icon: const LineIcon(LineGlyph.clock),
         ),
       ),
       onChanged: onChanged,

@@ -2,16 +2,17 @@ import 'package:clock_rhythm/app/clock_rhythm_app.dart';
 import 'package:clock_rhythm/app/navigation/app_router.dart';
 import 'package:clock_rhythm/app/navigation/app_routes.dart';
 import 'package:clock_rhythm/app/platform_presentation_profile.dart';
-import 'package:clock_rhythm/app/presentation/android_bottom_navigation.dart';
 import 'package:clock_rhythm/app/presentation/app_navigation_copy.dart';
+import 'package:clock_rhythm/app/presentation/bottom_tab_navigation.dart';
 import 'package:clock_rhythm/app/presentation/route_error_page.dart';
-import 'package:clock_rhythm/app/presentation/windows_top_navigation.dart';
+import 'package:clock_rhythm/app/presentation/side_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   const AppNavigationCopy copy = AppNavigationCopy(
+    appTitle: 'Clock Rhythm',
     clockLabel: 'Clock',
     navigationSemanticsLabel: 'App destinations',
     calendarLabel: 'Calendar',
@@ -24,9 +25,10 @@ void main() {
     backToClockLabel: 'Back to Clock',
   );
 
-  testWidgets('Android uses bottom navigation and Back returns to Clock', (
+  testWidgets('narrow Android uses bottom tabs and Back returns to Clock', (
     WidgetTester tester,
   ) async {
+    _setViewport(tester, const Size(390, 844));
     final ClockRhythmRouter clockRouter = ClockRhythmRouter(
       profile: PlatformPresentationProfile.android,
       navigationCopy: copy,
@@ -36,8 +38,8 @@ void main() {
     await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
     await tester.pumpAndSettle();
 
-    expect(find.byType(AndroidBottomNavigation), findsOneWidget);
-    expect(find.byType(WindowsTopNavigation), findsNothing);
+    expect(find.byType(BottomTabNavigation), findsOneWidget);
+    expect(find.byType(SideNavigation), findsNothing);
     await tester.tap(find.text('Data'));
     await tester.pumpAndSettle();
     expect(clockRouter.router.state.uri.path, '/data');
@@ -48,8 +50,9 @@ void main() {
   });
 
   testWidgets(
-    'Windows uses top navigation and Ctrl+4/5 select Theme and Settings',
+    'wide Windows uses the sidebar and Ctrl+4/5 select Theme and Settings',
     (WidgetTester tester) async {
+      _setViewport(tester, const Size(1280, 820));
       final ClockRhythmRouter clockRouter = ClockRhythmRouter(
         profile: PlatformPresentationProfile.windows,
         navigationCopy: copy,
@@ -58,8 +61,9 @@ void main() {
       await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
       await tester.pumpAndSettle();
 
-      expect(find.byType(WindowsTopNavigation), findsOneWidget);
-      expect(find.byType(AndroidBottomNavigation), findsNothing);
+      expect(find.byType(SideNavigation), findsOneWidget);
+      expect(find.byType(BottomTabNavigation), findsNothing);
+      expect(find.text('Ctrl+4'), findsOneWidget);
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
       await tester.sendKeyEvent(LogicalKeyboardKey.digit4);
@@ -77,9 +81,10 @@ void main() {
     },
   );
 
-  testWidgets('macOS uses desktop navigation and opens Settings', (
+  testWidgets('wide macOS uses the sidebar and opens Settings', (
     WidgetTester tester,
   ) async {
+    _setViewport(tester, const Size(1280, 820));
     final ClockRhythmRouter clockRouter = ClockRhythmRouter(
       profile: PlatformPresentationProfile.macos,
       navigationCopy: copy,
@@ -89,11 +94,63 @@ void main() {
     await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
     await tester.pumpAndSettle();
 
-    expect(find.byType(WindowsTopNavigation), findsOneWidget);
-    expect(find.byType(AndroidBottomNavigation), findsNothing);
+    expect(find.byType(SideNavigation), findsOneWidget);
+    expect(find.text('⌃5'), findsOneWidget);
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
     expect(clockRouter.router.state.uri.path, '/settings');
+  });
+
+  testWidgets('a narrow desktop window switches to bottom tabs', (
+    WidgetTester tester,
+  ) async {
+    _setViewport(tester, const Size(720, 560));
+    final ClockRhythmRouter clockRouter = ClockRhythmRouter(
+      profile: PlatformPresentationProfile.windows,
+      navigationCopy: copy,
+    );
+    addTearDown(clockRouter.dispose);
+
+    await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BottomTabNavigation), findsOneWidget);
+    expect(find.byType(SideNavigation), findsNothing);
+  });
+
+  testWidgets('a wide Android tablet uses the sidebar without key hints', (
+    WidgetTester tester,
+  ) async {
+    _setViewport(tester, const Size(1280, 800));
+    final ClockRhythmRouter clockRouter = ClockRhythmRouter(
+      profile: PlatformPresentationProfile.android,
+      navigationCopy: copy,
+    );
+    addTearDown(clockRouter.dispose);
+
+    await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SideNavigation), findsOneWidget);
+    expect(find.textContaining('1'), findsNothing);
+  });
+
+  testWidgets('200-percent text keeps bottom tabs even when wide', (
+    WidgetTester tester,
+  ) async {
+    _setViewport(tester, const Size(1280, 820));
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final ClockRhythmRouter clockRouter = ClockRhythmRouter(
+      profile: PlatformPresentationProfile.windows,
+      navigationCopy: copy,
+    );
+    addTearDown(clockRouter.dispose);
+
+    await tester.pumpWidget(ClockRhythmApp(router: clockRouter.router));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BottomTabNavigation), findsOneWidget);
   });
 
   testWidgets('all platforms expose a Settings destination', (
@@ -301,4 +358,11 @@ final class _RestorableRouterHarnessState
     clockRouter.dispose();
     super.dispose();
   }
+}
+
+void _setViewport(WidgetTester tester, Size size) {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
 }

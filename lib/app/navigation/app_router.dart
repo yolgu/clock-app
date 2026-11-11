@@ -65,6 +65,8 @@ final class ClockRhythmRouter {
     required PlatformPresentationProfile profile,
     AppNavigationCopy? navigationCopy,
     AppDestinationPages? pages,
+    String? releaseLabel,
+    DestinationPageBuilder? sidebarSummary,
     String initialLocation = '/clock',
   }) {
     final AppNavigationCopyResolver resolveNavigationCopy =
@@ -96,6 +98,8 @@ final class ClockRhythmRouter {
                     navigationShell: navigationShell,
                     profile: profile,
                     copy: resolveNavigationCopy(context),
+                    releaseLabel: releaseLabel,
+                    sidebarSummary: sidebarSummary?.call(context),
                   ),
                 );
               },

@@ -7,7 +7,9 @@ import '../../../shared/ui/public.dart'
         ClockRhythmCard,
         ClockRhythmLayout,
         ClockRhythmRadius,
-        ClockRhythmSpace;
+        ClockRhythmSpace,
+        LineGlyph,
+        LineIcon;
 import '../../../shared/ui/public.dart' show SemanticStatusAnnouncement;
 import '../application/backup_failure.dart';
 import '../application/prepare_backup_import.dart';
@@ -25,149 +27,161 @@ final class DataManagementPanel extends ConsumerWidget {
     final AppLocalizations copy = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final DataTransferState state = ref.watch(dataTransferViewModelProvider);
-    return ClockRhythmCard.unpadded(
+    final double padding = ClockRhythmLayout.cardPaddingFor(
+      MediaQuery.sizeOf(context).width,
+    );
+    return Column(
       key: const ValueKey<String>('data-management-panel'),
-      child: Padding(
-        padding: EdgeInsets.all(
-          ClockRhythmLayout.cardPaddingFor(MediaQuery.sizeOf(context).width),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                  child: const SizedBox.square(
-                    dimension: 36,
-                    child: Icon(
-                      Icons.folder_rounded,
-                      size: 22,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: ClockRhythmSpace.space12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(copy.backupTitle, style: theme.textTheme.titleLarge),
-                      const SizedBox(height: ClockRhythmSpace.space4),
-                      Text(
-                        copy.backupDescription,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: ClockRhythmSpace.space16),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(ClockRhythmSpace.space12),
-                child: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        ClockRhythmCard.unpadded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.fromLTRB(padding, padding, padding, 14),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Icon(
-                      Icons.info_outline_rounded,
-                      size: 20,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: ClockRhythmSpace.space8),
-                    Expanded(
+                    Semantics(
+                      header: true,
                       child: Text(
-                        copy.backupPlainTextWarning,
-                        key: const ValueKey<String>('data-plain-text-warning'),
+                        copy.backupTitle,
+                        style: theme.textTheme.titleMedium,
                       ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      copy.backupDescription,
+                      style: theme.textTheme.bodySmall,
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: ClockRhythmSpace.space16),
-            Wrap(
-              spacing: ClockRhythmSpace.space8,
-              runSpacing: ClockRhythmSpace.space8,
-              children: <Widget>[
-                FilledButton.icon(
+              _BackupAction(
+                padding: padding,
+                icon: LineGlyph.upload,
+                title: copy.backupExport,
+                description: copy.backupExportDescription,
+                command: FilledButton(
                   key: const ValueKey<String>('export-backup'),
                   onPressed: state.isBusy
                       ? null
                       : () => _confirmExport(context, ref),
-                  icon: const Icon(Icons.ios_share_rounded),
-                  label: Text(copy.backupExport),
+                  child: Text(copy.backupExport),
                 ),
-                OutlinedButton.icon(
+              ),
+              _BackupAction(
+                padding: padding,
+                icon: LineGlyph.download,
+                title: copy.backupImport,
+                description: copy.backupImportDescription,
+                command: OutlinedButton(
                   key: const ValueKey<String>('import-backup'),
                   onPressed: state.isBusy
                       ? null
                       : () => _prepareImport(context, ref),
-                  icon: const Icon(Icons.file_open_rounded),
-                  label: Text(copy.backupImport),
+                  child: Text(copy.actionImportPortableBackup),
+                ),
+              ),
+              SizedBox(
+                height: ClockRhythmSpace.space4,
+                child: state.isBusy ? const LinearProgressIndicator() : null,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: padding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    if (state.success == DataTransferSuccess.exported)
+                      SemanticStatusAnnouncement(
+                        message: copy.messageBackupExported,
+                        child: Text(
+                          copy.messageBackupExported,
+                          key: const ValueKey<String>(
+                            'backup-exported-feedback',
+                          ),
+                        ),
+                      ),
+                    if (state.success == DataTransferSuccess.imported)
+                      SemanticStatusAnnouncement(
+                        message: copy.messageBackupImported,
+                        child: Text(
+                          copy.messageBackupImported,
+                          key: const ValueKey<String>(
+                            'backup-imported-feedback',
+                          ),
+                        ),
+                      ),
+                    if (state.failure case final BackupFailure failure)
+                      SemanticStatusAnnouncement(
+                        message: backupFailureMessage(copy, failure),
+                        child: Text(
+                          backupFailureMessage(copy, failure),
+                          key: const ValueKey<String>(
+                            'backup-failure-feedback',
+                          ),
+                          style: TextStyle(color: theme.colorScheme.error),
+                        ),
+                      ),
+                    if (state.autoStartRepairRequired)
+                      Text(
+                        copy.autoStartStatusNeedsAction,
+                        key: const ValueKey<String>('backup-autostart-repair'),
+                      ),
+                    if (state.refreshRequired)
+                      ListTile(
+                        key: const ValueKey<String>('backup-refresh-retry'),
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(copy.failureUnknown),
+                        trailing: TextButton(
+                          onPressed: () => ref
+                              .read(dataTransferViewModelProvider.notifier)
+                              .retryRefresh(),
+                          child: Text(copy.actionRetry),
+                        ),
+                      ),
+                    const SizedBox(height: ClockRhythmSpace.space12),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: ClockRhythmSpace.space12),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+            borderRadius: BorderRadius.circular(ClockRhythmRadius.control + 2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: ClockRhythmSpace.space16,
+              vertical: ClockRhythmSpace.space12,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                LineIcon(
+                  LineGlyph.info,
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: ClockRhythmSpace.space8),
+                Expanded(
+                  child: Text(
+                    copy.backupPlainTextWarning,
+                    key: const ValueKey<String>('data-plain-text-warning'),
+                    style: theme.textTheme.bodySmall,
+                  ),
                 ),
               ],
             ),
-            SizedBox(
-              height: ClockRhythmSpace.space4,
-              child: state.isBusy ? const LinearProgressIndicator() : null,
-            ),
-            if (state.success == DataTransferSuccess.exported)
-              SemanticStatusAnnouncement(
-                message: copy.messageBackupExported,
-                child: Text(
-                  copy.messageBackupExported,
-                  key: const ValueKey<String>('backup-exported-feedback'),
-                ),
-              ),
-            if (state.success == DataTransferSuccess.imported)
-              SemanticStatusAnnouncement(
-                message: copy.messageBackupImported,
-                child: Text(
-                  copy.messageBackupImported,
-                  key: const ValueKey<String>('backup-imported-feedback'),
-                ),
-              ),
-            if (state.failure case final BackupFailure failure)
-              SemanticStatusAnnouncement(
-                message: backupFailureMessage(copy, failure),
-                child: Text(
-                  backupFailureMessage(copy, failure),
-                  key: const ValueKey<String>('backup-failure-feedback'),
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
-            if (state.autoStartRepairRequired)
-              Text(
-                copy.autoStartStatusNeedsAction,
-                key: const ValueKey<String>('backup-autostart-repair'),
-              ),
-            if (state.refreshRequired)
-              ListTile(
-                key: const ValueKey<String>('backup-refresh-retry'),
-                contentPadding: EdgeInsets.zero,
-                title: Text(copy.failureUnknown),
-                trailing: TextButton(
-                  onPressed: () => ref
-                      .read(dataTransferViewModelProvider.notifier)
-                      .retryRefresh(),
-                  child: Text(copy.actionRetry),
-                ),
-              ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: ClockRhythmSpace.space20),
+        const _BackupScope(),
+      ],
     );
   }
 
@@ -249,6 +263,196 @@ final class DataManagementPanel extends ConsumerWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// One backup command as a row: what it does on the left, the button on the
+/// right, separated from its neighbours by a hairline.
+final class _BackupAction extends StatelessWidget {
+  const _BackupAction({
+    required this.padding,
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.command,
+  });
+
+  final double padding;
+  final LineGlyph icon;
+  final String title;
+  final String description;
+  final Widget command;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final Widget copy = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: Color.lerp(
+              theme.scaffoldBackgroundColor,
+              theme.colorScheme.surface,
+              0.5,
+            ),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+            borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
+          ),
+          child: SizedBox.square(
+            dimension: 36,
+            child: LineIcon(
+              icon,
+              size: 18,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const SizedBox(width: ClockRhythmSpace.space12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                title,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(description, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ],
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: padding,
+          vertical: ClockRhythmSpace.space16,
+        ),
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            if (constraints.maxWidth < _sideBySideMinimumWidth) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  copy,
+                  const SizedBox(height: ClockRhythmSpace.space12),
+                  command,
+                ],
+              );
+            }
+            return Row(
+              children: <Widget>[
+                Expanded(child: copy),
+                const SizedBox(width: ClockRhythmSpace.space16),
+                command,
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  static const double _sideBySideMinimumWidth = 520;
+}
+
+/// What a Portable Backup carries and what it leaves on the device.
+final class _BackupScope extends StatelessWidget {
+  const _BackupScope();
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final AppLocalizations copy = AppLocalizations.of(context);
+    final List<Widget> included = <Widget>[
+      _ScopeItem(included: true, text: copy.backupScopeIncludedPreferences),
+      _ScopeItem(included: true, text: copy.backupScopeIncludedTodos),
+    ];
+    final List<Widget> excluded = <Widget>[
+      _ScopeItem(included: false, text: copy.backupScopeExcludedRhythm),
+      _ScopeItem(included: false, text: copy.backupScopeExcludedDrafts),
+      _ScopeItem(included: false, text: copy.backupScopeExcludedFiles),
+    ];
+    return Column(
+      key: const ValueKey<String>('backup-scope'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Semantics(
+          header: true,
+          child: Text(
+            copy.backupScopeTitle,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        const SizedBox(height: ClockRhythmSpace.space12),
+        LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            if (constraints.maxWidth < 560) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[...included, ...excluded],
+              );
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(child: Column(children: included)),
+                const SizedBox(width: ClockRhythmSpace.space20),
+                Expanded(child: Column(children: excluded)),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+final class _ScopeItem extends StatelessWidget {
+  const _ScopeItem({required this.included, required this.text});
+
+  final bool included;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: ClockRhythmSpace.space8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          LineIcon(
+            included ? LineGlyph.check : LineGlyph.minus,
+            size: 16,
+            color: included
+                ? theme.colorScheme.secondary
+                : theme.colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: ClockRhythmSpace.space8),
+          Expanded(
+            child: Text(
+              text,
+              style: included
+                  ? theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                    )
+                  : theme.textTheme.bodySmall,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

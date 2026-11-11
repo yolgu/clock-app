@@ -101,6 +101,15 @@ abstract final class BackupV1Validator {
               _string(values, 'theme', BackupFailureKey.invalidPreferences),
             )
           : ThemePreference.current;
+      final AppearancePreference appearance = values.containsKey('appearance')
+          ? AppearancePreference.parse(
+              _string(
+                values,
+                'appearance',
+                BackupFailureKey.invalidPreferences,
+              ),
+            )
+          : AppearancePreference.standard;
       final bool initialSetupCompleted =
           values.containsKey('initialSetupCompleted')
           ? _boolean(
@@ -120,6 +129,7 @@ abstract final class BackupV1Validator {
           notificationSound: soundResult.sound.snapshot(),
           language: language,
           theme: theme,
+          appearance: appearance,
           initialSetupCompleted: initialSetupCompleted,
         ),
       );

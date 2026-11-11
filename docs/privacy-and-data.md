@@ -21,7 +21,7 @@ Windows release에도 network 기능이나 account adapter가 없습니다. Prod
 | Windows window bounds/maximized | flavor별 Local AppData | 제외 | 해당 없음 |
 | 진단·cache·temporary file | device-local | 제외 | 제외 |
 
-Preferences에는 Focus/Rest 간격, Daily Rhythm, 언어, theme, sound mode/volume, Windows 자동 시작의 desired value와 초기 설정 상태가 포함됩니다. Todo에는 title, Local Calendar Date, 선택적 표시 시간, 완료 상태, display order와 생성·수정 시각이 포함됩니다.
+Preferences에는 Focus/Rest 간격, Daily Rhythm, 언어, theme, 화면 모드(Appearance), sound mode/volume, Windows 자동 시작의 desired value와 초기 설정 상태가 포함됩니다. Todo에는 title, Local Calendar Date, 선택적 표시 시간, 완료 상태, display order와 생성·수정 시각이 포함됩니다.
 
 ## Portable Backup
 

@@ -13,13 +13,13 @@ abstract final class ClockRhythmSpace {
   static const double space32 = 32;
 }
 
-/// Generous, continuous-looking corners in the spirit of Apple's grouped
-/// interfaces: soft controls, large cards and capsule buttons.
+/// Tight corners for a dense minimal interface: controls and cards stay
+/// rectangular enough to align on a grid; the pill is kept for status chips.
 abstract final class ClockRhythmRadius {
-  static const double small = 8;
-  static const double control = 12;
-  static const double card = 20;
-  static const double dialog = 24;
+  static const double small = 6;
+  static const double control = 8;
+  static const double card = 12;
+  static const double dialog = 16;
   static const double pill = 999;
 }
 
@@ -43,7 +43,6 @@ abstract final class ClockRhythmLayout {
   static const double maximumContentWidth = 1120;
   static const double minimumInteractiveDimension = 48;
   static const double androidNavigationHeight = 68;
-  static const double windowsNavigationHeight = 64;
 
   static double horizontalInsetFor(double width) {
     if (width < compactBreakpoint) {

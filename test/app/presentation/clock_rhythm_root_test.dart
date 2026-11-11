@@ -43,7 +43,7 @@ void main() {
           .data,
       ThemeCatalog.resolve(
         ThemePreference.current,
-      ).background.color.toARGB32().toString(),
+      ).dark.background.color.toARGB32().toString(),
     );
 
     await tester.tap(find.byKey(const ValueKey<String>('change-root-style')));
@@ -56,7 +56,41 @@ void main() {
           .data,
       ThemeCatalog.resolve(
         ThemePreference.nord,
-      ).background.color.toARGB32().toString(),
+      ).dark.background.color.toARGB32().toString(),
+    );
+  });
+
+  testWidgets('a durable Appearance change switches the root to light', (
+    WidgetTester tester,
+  ) async {
+    final _RootPreferencesActions actions = _RootPreferencesActions();
+    final ClockRhythmRouter router = ClockRhythmRouter(
+      profile: PlatformPresentationProfile.windows,
+      pages: AppDestinationPages(
+        clock: (_) => const _RootProbe(),
+        calendar: (_, _) => const SizedBox.shrink(),
+        data: (_) => const SizedBox.shrink(),
+        theme: (_) => const SizedBox.shrink(),
+        settings: (_) => const SizedBox.shrink(),
+      ),
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [preferencesActionsProvider.overrideWithValue(actions)],
+        child: ClockRhythmRoot(router: router.router),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('use-light')));
+    await tester.pumpAndSettle();
+
+    final BuildContext context = tester.element(find.byType(_RootProbe));
+    expect(Theme.of(context).brightness, Brightness.light);
+    expect(
+      Theme.of(context).scaffoldBackgroundColor,
+      ThemeCatalog.resolve(ThemePreference.current).light.background.color,
     );
   });
 
@@ -133,6 +167,13 @@ final class _RootProbe extends ConsumerWidget {
             },
             child: const Text('change'),
           ),
+          TextButton(
+            key: const ValueKey<String>('use-light'),
+            onPressed: () => ref
+                .read(preferencesDataControllerProvider.notifier)
+                .changeAppearance(AppearancePreference.light),
+            child: const Text('light'),
+          ),
         ],
       ),
     );
@@ -166,6 +207,14 @@ final class _RootPreferencesActions implements PreferencesActions {
   @override
   Future<PreferencesCommandResult> changeTheme(ThemePreference theme) async {
     preferences = preferences.changeTheme(theme);
+    return PreferencesCommandResult(preferences: preferences);
+  }
+
+  @override
+  Future<PreferencesCommandResult> changeAppearance(
+    AppearancePreference appearance,
+  ) async {
+    preferences = preferences.changeAppearance(appearance);
     return PreferencesCommandResult(preferences: preferences);
   }
 

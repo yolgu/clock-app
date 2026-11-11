@@ -1,3 +1,4 @@
+import 'package:clock_rhythm/contexts/preferences/domain/appearance_preference.dart';
 import 'package:clock_rhythm/contexts/preferences/domain/language_preference.dart';
 import 'package:clock_rhythm/contexts/preferences/domain/notification_sound_preference.dart';
 import 'package:clock_rhythm/contexts/preferences/domain/theme_preference.dart';
@@ -14,6 +15,7 @@ void main() {
     expect(preferences.rhythmConfiguration.dailyRhythm.end.text, '18:00');
     expect(preferences.language, LanguagePreference.korean);
     expect(preferences.theme, ThemePreference.current);
+    expect(preferences.appearance, AppearancePreference.dark);
     expect(
       preferences.notificationSound.mode,
       NotificationSoundMode.bundledDefault,
@@ -42,9 +44,39 @@ void main() {
     );
   });
 
-  test('rejects present invalid language and theme identifiers', () {
-    expect(() => LanguagePreference.parse('ko'), throwsFormatException);
-    expect(() => ThemePreference.parse('unknown'), throwsFormatException);
+  test(
+    'rejects present invalid language, theme and Appearance identifiers',
+    () {
+      expect(() => LanguagePreference.parse('ko'), throwsFormatException);
+      expect(() => ThemePreference.parse('unknown'), throwsFormatException);
+      expect(() => AppearancePreference.parse('sepia'), throwsFormatException);
+    },
+  );
+
+  test('publishes stable Appearance identifiers with dark as standard', () {
+    expect(
+      AppearancePreference.values.map(
+        (AppearancePreference appearance) => appearance.id,
+      ),
+      <String>['system', 'light', 'dark'],
+    );
+    expect(AppearancePreference.standard, AppearancePreference.dark);
+  });
+
+  test('Appearance changes independently of the palette and restores', () {
+    final UserPreferences palette = UserPreferences.defaults().changeTheme(
+      ThemePreference.nord,
+    );
+
+    final UserPreferences light = palette.changeAppearance(
+      AppearancePreference.light,
+    );
+
+    expect(light.theme, ThemePreference.nord);
+    expect(light.appearance, AppearancePreference.light);
+    expect(light, isNot(palette));
+    expect(UserPreferences.restore(light.snapshot()), light);
+    expect(light.snapshot().toJsonLikeMap()['appearance'], 'light');
   });
 
   test('mute keeps notifications enabled and preserves zero volume', () {

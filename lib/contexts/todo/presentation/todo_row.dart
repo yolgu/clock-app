@@ -5,7 +5,13 @@ import 'package:flutter/services.dart';
 
 import '../../../shared/i18n/public.dart' show AppLocalizations;
 import '../../../shared/ui/public.dart'
-    show ClockRhythmRadius, ClockRhythmSpace, FocusRing, MinimumTapTarget;
+    show
+        ClockRhythmRadius,
+        ClockRhythmSpace,
+        FocusRing,
+        LineGlyph,
+        LineIcon,
+        MinimumTapTarget;
 import '../domain/todo.dart';
 import 'todo_details_button.dart';
 import 'todo_inline_edit_session.dart';
@@ -211,7 +217,7 @@ final class TodoRow extends StatelessWidget {
                     : colors.onSurfaceVariant;
               }),
             ),
-            icon: const Icon(Icons.delete_outline, size: 20),
+            icon: const LineIcon(LineGlyph.trash, size: 20),
           ),
         ),
       ],
@@ -278,12 +284,12 @@ final class _TodoReorderHandleState extends State<_TodoReorderHandle> {
             behavior: HitTestBehavior.opaque,
             onTap: _focusNode.requestFocus,
             child: MinimumTapTarget(
-              child: Icon(
-                Icons.drag_handle,
-                size: 20,
+              child: LineIcon(
+                LineGlyph.dragDots,
+                size: 18,
                 color: Theme.of(
                   context,
-                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
               ),
             ),
           ),

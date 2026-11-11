@@ -32,7 +32,14 @@ void main() {
 
       expect(_findKeysWithPrefix('calendar-day-'), findsNWidgets(30));
       expect(_findKeysWithPrefix('calendar-blank-'), findsNWidgets(12));
-      expect(find.text('1/2'), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(
+              find.byKey(const ValueKey<String>('calendar-summary-2026-06-02')),
+            )
+            .data,
+        '2 Todos',
+      );
       expect(
         find.bySemanticsLabel(
           RegExp(
@@ -262,14 +269,21 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check), findsWidgets);
-      expect(find.byIcon(Icons.checklist), findsOneWidget);
+      // Todo presence reads as a count, today as a filled disc behind the
+      // date, and the selection as an outline around the whole cell.
+      expect(
+        find.byKey(const ValueKey<String>('calendar-summary-2026-06-02')),
+        findsOneWidget,
+      );
+      expect(_hasOutline(tester, '2026-06-02'), isTrue);
       await tester.tap(
         find.byKey(const ValueKey<String>('calendar-day-2026-06-03')),
       );
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.today_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.check), findsWidgets);
+      expect(_hasOutline(tester, '2026-06-03'), isTrue);
+      expect(_hasOutline(tester, '2026-06-02'), isFalse);
+      expect(_hasDateDisc(tester, '2026-06-02'), isTrue);
+      expect(_hasDateDisc(tester, '2026-06-03'), isFalse);
     },
   );
 
@@ -398,4 +412,30 @@ Finder _findKeysWithPrefix(String prefix) {
     final Key? key = widget.key;
     return key is ValueKey<String> && key.value.startsWith(prefix);
   });
+}
+
+bool _hasOutline(WidgetTester tester, String date) {
+  final Material cell = tester.widget<Material>(
+    find
+        .descendant(
+          of: find.byKey(ValueKey<String>('calendar-day-$date')),
+          matching: find.byType(Material),
+        )
+        .first,
+  );
+  return (cell.shape! as RoundedRectangleBorder).side != BorderSide.none;
+}
+
+bool _hasDateDisc(WidgetTester tester, String date) {
+  return tester
+      .widgetList<Container>(
+        find.descendant(
+          of: find.byKey(ValueKey<String>('calendar-day-$date')),
+          matching: find.byType(Container),
+        ),
+      )
+      .any(
+        (Container container) =>
+            (container.decoration as BoxDecoration?)?.color != null,
+      );
 }

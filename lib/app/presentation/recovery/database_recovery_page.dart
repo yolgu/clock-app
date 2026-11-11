@@ -7,7 +7,8 @@ import '../../../features/data_transfer/public.dart'
 import '../../../features/data_transfer/public_presentation.dart'
     show BackupImportPreviewDialog;
 import '../../../shared/i18n/public.dart';
-import '../../../shared/ui/public.dart' show ClockRhythmSpace;
+import '../../../shared/ui/public.dart'
+    show ClockRhythmSpace, LineGlyph, LineIcon;
 import 'database_recovery_contract.dart';
 import 'database_reset_confirmation.dart';
 
@@ -49,7 +50,7 @@ final class _DatabaseRecoveryPageState extends State<DatabaseRecoveryPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  const Icon(Icons.storage, size: 64),
+                  const LineIcon(LineGlyph.folder, size: 64),
                   const SizedBox(height: ClockRhythmSpace.space16),
                   Text(
                     copy.databaseRecoveryTitle,

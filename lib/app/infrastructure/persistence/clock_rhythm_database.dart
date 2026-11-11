@@ -21,6 +21,11 @@ class PreferenceRecords extends Table {
   TextColumn get mutedFromFileName => text().nullable()();
   TextColumn get language => text()();
   TextColumn get theme => text()();
+
+  /// Schema version 2. The default is the appearance installations from
+  /// version 1 open in (`AppearancePreference.standard`).
+  TextColumn get appearance =>
+      text().withDefault(const Constant<String>('dark'))();
   BoolColumn get initialSetupCompleted => boolean()();
 
   @override
@@ -69,6 +74,12 @@ final class ClockRhythmDatabase extends _$ClockRhythmDatabase {
               to != DatabaseSchema.currentVersion) {
             throw StateError(
               'No committed database migration exists from $from to $to.',
+            );
+          }
+          if (from < DatabaseSchema.appearanceVersion) {
+            await migrator.addColumn(
+              preferenceRecords,
+              preferenceRecords.appearance,
             );
           }
           await migrationCheckpoint?.call();

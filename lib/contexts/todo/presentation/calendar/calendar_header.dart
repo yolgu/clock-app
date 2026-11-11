@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/i18n/public.dart'
     show AppLocalizations, LocalDateFormatter;
-import '../../../../shared/ui/public.dart' show ClockRhythmSpace;
+import '../../../../shared/ui/public.dart'
+    show ClockRhythmSpace, LineGlyph, LineIcon;
 import '../todo_date_math.dart';
 import '../todo_view_state.dart';
 
@@ -33,31 +34,19 @@ final class CalendarHeader extends StatelessWidget {
         TodoDateMath.addMonths(state.visibleMonth, -1) != null;
     final bool canMoveNext =
         TodoDateMath.addMonths(state.visibleMonth, 1) != null;
-    return Wrap(
-      alignment: WrapAlignment.spaceBetween,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: ClockRhythmSpace.space12,
-      runSpacing: ClockRhythmSpace.space8,
+    return Row(
       children: <Widget>[
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(
-              localizations.calendarMonthEyebrow,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+        Expanded(
+          child: Semantics(
+            header: true,
+            child: Text(
+              monthLabel,
+              key: const ValueKey<String>('calendar-month-label'),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
               ),
             ),
-            Semantics(
-              header: true,
-              child: Text(
-                monthLabel,
-                key: const ValueKey<String>('calendar-month-label'),
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-            ),
-          ],
+          ),
         ),
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
@@ -71,7 +60,7 @@ final class CalendarHeader extends StatelessWidget {
                     }
                   : null,
               tooltip: localizations.calendarPreviousMonth,
-              icon: const Icon(Icons.chevron_left_rounded),
+              icon: const LineIcon(LineGlyph.chevronLeft),
             ),
             OutlinedButton(
               key: const ValueKey<String>('calendar-today'),
@@ -90,7 +79,7 @@ final class CalendarHeader extends StatelessWidget {
                     }
                   : null,
               tooltip: localizations.calendarNextMonth,
-              icon: const Icon(Icons.chevron_right_rounded),
+              icon: const LineIcon(LineGlyph.chevronRight),
             ),
           ],
         ),

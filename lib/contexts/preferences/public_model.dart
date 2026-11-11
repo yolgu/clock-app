@@ -1,5 +1,6 @@
 library;
 
+export 'domain/appearance_preference.dart' show AppearancePreference;
 export 'domain/language_preference.dart' show LanguagePreference;
 export 'domain/notification_sound_preference.dart'
     show

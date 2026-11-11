@@ -1,5 +1,7 @@
 # Provide adaptive and accessible interaction
 
+> Navigation layout and theme palettes superseded by [ADR 0025](0025-switch-navigation-by-available-width.md) and [ADR 0024](0024-replace-inherited-theme-palettes-with-original-palettes.md).
+
 The Windows window opens at 920×680 logical pixels on first launch and cannot shrink below 720×560. Later launches restore device-local bounds and maximized state, clamping a window back onto an available display when monitor geometry changes. Window state is device-specific and excluded from Portable Backup.
 
 Windows keeps its top segmented navigation and Android keeps its bottom navigation. Content adapts from one column to useful two-column compositions according to available constraints rather than a device-type or orientation check, and Android supports portrait, landscape, split-screen, phones, and tablets without locking orientation. Route content and scroll state survive resizing and ordinary navigation.

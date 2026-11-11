@@ -155,6 +155,18 @@ class $PreferenceRecordsTable extends PreferenceRecords
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _appearanceMeta = const VerificationMeta(
+    'appearance',
+  );
+  @override
+  late final GeneratedColumn<String> appearance = GeneratedColumn<String>(
+    'appearance',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant<String>('dark'),
+  );
   static const VerificationMeta _initialSetupCompletedMeta =
       const VerificationMeta('initialSetupCompleted');
   @override
@@ -184,6 +196,7 @@ class $PreferenceRecordsTable extends PreferenceRecords
     mutedFromFileName,
     language,
     theme,
+    appearance,
     initialSetupCompleted,
   ];
   @override
@@ -318,6 +331,12 @@ class $PreferenceRecordsTable extends PreferenceRecords
     } else if (isInserting) {
       context.missing(_themeMeta);
     }
+    if (data.containsKey('appearance')) {
+      context.handle(
+        _appearanceMeta,
+        appearance.isAcceptableOrUnknown(data['appearance']!, _appearanceMeta),
+      );
+    }
     if (data.containsKey('initial_setup_completed')) {
       context.handle(
         _initialSetupCompletedMeta,
@@ -390,6 +409,10 @@ class $PreferenceRecordsTable extends PreferenceRecords
         DriftSqlType.string,
         data['${effectivePrefix}theme'],
       )!,
+      appearance: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}appearance'],
+      )!,
       initialSetupCompleted: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}initial_setup_completed'],
@@ -418,6 +441,10 @@ class PreferenceRecord extends DataClass
   final String? mutedFromFileName;
   final String language;
   final String theme;
+
+  /// Schema version 2. The default is the appearance installations from
+  /// version 1 open in (`AppearancePreference.standard`).
+  final String appearance;
   final bool initialSetupCompleted;
   const PreferenceRecord({
     required this.singletonId,
@@ -433,6 +460,7 @@ class PreferenceRecord extends DataClass
     this.mutedFromFileName,
     required this.language,
     required this.theme,
+    required this.appearance,
     required this.initialSetupCompleted,
   });
   @override
@@ -457,6 +485,7 @@ class PreferenceRecord extends DataClass
     }
     map['language'] = Variable<String>(language);
     map['theme'] = Variable<String>(theme);
+    map['appearance'] = Variable<String>(appearance);
     map['initial_setup_completed'] = Variable<bool>(initialSetupCompleted);
     return map;
   }
@@ -482,6 +511,7 @@ class PreferenceRecord extends DataClass
           : Value(mutedFromFileName),
       language: Value(language),
       theme: Value(theme),
+      appearance: Value(appearance),
       initialSetupCompleted: Value(initialSetupCompleted),
     );
   }
@@ -507,6 +537,7 @@ class PreferenceRecord extends DataClass
       ),
       language: serializer.fromJson<String>(json['language']),
       theme: serializer.fromJson<String>(json['theme']),
+      appearance: serializer.fromJson<String>(json['appearance']),
       initialSetupCompleted: serializer.fromJson<bool>(
         json['initialSetupCompleted'],
       ),
@@ -529,6 +560,7 @@ class PreferenceRecord extends DataClass
       'mutedFromFileName': serializer.toJson<String?>(mutedFromFileName),
       'language': serializer.toJson<String>(language),
       'theme': serializer.toJson<String>(theme),
+      'appearance': serializer.toJson<String>(appearance),
       'initialSetupCompleted': serializer.toJson<bool>(initialSetupCompleted),
     };
   }
@@ -547,6 +579,7 @@ class PreferenceRecord extends DataClass
     Value<String?> mutedFromFileName = const Value.absent(),
     String? language,
     String? theme,
+    String? appearance,
     bool? initialSetupCompleted,
   }) => PreferenceRecord(
     singletonId: singletonId ?? this.singletonId,
@@ -568,6 +601,7 @@ class PreferenceRecord extends DataClass
         : this.mutedFromFileName,
     language: language ?? this.language,
     theme: theme ?? this.theme,
+    appearance: appearance ?? this.appearance,
     initialSetupCompleted: initialSetupCompleted ?? this.initialSetupCompleted,
   );
   PreferenceRecord copyWithCompanion(PreferenceRecordsCompanion data) {
@@ -603,6 +637,9 @@ class PreferenceRecord extends DataClass
           : this.mutedFromFileName,
       language: data.language.present ? data.language.value : this.language,
       theme: data.theme.present ? data.theme.value : this.theme,
+      appearance: data.appearance.present
+          ? data.appearance.value
+          : this.appearance,
       initialSetupCompleted: data.initialSetupCompleted.present
           ? data.initialSetupCompleted.value
           : this.initialSetupCompleted,
@@ -625,6 +662,7 @@ class PreferenceRecord extends DataClass
           ..write('mutedFromFileName: $mutedFromFileName, ')
           ..write('language: $language, ')
           ..write('theme: $theme, ')
+          ..write('appearance: $appearance, ')
           ..write('initialSetupCompleted: $initialSetupCompleted')
           ..write(')'))
         .toString();
@@ -645,6 +683,7 @@ class PreferenceRecord extends DataClass
     mutedFromFileName,
     language,
     theme,
+    appearance,
     initialSetupCompleted,
   );
   @override
@@ -664,6 +703,7 @@ class PreferenceRecord extends DataClass
           other.mutedFromFileName == this.mutedFromFileName &&
           other.language == this.language &&
           other.theme == this.theme &&
+          other.appearance == this.appearance &&
           other.initialSetupCompleted == this.initialSetupCompleted);
 }
 
@@ -681,6 +721,7 @@ class PreferenceRecordsCompanion extends UpdateCompanion<PreferenceRecord> {
   final Value<String?> mutedFromFileName;
   final Value<String> language;
   final Value<String> theme;
+  final Value<String> appearance;
   final Value<bool> initialSetupCompleted;
   const PreferenceRecordsCompanion({
     this.singletonId = const Value.absent(),
@@ -696,6 +737,7 @@ class PreferenceRecordsCompanion extends UpdateCompanion<PreferenceRecord> {
     this.mutedFromFileName = const Value.absent(),
     this.language = const Value.absent(),
     this.theme = const Value.absent(),
+    this.appearance = const Value.absent(),
     this.initialSetupCompleted = const Value.absent(),
   });
   PreferenceRecordsCompanion.insert({
@@ -712,6 +754,7 @@ class PreferenceRecordsCompanion extends UpdateCompanion<PreferenceRecord> {
     this.mutedFromFileName = const Value.absent(),
     required String language,
     required String theme,
+    this.appearance = const Value.absent(),
     required bool initialSetupCompleted,
   }) : focusMinutes = Value(focusMinutes),
        restMinutes = Value(restMinutes),
@@ -737,6 +780,7 @@ class PreferenceRecordsCompanion extends UpdateCompanion<PreferenceRecord> {
     Expression<String>? mutedFromFileName,
     Expression<String>? language,
     Expression<String>? theme,
+    Expression<String>? appearance,
     Expression<bool>? initialSetupCompleted,
   }) {
     return RawValuesInsertable({
@@ -753,6 +797,7 @@ class PreferenceRecordsCompanion extends UpdateCompanion<PreferenceRecord> {
       if (mutedFromFileName != null) 'muted_from_file_name': mutedFromFileName,
       if (language != null) 'language': language,
       if (theme != null) 'theme': theme,
+      if (appearance != null) 'appearance': appearance,
       if (initialSetupCompleted != null)
         'initial_setup_completed': initialSetupCompleted,
     });
@@ -772,6 +817,7 @@ class PreferenceRecordsCompanion extends UpdateCompanion<PreferenceRecord> {
     Value<String?>? mutedFromFileName,
     Value<String>? language,
     Value<String>? theme,
+    Value<String>? appearance,
     Value<bool>? initialSetupCompleted,
   }) {
     return PreferenceRecordsCompanion(
@@ -788,6 +834,7 @@ class PreferenceRecordsCompanion extends UpdateCompanion<PreferenceRecord> {
       mutedFromFileName: mutedFromFileName ?? this.mutedFromFileName,
       language: language ?? this.language,
       theme: theme ?? this.theme,
+      appearance: appearance ?? this.appearance,
       initialSetupCompleted:
           initialSetupCompleted ?? this.initialSetupCompleted,
     );
@@ -835,6 +882,9 @@ class PreferenceRecordsCompanion extends UpdateCompanion<PreferenceRecord> {
     if (theme.present) {
       map['theme'] = Variable<String>(theme.value);
     }
+    if (appearance.present) {
+      map['appearance'] = Variable<String>(appearance.value);
+    }
     if (initialSetupCompleted.present) {
       map['initial_setup_completed'] = Variable<bool>(
         initialSetupCompleted.value,
@@ -859,6 +909,7 @@ class PreferenceRecordsCompanion extends UpdateCompanion<PreferenceRecord> {
           ..write('mutedFromFileName: $mutedFromFileName, ')
           ..write('language: $language, ')
           ..write('theme: $theme, ')
+          ..write('appearance: $appearance, ')
           ..write('initialSetupCompleted: $initialSetupCompleted')
           ..write(')'))
         .toString();
@@ -1473,6 +1524,7 @@ typedef $$PreferenceRecordsTableCreateCompanionBuilder =
       Value<String?> mutedFromFileName,
       required String language,
       required String theme,
+      Value<String> appearance,
       required bool initialSetupCompleted,
     });
 typedef $$PreferenceRecordsTableUpdateCompanionBuilder =
@@ -1490,6 +1542,7 @@ typedef $$PreferenceRecordsTableUpdateCompanionBuilder =
       Value<String?> mutedFromFileName,
       Value<String> language,
       Value<String> theme,
+      Value<String> appearance,
       Value<bool> initialSetupCompleted,
     });
 
@@ -1564,6 +1617,11 @@ class $$PreferenceRecordsTableFilterComposer
 
   ColumnFilters<String> get theme => $composableBuilder(
     column: $table.theme,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get appearance => $composableBuilder(
+    column: $table.appearance,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1647,6 +1705,11 @@ class $$PreferenceRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get appearance => $composableBuilder(
+    column: $table.appearance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get initialSetupCompleted => $composableBuilder(
     column: $table.initialSetupCompleted,
     builder: (column) => ColumnOrderings(column),
@@ -1719,6 +1782,11 @@ class $$PreferenceRecordsTableAnnotationComposer
   GeneratedColumn<String> get theme =>
       $composableBuilder(column: $table.theme, builder: (column) => column);
 
+  GeneratedColumn<String> get appearance => $composableBuilder(
+    column: $table.appearance,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get initialSetupCompleted => $composableBuilder(
     column: $table.initialSetupCompleted,
     builder: (column) => column,
@@ -1778,6 +1846,7 @@ class $$PreferenceRecordsTableTableManager
                 Value<String?> mutedFromFileName = const Value.absent(),
                 Value<String> language = const Value.absent(),
                 Value<String> theme = const Value.absent(),
+                Value<String> appearance = const Value.absent(),
                 Value<bool> initialSetupCompleted = const Value.absent(),
               }) => PreferenceRecordsCompanion(
                 singletonId: singletonId,
@@ -1793,6 +1862,7 @@ class $$PreferenceRecordsTableTableManager
                 mutedFromFileName: mutedFromFileName,
                 language: language,
                 theme: theme,
+                appearance: appearance,
                 initialSetupCompleted: initialSetupCompleted,
               ),
           createCompanionCallback:
@@ -1810,6 +1880,7 @@ class $$PreferenceRecordsTableTableManager
                 Value<String?> mutedFromFileName = const Value.absent(),
                 required String language,
                 required String theme,
+                Value<String> appearance = const Value.absent(),
                 required bool initialSetupCompleted,
               }) => PreferenceRecordsCompanion.insert(
                 singletonId: singletonId,
@@ -1825,6 +1896,7 @@ class $$PreferenceRecordsTableTableManager
                 mutedFromFileName: mutedFromFileName,
                 language: language,
                 theme: theme,
+                appearance: appearance,
                 initialSetupCompleted: initialSetupCompleted,
               ),
           withReferenceMapper: (p0) => p0

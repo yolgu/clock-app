@@ -39,6 +39,52 @@ class AppLocalizationsKo extends AppLocalizations {
   String get clockPageEyebrow => '집중 리듬';
 
   @override
+  String get clockCurrentTimeTitle => '현재 시각';
+
+  @override
+  String clockSecondsWithZone(String seconds, String zone) {
+    return '$seconds초 · $zone';
+  }
+
+  @override
+  String clockDailyRhythmCaption(int focus, int rest) {
+    return '오늘의 리듬 · 집중 $focus분 / 휴식 $rest분';
+  }
+
+  @override
+  String get dataPageSection => '백업';
+
+  @override
+  String get themePageSection => '모양';
+
+  @override
+  String get settingsPageSection => '환경';
+
+  @override
+  String get themeAppliedLabel => '적용 중';
+
+  @override
+  String get themeAppearanceTitle => '화면 모드';
+
+  @override
+  String get themeAppearanceSystem => '시스템';
+
+  @override
+  String get themeAppearanceLight => '라이트';
+
+  @override
+  String get themeAppearanceDark => '다크';
+
+  @override
+  String get sidebarTodayTitle => '오늘';
+
+  @override
+  String get sidebarOpenTodos => '미완료 할 일';
+
+  @override
+  String get sidebarFocusWindow => '집중 시간대';
+
+  @override
   String get clockSettingsShortcutHint => '설정에서 변경';
 
   @override
@@ -334,9 +380,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get todoTodayEyebrow => '오늘';
-
-  @override
   String get todoTodayTitle => '오늘 할 일';
 
   @override
@@ -355,7 +398,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get todoActionEdit => '수정';
 
   @override
-  String get todoActionDetails => '할 일 상세 수정';
+  String get todoActionDetails => 'Todo 수정';
 
   @override
   String get todoInlineEditHint => '제목 수정. Enter로 저장, Esc로 취소합니다.';
@@ -401,6 +444,37 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get todoListEditTime => 'Todo 시간 수정';
+
+  @override
+  String get todoFieldTitle => '제목';
+
+  @override
+  String get todoFieldDate => '날짜';
+
+  @override
+  String get todoFieldTime => '시간';
+
+  @override
+  String get todoDatePanelLabel => 'Todo 날짜 고르기';
+
+  @override
+  String get todoTimePanelLabel => 'Todo 시간 고르기';
+
+  @override
+  String get todoTimeHours => '시';
+
+  @override
+  String get todoTimeMinutes => '분';
+
+  @override
+  String todoTimeHourValue(String hour) {
+    return '$hour시';
+  }
+
+  @override
+  String todoTimeMinuteValue(String minute) {
+    return '$minute분';
+  }
 
   @override
   String get todoGroupIncomplete => '미완료';
@@ -509,7 +583,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get calendarTitle => 'Todo 캘린더';
 
   @override
-  String get calendarMonthEyebrow => '월';
+  String calendarMonthSummary(int total, int completed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: 'Todo $total개',
+      one: 'Todo 1개',
+    );
+    return '이번 달 $_temp0 · 완료 $completed';
+  }
 
   @override
   String get calendarSelectedEyebrow => '선택 날짜';
@@ -573,7 +655,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get backupEyebrow => '데이터';
 
   @override
-  String get backupTitle => '데이터 관리';
+  String get backupTitle => 'Portable Backup';
 
   @override
   String get backupDescription =>
@@ -584,6 +666,32 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get backupImport => '가져오기';
+
+  @override
+  String get backupExportDescription => '지금의 설정과 모든 날짜의 Todo를 파일 하나로 저장합니다.';
+
+  @override
+  String get backupImportDescription =>
+      '파일의 데이터로 현재 설정과 Todo를 전체 교체합니다. 가져오기 전에 먼저 내보내 두세요.';
+
+  @override
+  String get backupScopeTitle => '백업에 담기는 것';
+
+  @override
+  String get backupScopeIncludedPreferences =>
+      '설정 (집중·휴식 시간, 집중 시간대, 알림음, 언어, 테마)';
+
+  @override
+  String get backupScopeIncludedTodos => '모든 날짜의 Todo와 시간, 완료 상태, 순서';
+
+  @override
+  String get backupScopeExcludedRhythm => '지금의 리듬 상태와 예약된 알림';
+
+  @override
+  String get backupScopeExcludedDrafts => '저장하지 않은 설정 초안, 알림 권한 상태';
+
+  @override
+  String get backupScopeExcludedFiles => '사용자 알림음 파일 자체';
 
   @override
   String get backupPreviewTitle => 'Portable Backup 미리 보기';
@@ -746,37 +854,70 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeDescription => '디자인 구조는 유지하고 색상 팔레트만 바꿉니다.';
 
   @override
-  String get themeCurrentName => '현재 유지';
+  String get themeGraphiteName => 'Graphite';
 
   @override
-  String get themeTokyoNightName => 'Tokyo Night';
+  String get themeGraphiteDescription => '무채색 흑연과 인디고. 기본 테마입니다.';
 
   @override
-  String get themeOneDarkProName => 'One Dark Pro';
+  String get themeMidnightName => 'Midnight';
 
   @override
-  String get themeCatppuccinMochaName => 'Catppuccin Mocha';
+  String get themeMidnightDescription => '자정의 남색과 맑은 하늘색';
 
   @override
-  String get themeNordName => 'Nord';
+  String get themeSlateName => 'Slate';
 
   @override
-  String get themeDraculaName => 'Dracula';
+  String get themeSlateDescription => '푸른 석판과 차분한 블루, 금빛 보조';
 
   @override
-  String get themeGruvboxName => 'Gruvbox';
+  String get themeDuskName => 'Dusk';
 
   @override
-  String get themeNeonDuskName => 'Neon Dusk';
+  String get themeDuskDescription => '해 질 녘 보랏빛과 라벤더';
 
   @override
-  String get themeNightOwlName => 'Night Owl';
+  String get themeGlacierName => 'Glacier';
 
   @override
-  String get themeSynthwave84Name => 'Synthwave 84';
+  String get themeGlacierDescription => '빙하 같은 청회색과 서리빛 시안';
 
   @override
-  String get themeAyuMirageDarkName => 'Ayu Mirage Dark';
+  String get themeOrchidName => 'Orchid';
+
+  @override
+  String get themeOrchidDescription => '자두빛 바탕과 난초 핑크';
+
+  @override
+  String get themeEmberName => 'Ember';
+
+  @override
+  String get themeEmberDescription => '따뜻한 잿빛 갈색과 앰버';
+
+  @override
+  String get themeAuroraName => 'Aurora';
+
+  @override
+  String get themeAuroraDescription => '극야의 청록 어둠과 오로라 민트';
+
+  @override
+  String get themeMossName => 'Moss';
+
+  @override
+  String get themeMossDescription => '숲의 녹회색과 세이지';
+
+  @override
+  String get themeSunsetName => 'Sunset';
+
+  @override
+  String get themeSunsetDescription => '자줏빛 저녁 하늘과 복숭아빛';
+
+  @override
+  String get themeMonoName => 'Mono';
+
+  @override
+  String get themeMonoDescription => '포인트까지 흑백';
 
   @override
   String get themeSelected => '선택됨';

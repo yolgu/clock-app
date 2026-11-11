@@ -16,7 +16,6 @@ final class TodayTodoPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AppLocalizations localizations = AppLocalizations.of(context);
     final AsyncValue<TodoDataState> asyncState = ref.watch(
       todoDataControllerProvider,
     );
@@ -26,33 +25,30 @@ final class TodayTodoPanel extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Semantics(
-            header: true,
-            child: Text(
-              localizations.todoTodayEyebrow,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            localizations.todoTodayTitle,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: ClockRhythmSpace.space4),
           asyncState.when<Widget>(
             data: (TodoDataState state) => _TodayTodoContent(state: state),
-            error: (Object error, StackTrace stackTrace) => TodoLoadFailure(
-              onRetry: () {
-                ref.invalidate(todoDataControllerProvider);
-              },
+            error: (Object error, StackTrace stackTrace) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                const _TodayHeader(),
+                TodoLoadFailure(
+                  onRetry: () {
+                    ref.invalidate(todoDataControllerProvider);
+                  },
+                ),
+              ],
             ),
-            loading: () => const Center(
-              child: Padding(
-                padding: EdgeInsets.all(ClockRhythmSpace.space24),
-                child: CircularProgressIndicator(),
-              ),
+            loading: () => const Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                _TodayHeader(),
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(ClockRhythmSpace.space24),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -91,14 +87,13 @@ final class _TodayTodoContentState extends State<_TodayTodoContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Text(
-          formattedDate,
-          key: const ValueKey<String>('today-date'),
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+        _TodayHeader(
+          date: formattedDate,
+          count: AppLocalizations.of(
+            context,
+          ).todoCount(state.todayTodos.length),
         ),
-        const SizedBox(height: ClockRhythmSpace.space12),
+        const SizedBox(height: ClockRhythmSpace.space8),
         TodoEditor.today(
           key: const ValueKey<String>('today-todo-editor'),
           date: state.todayDate,
@@ -113,6 +108,48 @@ final class _TodayTodoContentState extends State<_TodayTodoContent> {
             }
           },
         ),
+      ],
+    );
+  }
+}
+
+/// The card title with today's date underneath and the Todo count opposite.
+final class _TodayHeader extends StatelessWidget {
+  const _TodayHeader({this.date, this.count});
+
+  final String? date;
+  final String? count;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: <Widget>[
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Semantics(
+                header: true,
+                child: Text(
+                  AppLocalizations.of(context).todoTodayTitle,
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+              if (date case final String value)
+                Text(
+                  value,
+                  key: const ValueKey<String>('today-date'),
+                  style: theme.textTheme.bodySmall,
+                ),
+            ],
+          ),
+        ),
+        if (count case final String value) ...<Widget>[
+          const SizedBox(width: ClockRhythmSpace.space12),
+          Text(value, style: theme.textTheme.labelSmall),
+        ],
       ],
     );
   }

@@ -908,6 +908,32 @@ void main() {
     expect(find.byKey(const ValueKey<String>('theme-current')), findsOneWidget);
   });
 
+  testWidgets('theme page switches Appearance without changing the palette', (
+    WidgetTester tester,
+  ) async {
+    final FakeWidgetPreferencesActions actions = FakeWidgetPreferencesActions();
+    await tester.pumpWidget(
+      _testApp(
+        actions: actions,
+        capabilities: PreferencesPlatformCapabilities.windows,
+        home: const ThemePage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final Finder selector = find.byKey(
+      const ValueKey<String>('theme-appearance'),
+    );
+    expect(selector, findsOneWidget);
+    await tester.tap(
+      find.descendant(of: selector, matching: find.text('Light')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(actions.preferences.appearance, AppearancePreference.light);
+    expect(actions.preferences.theme, ThemePreference.current);
+  });
+
   testWidgets('theme page follows the responsive token matrix', (
     WidgetTester tester,
   ) async {
@@ -1119,6 +1145,14 @@ final class FakeWidgetPreferencesActions implements PreferencesActions {
   @override
   Future<PreferencesCommandResult> changeTheme(ThemePreference theme) async {
     preferences = preferences.changeTheme(theme);
+    return PreferencesCommandResult(preferences: preferences);
+  }
+
+  @override
+  Future<PreferencesCommandResult> changeAppearance(
+    AppearancePreference appearance,
+  ) async {
+    preferences = preferences.changeAppearance(appearance);
     return PreferencesCommandResult(preferences: preferences);
   }
 

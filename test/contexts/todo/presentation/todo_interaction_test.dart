@@ -16,7 +16,7 @@ import 'support/todo_presentation_test_support.dart';
 
 void main() {
   testWidgets(
-    'creation controls align right below the full-width input in Clock and Calendar',
+    'creation controls share the input line when wide and align right below it when narrow',
     (WidgetTester tester) async {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -69,6 +69,16 @@ void main() {
               );
               final Rect timeButton = tester.getRect(time);
               expect(input.left, editor.left);
+              if (editor.width >= TodoEditor.inlineMinimumWidth && scale == 1) {
+                expect(add.right, closeTo(editor.right, 0.01));
+                expect(add.top, closeTo(input.top, 0.01));
+                expect(timeGroup.top, closeTo(input.top, 0.01));
+                expect(input.right + 8, closeTo(timeGroup.left, 0.01));
+                expect(timeGroup.right + 8, closeTo(add.left, 0.01));
+                expect(tester.takeException(), isNull);
+                await tester.pumpWidget(const SizedBox.shrink());
+                continue;
+              }
               expect(input.right, editor.right);
               expect(timeGroup.top, greaterThanOrEqualTo(input.bottom + 8));
               expect(add.top, greaterThanOrEqualTo(input.bottom + 8));
@@ -211,9 +221,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey<String>('todo-edit-date')));
       await tester.pumpAndSettle();
-      Navigator.of(
-        tester.element(find.byType(DatePickerDialog)),
-      ).pop(DateTime(2026, 6, 3));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('todo-date-2026-06-03')),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey<String>('todo-save')));
       await tester.pumpAndSettle();

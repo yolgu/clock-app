@@ -10,6 +10,8 @@ import '../../../../shared/ui/public.dart'
         ClockRhythmCard,
         ClockRhythmLayout,
         ClockRhythmSpace,
+        LineGlyph,
+        LineIcon,
         StableContentSlot;
 import '../../../../shared/ui/public.dart' show SemanticStatusAnnouncement;
 import '../../application/ports/notification_sound_file_port.dart';
@@ -81,23 +83,6 @@ final class _NotificationSoundPanelState
           children: <Widget>[
             Row(
               children: <Widget>[
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.error,
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                  child: SizedBox.square(
-                    dimension: 36,
-                    child: Icon(
-                      sound.mode == NotificationSoundMode.muted
-                          ? Icons.volume_off_rounded
-                          : Icons.volume_up_rounded,
-                      size: 22,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: ClockRhythmSpace.space12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,8 +153,8 @@ final class _NotificationSoundPanelState
                       child: SoundActionContent(
                         stacked: stacked,
                         icon: sound.mode == NotificationSoundMode.bundledDefault
-                            ? Icons.check_rounded
-                            : Icons.music_note_rounded,
+                            ? LineGlyph.check
+                            : LineGlyph.musicNote,
                         label: Text(
                           copy.soundUseDefault,
                           textAlign: TextAlign.center,
@@ -196,8 +181,8 @@ final class _NotificationSoundPanelState
                         child: SoundActionContent(
                           stacked: stacked,
                           icon: sound.mode == NotificationSoundMode.custom
-                              ? Icons.check_rounded
-                              : Icons.audio_file_outlined,
+                              ? LineGlyph.check
+                              : LineGlyph.musicNote,
                           label: Text(
                             copy.soundChooseMp3,
                             textAlign: TextAlign.center,
@@ -228,8 +213,8 @@ final class _NotificationSoundPanelState
                       child: SoundActionContent(
                         stacked: stacked,
                         icon: sound.mode == NotificationSoundMode.muted
-                            ? Icons.volume_off_rounded
-                            : Icons.volume_up_rounded,
+                            ? LineGlyph.speakerMuted
+                            : LineGlyph.speaker,
                         label: Text(
                           sound.mode == NotificationSoundMode.muted
                               ? copy.soundUnmute
@@ -256,8 +241,8 @@ final class _NotificationSoundPanelState
               const SizedBox(height: ClockRhythmSpace.space16),
               Row(
                 children: <Widget>[
-                  Icon(
-                    Icons.volume_mute_rounded,
+                  LineIcon(
+                    LineGlyph.speakerMuted,
                     size: 20,
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -286,8 +271,8 @@ final class _NotificationSoundPanelState
                       ),
                     ),
                   ),
-                  Icon(
-                    Icons.volume_up_rounded,
+                  LineIcon(
+                    LineGlyph.speaker,
                     size: 20,
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -309,8 +294,8 @@ final class _NotificationSoundPanelState
               ListTile(
                 key: const ValueKey<String>('sound-repair-needed'),
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(
-                  Icons.warning_amber_rounded,
+                leading: LineIcon(
+                  LineGlyph.warning,
                   color: theme.colorScheme.error,
                 ),
                 title: Text(copy.failureCustomSoundPlayback),

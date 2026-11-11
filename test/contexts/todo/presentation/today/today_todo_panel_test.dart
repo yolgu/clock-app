@@ -1,6 +1,7 @@
 import 'package:clock_rhythm/contexts/todo/public.dart';
 import 'package:clock_rhythm/contexts/todo/public_presentation.dart';
 import 'package:clock_rhythm/shared/i18n/public.dart';
+import 'package:clock_rhythm/shared/ui/public.dart' show LineGlyph, LineIcon;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -396,7 +397,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey<String>('todo-edit-created-1')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey<String>('todo-edit-time')));
-    await _enterPickerTime(tester, hour: '9', minute: '05');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('todo-hour-09')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey<String>('todo-minute-05')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey<String>('todo-save')));
     await tester.pumpAndSettle();
 
@@ -506,7 +511,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.drag_handle), findsNWidgets(3));
+      expect(_dragHandles, findsNWidgets(3));
       expect(find.widgetWithIcon(IconButton, Icons.arrow_upward), findsNothing);
       expect(
         find.widgetWithIcon(IconButton, Icons.arrow_downward),
@@ -514,7 +519,7 @@ void main() {
       );
 
       final TestGesture drag = await tester.startGesture(
-        tester.getCenter(find.byIcon(Icons.drag_handle).first),
+        tester.getCenter(_dragHandles.first),
       );
       await tester.pump(kPressTimeout);
       await drag.moveBy(const Offset(0, 160));
@@ -609,3 +614,7 @@ Future<void> _enterPickerTime(
   );
   await tester.pumpAndSettle();
 }
+
+final Finder _dragHandles = find.byWidgetPredicate(
+  (Widget widget) => widget is LineIcon && widget.glyph == LineGlyph.dragDots,
+);

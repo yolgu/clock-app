@@ -17,6 +17,7 @@
     },
     "language": "en",
     "theme": "nord",
+    "appearance": "dark",
     "initialSetupCompleted": true
   },
   "todos": [

@@ -1,21 +1,15 @@
-import 'package:flutter/material.dart';
-
+import '../../shared/ui/public.dart' show LineGlyph;
 import '../navigation/app_routes.dart';
 
-/// Rounded glyphs that sit closest to SF Symbols in the Material set.
+/// The line glyph that stands for each destination wherever it is listed.
 abstract final class DestinationIcons {
-  static IconData of(MainDestination destination, {required bool selected}) {
+  static LineGlyph of(MainDestination destination) {
     return switch (destination) {
-      MainDestination.clock =>
-        selected ? Icons.watch_later_rounded : Icons.watch_later_outlined,
-      MainDestination.calendar =>
-        selected ? Icons.calendar_month_rounded : Icons.calendar_month_outlined,
-      MainDestination.data =>
-        selected ? Icons.folder_rounded : Icons.folder_outlined,
-      MainDestination.theme =>
-        selected ? Icons.palette_rounded : Icons.palette_outlined,
-      MainDestination.settings =>
-        selected ? Icons.settings_rounded : Icons.settings_outlined,
+      MainDestination.clock => LineGlyph.clock,
+      MainDestination.calendar => LineGlyph.calendar,
+      MainDestination.data => LineGlyph.folder,
+      MainDestination.theme => LineGlyph.palette,
+      MainDestination.settings => LineGlyph.sliders,
     };
   }
 }

@@ -1,7 +1,7 @@
 import 'package:clock_rhythm/app/navigation/app_routes.dart';
 import 'package:clock_rhythm/app/presentation/app_navigation_copy.dart';
 import 'package:clock_rhythm/app/presentation/app_shortcuts.dart';
-import 'package:clock_rhythm/app/presentation/windows_top_navigation.dart';
+import 'package:clock_rhythm/app/presentation/side_navigation.dart';
 import 'package:clock_rhythm/features/data_transfer/application/backup_preview.dart';
 import 'package:clock_rhythm/features/data_transfer/presentation/backup_import_preview_dialog.dart';
 import 'package:clock_rhythm/shared/i18n/public.dart';
@@ -41,7 +41,7 @@ void main() {
     expect(selections, <int>[0, 1, 2, 3, 4]);
   });
 
-  testWidgets('Windows tab navigation responds to arrow keys', (
+  testWidgets('sidebar navigation responds to arrow keys', (
     WidgetTester tester,
   ) async {
     final GlobalKey<_NavigationHarnessState> key =
@@ -55,11 +55,11 @@ void main() {
 
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pump();
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.pump();
     expect(key.currentState!.selectedIndex, MainDestination.calendar.index);
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
     await tester.pump();
     expect(key.currentState!.selectedIndex, MainDestination.clock.index);
   });
@@ -90,6 +90,7 @@ void main() {
 }
 
 const AppNavigationCopy _navigationCopy = AppNavigationCopy(
+  appTitle: 'Clock Rhythm',
   clockLabel: 'Clock',
   navigationSemanticsLabel: 'App destinations',
   calendarLabel: 'Calendar',
@@ -140,8 +141,9 @@ final class _NavigationHarnessState extends State<_NavigationHarness> {
 
   @override
   Widget build(BuildContext context) {
-    return WindowsTopNavigation(
+    return SideNavigation(
       selectedIndex: selectedIndex,
+      shortcutModifierLabel: 'Ctrl+',
       onDestinationSelected: (int index) {
         setState(() {
           selectedIndex = index;

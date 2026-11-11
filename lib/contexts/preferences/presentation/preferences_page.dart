@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart';
 import '../../../shared/ui/public.dart'
-    show ClockRhythmLayout, ClockRhythmPageHeader, ClockRhythmSpace;
+    show ClockRhythmLayout, ClockRhythmPage, ClockRhythmSpace;
 import 'permission_status_panel.dart';
 import 'preferences_platform_capabilities.dart';
 import 'preferences_providers.dart';
@@ -28,29 +28,33 @@ final class PreferencesPage extends ConsumerWidget {
     final PreferencesPlatformCapabilities capabilities = ref.watch(
       preferencesPlatformCapabilitiesProvider,
     );
-    final double width = MediaQuery.sizeOf(context).width;
-    final EdgeInsets insets = ClockRhythmLayout.pageInsetsFor(width);
-    final double horizontal = math.max(
-      insets.left,
-      (width - maximumColumnWidth) / 2,
-    );
-    return ListView(
-      key: const PageStorageKey<String>('preferences-page-scroll'),
-      restorationId: 'preferences_page_scroll',
-      padding: insets.copyWith(left: horizontal, right: horizontal),
-      children: <Widget>[
-        ClockRhythmPageHeader(
-          title: copy.settingsTitle,
-          description: copy.settingsDescription,
-        ),
-        RhythmSettingsPanel(now: now),
-        const SizedBox(height: ClockRhythmSpace.space20),
-        const NotificationSoundPanel(),
-        if (capabilities.showsDeliveryPermissions) ...<Widget>[
-          const SizedBox(height: ClockRhythmSpace.space20),
-          const PermissionStatusPanel(),
-        ],
-      ],
+    return ClockRhythmPage(
+      section: copy.settingsPageSection,
+      title: copy.settingsTitle,
+      description: copy.settingsDescription,
+      builder: (BuildContext context, Widget lead) {
+        final double width = MediaQuery.sizeOf(context).width;
+        final EdgeInsets insets = ClockRhythmLayout.pageInsetsFor(width);
+        final double horizontal = math.max(
+          insets.left,
+          (width - maximumColumnWidth) / 2,
+        );
+        return ListView(
+          key: const PageStorageKey<String>('preferences-page-scroll'),
+          restorationId: 'preferences_page_scroll',
+          padding: insets.copyWith(left: horizontal, right: horizontal),
+          children: <Widget>[
+            lead,
+            RhythmSettingsPanel(now: now),
+            const SizedBox(height: ClockRhythmSpace.space20),
+            const NotificationSoundPanel(),
+            if (capabilities.showsDeliveryPermissions) ...<Widget>[
+              const SizedBox(height: ClockRhythmSpace.space20),
+              const PermissionStatusPanel(),
+            ],
+          ],
+        );
+      },
     );
   }
 }

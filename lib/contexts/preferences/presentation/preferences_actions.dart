@@ -5,6 +5,7 @@ import '../application/ports/sound_preview_port.dart';
 import '../application/preferences_command_result.dart';
 import '../application/preferences_service.dart';
 import '../application/rhythm_settings_service.dart';
+import '../domain/appearance_preference.dart';
 import '../domain/language_preference.dart';
 import '../domain/rhythm_settings_draft.dart';
 import '../domain/theme_preference.dart';
@@ -36,6 +37,10 @@ abstract interface class PreferencesActions {
   Future<PreferencesCommandResult> changeLanguage(LanguagePreference language);
 
   Future<PreferencesCommandResult> changeTheme(ThemePreference theme);
+
+  Future<PreferencesCommandResult> changeAppearance(
+    AppearancePreference appearance,
+  );
 
   Future<PreferencesCommandResult> useBundledSound();
 
@@ -128,6 +133,16 @@ final class ApplicationPreferencesActions implements PreferencesActions {
   Future<PreferencesCommandResult> changeTheme(ThemePreference theme) {
     return _runCommand(
       () => _preferences.changeTheme(theme),
+      attempted: const <PreferencesRepairNeed>{PreferencesRepairNeed.visual},
+    );
+  }
+
+  @override
+  Future<PreferencesCommandResult> changeAppearance(
+    AppearancePreference appearance,
+  ) {
+    return _runCommand(
+      () => _preferences.changeAppearance(appearance),
       attempted: const <PreferencesRepairNeed>{PreferencesRepairNeed.visual},
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/ui/public.dart' show ClockRhythmSpace;
+import '../../../../shared/ui/public.dart'
+    show ClockRhythmSpace, LineGlyph, LineIcon;
 
 final class SoundActionContent extends StatelessWidget {
   const SoundActionContent({
@@ -13,7 +14,7 @@ final class SoundActionContent extends StatelessWidget {
   static const double iconSize = 20;
   static const double gap = ClockRhythmSpace.space8;
 
-  final IconData icon;
+  final LineGlyph icon;
   final Widget label;
   final bool stacked;
 
@@ -22,7 +23,7 @@ final class SoundActionContent extends StatelessWidget {
     if (stacked) {
       return Column(
         children: <Widget>[
-          Icon(icon, size: iconSize),
+          LineIcon(icon, size: iconSize),
           const SizedBox(height: gap),
           Expanded(child: Center(child: label)),
         ],
@@ -31,7 +32,7 @@ final class SoundActionContent extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, size: iconSize),
+        LineIcon(icon, size: iconSize),
         const SizedBox(width: gap),
         Flexible(child: label),
       ],

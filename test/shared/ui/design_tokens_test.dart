@@ -17,14 +17,13 @@ void main() {
       ],
       <double>[4, 8, 12, 16, 20, 24, 28, 32],
     );
-    expect(ClockRhythmRadius.small, 8);
-    expect(ClockRhythmRadius.control, 12);
-    expect(ClockRhythmRadius.card, 20);
-    expect(ClockRhythmRadius.dialog, 24);
+    expect(ClockRhythmRadius.small, 6);
+    expect(ClockRhythmRadius.control, 8);
+    expect(ClockRhythmRadius.card, 12);
+    expect(ClockRhythmRadius.dialog, 16);
     expect(ClockRhythmRadius.pill, 999);
     expect(ClockRhythmLayout.minimumInteractiveDimension, 48);
     expect(ClockRhythmLayout.androidNavigationHeight, 68);
-    expect(ClockRhythmLayout.windowsNavigationHeight, 64);
     expect(ClockRhythmMotion.fast, const Duration(milliseconds: 100));
     expect(ClockRhythmMotion.standard, const Duration(milliseconds: 200));
     expect(ClockRhythmMotion.card, const Duration(milliseconds: 300));
@@ -88,7 +87,7 @@ void main() {
     expect(windows.labelMedium?.fontWeight, FontWeight.w600);
   });
 
-  testWidgets('ClockRhythmCard applies a borderless grouped panel contract', (
+  testWidgets('ClockRhythmCard applies a hairline outlined panel contract', (
     WidgetTester tester,
   ) async {
     tester.view.physicalSize = const Size(360, 800);
@@ -131,8 +130,8 @@ void main() {
     expect(radius.topLeft.x, ClockRhythmRadius.card);
     expect(material.elevation, 0);
     expect(material.shadowColor, Colors.transparent);
-    expect(shape.side.width, 0.5);
-    expect(shape.side.color, Colors.white.withValues(alpha: 0.07));
+    expect(shape.side.width, 1);
+    expect(shape.side.color, outlineColor);
     expect(
       paddingAncestors.any(
         (Padding padding) =>

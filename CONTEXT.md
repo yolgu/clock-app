@@ -16,6 +16,10 @@ _Avoid_: Android System Backup, synchronization
 A theme that preserves a legacy backup identifier while presenting a redistributable replacement palette and display name.
 _Avoid_: Theme alias
 
+**Appearance**:
+The user's choice of System, Light or Dark rendering, stored apart from the palette so every palette can be shown in either mode. Dark is the standard.
+_Avoid_: Light theme, dark theme (as palette names)
+
 **Daily Rhythm**:
 A recurring local-time window, which may cross midnight, within which Focus Intervals and Rest Intervals alternate.
 _Avoid_: Work hours

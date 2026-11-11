@@ -25,6 +25,12 @@ final class LocalDateFormatter {
     return DateFormat.yMMMMEEEEd(_localeName).format(date);
   }
 
+  /// The date without its year, for headings that sit inside the year.
+  String formatMonthDayWeekday(DateTime date) {
+    _requireLocalDate(date);
+    return DateFormat.MMMMEEEEd(_localeName).format(date);
+  }
+
   String formatMonth(DateTime date) {
     _requireLocalDate(date);
     return DateFormat.yMMMM(_localeName).format(date);

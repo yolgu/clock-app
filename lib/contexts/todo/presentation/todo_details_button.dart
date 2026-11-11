@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart' show AppLocalizations;
-import '../../../shared/ui/public.dart' show ClockRhythmSpace;
+import '../../../shared/ui/public.dart'
+    show ClockRhythmSpace, LineGlyph, LineIcon;
 import '../domain/local_calendar_date.dart';
 import '../domain/todo.dart';
 import 'todo_editor.dart';
@@ -97,41 +98,51 @@ final class _TodoDetailsButtonState extends ConsumerState<TodoDetailsButton> {
       onPressed: widget.enabled ? () => unawaited(_open()) : null,
       tooltip: <String>[copy.todoActionDetails, widget.todo.title].join(', '),
       color: Theme.of(context).colorScheme.onSurfaceVariant,
-      icon: const Icon(Icons.info_outline_rounded, size: 20),
+      icon: const LineIcon(LineGlyph.info, size: 20),
     );
   }
 }
 
+/// The edit form for one Todo: a dialog on desktop, a bottom sheet with
+/// full-width commands on Android.
 final class _TodoDetailsSurface extends ConsumerWidget {
   const _TodoDetailsSurface({required this.todo, required this.isSheet});
+
+  /// The design's widest dialog.
+  static const double _dialogMaximumWidth = 440;
 
   final TodoSnapshot todo;
   final bool isSheet;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool saving =
-        ref.watch(todoDataControllerProvider).value?.isMutating ?? false;
     final TodoDataState? state = ref.watch(todoDataControllerProvider).value;
+    final bool saving = state?.isMutating ?? false;
+    final ThemeData theme = Theme.of(context);
     final Widget form = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Text(
-          AppLocalizations.of(context).todoActionDetails,
-          style: Theme.of(context).textTheme.titleLarge,
+        Semantics(
+          header: true,
+          child: Text(
+            AppLocalizations.of(context).todoActionDetails,
+            style: theme.dialogTheme.titleTextStyle,
+          ),
         ),
-        const SizedBox(height: ClockRhythmSpace.space16),
+        const SizedBox(height: ClockRhythmSpace.space20),
         TodoEditor.edit(
           todo: todo,
+          surface: isSheet ? TodoEditSurface.sheet : TodoEditSurface.dialog,
           onFinished: () => Navigator.of(context).pop(),
         ),
-        TodoStatusMessage(
-          message: state?.message == TodoUiMessage.actionFailed
-              ? state?.message
-              : null,
-          messageSerial: state?.messageSerial ?? 0,
-        ),
+        // A dialog only ever reports a failed save, so it makes room for the
+        // sentence when there is one instead of keeping an empty slot.
+        if (state?.message == TodoUiMessage.actionFailed)
+          TodoStatusMessage(
+            message: state?.message,
+            messageSerial: state?.messageSerial ?? 0,
+          ),
       ],
     );
     return PopScope<void>(
@@ -142,12 +153,17 @@ final class _TodoDetailsSurface extends ConsumerWidget {
                 bottom: MediaQuery.viewInsetsOf(context).bottom,
               ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(ClockRhythmSpace.space24),
+                padding: const EdgeInsets.fromLTRB(
+                  ClockRhythmSpace.space20,
+                  ClockRhythmSpace.space24,
+                  ClockRhythmSpace.space20,
+                  ClockRhythmSpace.space16,
+                ),
                 child: form,
               ),
             )
           : Dialog(
-              constraints: const BoxConstraints(maxWidth: 480),
+              constraints: const BoxConstraints(maxWidth: _dialogMaximumWidth),
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(ClockRhythmSpace.space24),
                 child: form,

@@ -11,6 +11,7 @@ import '../../contexts/todo/public_model.dart' show LocalCalendarDate;
 import '../../contexts/todo/public_presentation.dart';
 import '../../features/data_transfer/public.dart';
 import '../../features/data_transfer/public_presentation.dart';
+import '../config/app_flavor.dart';
 import '../infrastructure/coordinating_preferences_changed_port.dart';
 import '../infrastructure/device_state/device_sound_locator_mutation.dart';
 import '../infrastructure/device_state/device_sound_locator_store.dart';
@@ -27,6 +28,7 @@ import '../navigation/app_routes.dart';
 import '../platform_presentation_profile.dart';
 import '../presentation/clock_page.dart';
 import '../presentation/clock_rhythm_root.dart';
+import '../presentation/today_summary.dart';
 import 'app_platform_services.dart';
 
 typedef AppPlatformServicesFactory =
@@ -157,6 +159,10 @@ final class ClockRhythmRuntime {
     final ClockRhythmRouter router = ClockRhythmRouter(
       profile: presentationProfile,
       pages: _destinationPages(),
+      releaseLabel: AppFlavorConfiguration.fromEnvironment().isBeta
+          ? 'Beta'
+          : null,
+      sidebarSummary: (_) => const TodaySummary(),
     );
     final AppPlatformServices platformServices;
     try {

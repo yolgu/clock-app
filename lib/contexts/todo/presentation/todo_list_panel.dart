@@ -110,8 +110,6 @@ final class _TodoListPanelState extends ConsumerState<TodoListPanel> {
             editSession: _editSession,
             onEditedRowRemoved: widget.onEditedRowRemoved,
           ),
-        if (incomplete.isNotEmpty && completed.isNotEmpty)
-          const SizedBox(height: ClockRhythmSpace.space16),
         if (completed.isNotEmpty)
           _TodoGroupList(
             group: CompletionGroup.completed,
@@ -164,19 +162,19 @@ final class _TodoGroupList extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(bottom: ClockRhythmSpace.space8),
+          padding: const EdgeInsets.only(
+            top: ClockRhythmSpace.space12,
+            bottom: 6,
+          ),
           child: Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: ClockRhythmSpace.space8,
             children: <Widget>[
               Semantics(
                 header: true,
-                child: Text(
-                  heading,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
+                child: Text(heading, style: theme.textTheme.labelMedium),
               ),
-              Text(count, style: Theme.of(context).textTheme.bodySmall),
+              Text(count, style: theme.textTheme.labelSmall),
             ],
           ),
         ),
@@ -212,14 +210,9 @@ final class _TodoGroupList extends ConsumerWidget {
             return DecoratedBox(
               key: ValueKey<String>(todo.id),
               decoration: BoxDecoration(
-                border: index == todos.length - 1
-                    ? null
-                    : Border(
-                        bottom: BorderSide(
-                          color: theme.colorScheme.outlineVariant,
-                          width: 0.5,
-                        ),
-                      ),
+                border: Border(
+                  top: BorderSide(color: theme.colorScheme.outlineVariant),
+                ),
               ),
               child: TodoRow(
                 todo: todo,

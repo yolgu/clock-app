@@ -11,36 +11,40 @@ import '../../../../shared/ui/public.dart'
 import 'clock_rhythm_theme_extension.dart';
 import 'theme_catalog.dart';
 
-/// Builds an Apple-inspired dark appearance from a palette: grouped
-/// borderless surfaces, capsule buttons, filled text fields, iOS-like
-/// switches and a quiet tab bar, while keeping every derived role readable.
+/// Builds the minimal appearance from a palette in one mode: hairline-
+/// bordered surfaces, compact rounded-rectangle controls, outlined fields, a
+/// tab bar that marks the selected destination with a tinted pill, and
+/// derived roles that stay readable in every palette and mode.
 abstract final class ClockRhythmTheme {
   static ThemeData build(
     ThemeDefinition definition, {
+    Brightness brightness = Brightness.dark,
     TargetPlatform? platform,
   }) {
     final TargetPlatform resolvedPlatform = platform ?? defaultTargetPlatform;
-    final Color background = definition.background.color;
-    final Color surface = definition.surface.color;
-    final Color primary = definition.accentPrimary.color;
-    final Color secondary = definition.accentSecondary.color;
+    final ThemeSeeds seeds = definition.seedsFor(brightness);
+    final _ModeRecipe recipe = _ModeRecipe.of(brightness);
+    final Color background = seeds.background.color;
+    final Color surface = seeds.surface.color;
+    final Color primary = seeds.accentPrimary.color;
+    final Color secondary = seeds.accentSecondary.color;
     final Color onSurface = _readableForeground(
-      preferred: definition.text.color,
+      preferred: seeds.text.color,
       background: surface,
       minimumContrast: 4.5,
     );
     final Color onPrimary = _readableForeground(
-      preferred: Colors.white,
+      preferred: recipe.onAccent,
       background: primary,
       minimumContrast: 4.5,
     );
     final Color onSecondary = _readableForeground(
-      preferred: const Color(0xFF05070A),
+      preferred: recipe.onAccent,
       background: secondary,
       minimumContrast: 4.5,
     );
     final Color error = _readableForeground(
-      preferred: definition.danger.color,
+      preferred: seeds.danger.color,
       background: surface,
       minimumContrast: 4.5,
     );
@@ -50,9 +54,13 @@ abstract final class ClockRhythmTheme {
       minimumContrast: 3,
     );
     final Color surfaceSoft = Color.lerp(surface, onSurface, 0.04)!;
-    final Color surfaceStrong = Color.lerp(surface, onSurface, 0.09)!;
-    final Color surfaceHighest = Color.lerp(surface, onSurface, 0.13)!;
-    final Color outlineSubtle = Color.lerp(surface, onSurface, 0.09)!;
+    final Color surfaceStrong = Color.lerp(surface, onSurface, recipe.strong)!;
+    final Color surfaceHighest = Color.lerp(
+      surface,
+      onSurface,
+      recipe.strong + 0.04,
+    )!;
+    final Color outlineSubtle = Color.lerp(surface, onSurface, recipe.line)!;
     final Color outline = _minimumContrastBlend(
       background: surface,
       foreground: onSurface,
@@ -63,7 +71,7 @@ abstract final class ClockRhythmTheme {
     final Color mutedText = _furthestReadableBlend(
       foreground: onSurface,
       background: surface,
-      maximumBlend: 0.38,
+      maximumBlend: recipe.muted,
       minimumContrast: 4.6,
     );
     // Accent used for text and glyphs (links, selected tabs, plain buttons).
@@ -72,14 +80,23 @@ abstract final class ClockRhythmTheme {
       toward: onSurface,
       background: surfaceStrong,
     );
-    final Color shadowColor = Colors.black.withValues(alpha: 0.32);
+    final Color shadowColor = recipe.shadow;
     final Color weakHoverOverlay = onSurface.withValues(alpha: 0.04);
     final Color hoverOverlay = onSurface.withValues(alpha: 0.09);
     final Color pressedOverlay = onSurface.withValues(alpha: 0.13);
-    final Color primaryContainer = Color.lerp(surface, primary, 0.20)!;
-    final Color secondaryContainer = Color.lerp(surface, secondary, 0.20)!;
-    final Color errorContainer = Color.lerp(surface, error, 0.20)!;
-    final ColorScheme colorScheme = ColorScheme.dark(
+    final Color primaryContainer = Color.lerp(
+      surface,
+      primary,
+      recipe.accentSoft,
+    )!;
+    final Color secondaryContainer = Color.lerp(
+      surface,
+      secondary,
+      recipe.accentSoft,
+    )!;
+    final Color errorContainer = Color.lerp(surface, error, recipe.dangerSoft)!;
+    final ColorScheme colorScheme = ColorScheme(
+      brightness: brightness,
       primary: primary,
       onPrimary: onPrimary,
       primaryContainer: primaryContainer,
@@ -97,7 +114,11 @@ abstract final class ClockRhythmTheme {
         minimumContrast: 4.5,
       ),
       error: error,
-      onError: _highestContrastForeground(error),
+      onError: _readableForeground(
+        preferred: recipe.onAccent,
+        background: error,
+        minimumContrast: 4.5,
+      ),
       errorContainer: errorContainer,
       onErrorContainer: _readableForeground(
         preferred: onSurface,
@@ -117,7 +138,7 @@ abstract final class ClockRhythmTheme {
       outline: outline,
       outlineVariant: outlineSubtle,
       shadow: shadowColor,
-      scrim: Colors.black.withValues(alpha: 0.6),
+      scrim: recipe.scrim,
       surfaceTint: Colors.transparent,
     );
     final ClockRhythmThemeExtension extension = ClockRhythmThemeExtension(
@@ -127,7 +148,7 @@ abstract final class ClockRhythmTheme {
       accentSecondary: secondary,
       focusRing: focusRing,
       danger: error,
-      sourceText: definition.text.color,
+      sourceText: seeds.text.color,
       outlineSubtle: outlineSubtle,
       hoverOverlay: hoverOverlay,
       pressedOverlay: pressedOverlay,
@@ -138,9 +159,10 @@ abstract final class ClockRhythmTheme {
       textColor: onSurface,
       mutedTextColor: mutedText,
     );
-    final RoundedRectangleBorder pillShape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(ClockRhythmRadius.pill),
+    final RoundedRectangleBorder controlShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
     );
+    final Color fieldFill = Color.lerp(background, surface, 0.5)!;
     final Size minimumButtonSize = const Size(
       ClockRhythmLayout.minimumInteractiveDimension,
       ClockRhythmLayout.minimumInteractiveDimension,
@@ -159,22 +181,15 @@ abstract final class ClockRhythmTheme {
           }
           return null;
         });
-    final WidgetStateProperty<BorderSide?> focusOutline =
-        WidgetStateProperty.resolveWith<BorderSide?>((Set<WidgetState> states) {
-          if (states.contains(WidgetState.focused)) {
-            return BorderSide(color: focusRing, width: 2);
-          }
-          return BorderSide.none;
-        });
-    final ButtonStyle capsuleButtonStyle = ButtonStyle(
+    final ButtonStyle controlButtonStyle = ButtonStyle(
       minimumSize: WidgetStatePropertyAll<Size>(minimumButtonSize),
       padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
         EdgeInsets.symmetric(
-          horizontal: ClockRhythmSpace.space20,
+          horizontal: ClockRhythmSpace.space16,
           vertical: ClockRhythmSpace.space12,
         ),
       ),
-      shape: WidgetStatePropertyAll<OutlinedBorder>(pillShape),
+      shape: WidgetStatePropertyAll<OutlinedBorder>(controlShape),
       overlayColor: interactiveOverlay,
       elevation: const WidgetStatePropertyAll<double>(0),
       shadowColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
@@ -185,11 +200,11 @@ abstract final class ClockRhythmTheme {
     final Color disabledForeground = mutedText.withValues(alpha: 0.5);
     final OutlineInputBorder fieldBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
-      borderSide: BorderSide.none,
+      borderSide: BorderSide(color: outlineSubtle),
     );
 
     return ThemeData(
-      brightness: Brightness.dark,
+      brightness: brightness,
       useMaterial3: true,
       platform: resolvedPlatform,
       colorScheme: colorScheme,
@@ -219,20 +234,21 @@ abstract final class ClockRhythmTheme {
       ),
       dividerTheme: DividerThemeData(
         color: outlineSubtle,
-        thickness: 0.5,
+        thickness: 1,
         space: 1,
       ),
-      // Filled: the prominent capsule (system blue with white label).
-      filledButtonTheme: FilledButtonThemeData(style: capsuleButtonStyle),
-      // Outlined: Apple's gray capsule — a quiet fill with no stroke.
+      // Filled: the one prominent action per area, in the primary accent.
+      filledButtonTheme: FilledButtonThemeData(style: controlButtonStyle),
+      // Outlined: a ghost button — transparent fill and a hairline stroke
+      // that turns into the focus ring when focused.
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: capsuleButtonStyle.copyWith(
+        style: controlButtonStyle.copyWith(
           backgroundColor: WidgetStateProperty.resolveWith<Color?>((
             Set<WidgetState> states,
           ) {
             return states.contains(WidgetState.disabled)
                 ? disabledFill
-                : surfaceHighest;
+                : Colors.transparent;
           }),
           foregroundColor: WidgetStateProperty.resolveWith<Color?>((
             Set<WidgetState> states,
@@ -248,12 +264,19 @@ abstract final class ClockRhythmTheme {
                 ? disabledForeground
                 : onSurface;
           }),
-          side: focusOutline,
+          side: WidgetStateProperty.resolveWith<BorderSide?>((
+            Set<WidgetState> states,
+          ) {
+            if (states.contains(WidgetState.focused)) {
+              return BorderSide(color: focusRing, width: 2);
+            }
+            return BorderSide(color: outline);
+          }),
         ),
       ),
       // Text: a plain tinted label.
       textButtonTheme: TextButtonThemeData(
-        style: capsuleButtonStyle.copyWith(
+        style: controlButtonStyle.copyWith(
           padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
             EdgeInsets.symmetric(horizontal: ClockRhythmSpace.space12),
           ),
@@ -278,23 +301,36 @@ abstract final class ClockRhythmTheme {
           minimumSize: const WidgetStatePropertyAll<Size>(
             Size.square(ClockRhythmLayout.minimumInteractiveDimension),
           ),
-          shape: WidgetStatePropertyAll<OutlinedBorder>(pillShape),
+          shape: WidgetStatePropertyAll<OutlinedBorder>(controlShape),
           overlayColor: interactiveOverlay,
           animationDuration: ClockRhythmMotion.standard,
         ),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
-        style: capsuleButtonStyle.copyWith(
+        style: controlButtonStyle.copyWith(
           padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
             EdgeInsets.symmetric(horizontal: ClockRhythmSpace.space16),
           ),
-          shape: WidgetStatePropertyAll<OutlinedBorder>(pillShape),
+          shape: WidgetStatePropertyAll<OutlinedBorder>(controlShape),
           side: WidgetStatePropertyAll<BorderSide>(BorderSide(color: outline)),
+          // A chosen segment reads as selection, which the app marks with
+          // the primary accent everywhere, not the secondary one.
+          backgroundColor:
+              WidgetStateProperty.fromMap(<WidgetStatesConstraint, Color>{
+                WidgetState.selected: colorScheme.primaryContainer,
+                WidgetState.any: Colors.transparent,
+              }),
+          foregroundColor:
+              WidgetStateProperty.fromMap(<WidgetStatesConstraint, Color>{
+                WidgetState.disabled: colorScheme.onSurfaceVariant,
+                WidgetState.selected: colorScheme.onPrimaryContainer,
+                WidgetState.any: colorScheme.onSurface,
+              }),
         ),
       ),
       inputDecorationTheme: InputDecorationThemeData(
         filled: true,
-        fillColor: surfaceStrong,
+        fillColor: fieldFill,
         hoverColor: Colors.transparent,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: ClockRhythmSpace.space16,
@@ -337,18 +373,35 @@ abstract final class ClockRhythmTheme {
         insetPadding: const EdgeInsets.all(ClockRhythmSpace.space24),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ClockRhythmRadius.dialog),
+          side: BorderSide(color: outlineSubtle),
         ),
         titleTextStyle: textTheme.titleMedium,
         contentTextStyle: textTheme.bodyMedium,
       ),
-      // A quiet iOS-style tab bar: no indicator pill, tinted glyphs.
+      // On phones a dialog becomes a sheet attached to the bottom edge, on
+      // the same surface as a dialog.
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: surface,
+        modalBackgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        modalElevation: 0,
+        showDragHandle: false,
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(ClockRhythmRadius.dialog),
+          ),
+          side: BorderSide(color: outlineSubtle),
+        ),
+      ),
+      // A quiet tab bar whose selected glyph sits in a tinted pill.
       navigationBarTheme: NavigationBarThemeData(
         height: ClockRhythmLayout.androidNavigationHeight,
-        backgroundColor: Color.lerp(background, surface, 0.72),
+        backgroundColor: fieldFill,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
         elevation: 0,
-        indicatorColor: Colors.transparent,
+        indicatorColor: primaryContainer,
         indicatorShape: const StadiumBorder(),
         overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -356,17 +409,18 @@ abstract final class ClockRhythmTheme {
           Set<WidgetState> states,
         ) {
           return IconThemeData(
-            size: 26,
+            size: 22,
             color: states.contains(WidgetState.selected) ? tint : mutedText,
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>((
           Set<WidgetState> states,
         ) {
+          final bool selected = states.contains(WidgetState.selected);
           return textTheme.labelSmall?.copyWith(
             fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: states.contains(WidgetState.selected) ? tint : mutedText,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            color: selected ? onSurface : mutedText,
           );
         }),
       ),
@@ -406,10 +460,10 @@ abstract final class ClockRhythmTheme {
         ),
         overlayColor: interactiveOverlay,
       ),
-      // Soft rounded-square completion marks.
+      // Small rounded-square completion marks.
       checkboxTheme: CheckboxThemeData(
         materialTapTargetSize: MaterialTapTargetSize.padded,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         side: BorderSide(color: outline, width: 1.5),
         fillColor: WidgetStateProperty.resolveWith<Color?>((
           Set<WidgetState> states,
@@ -590,4 +644,69 @@ abstract final class ClockRhythmTheme {
         : firstLuminance;
     return (lighter + 0.05) / (darker + 0.05);
   }
+}
+
+/// The mixing ratios each appearance mode uses to derive roles from a
+/// palette's seeds. Light mode mixes differently because the dark-mode
+/// ratios leave muted text and tinted fills under 4.5:1 on light grounds.
+final class _ModeRecipe {
+  const _ModeRecipe({
+    required this.strong,
+    required this.line,
+    required this.muted,
+    required this.accentSoft,
+    required this.dangerSoft,
+    required this.onAccent,
+    required this.scrim,
+    required this.shadow,
+  });
+
+  factory _ModeRecipe.of(Brightness brightness) {
+    return switch (brightness) {
+      Brightness.dark => _dark,
+      Brightness.light => _light,
+    };
+  }
+
+  static const _ModeRecipe _dark = _ModeRecipe(
+    strong: 0.09,
+    line: 0.09,
+    muted: 0.38,
+    accentSoft: 0.20,
+    dangerSoft: 0.16,
+    onAccent: Color(0xFF000000),
+    scrim: Color(0xA3000000),
+    shadow: Color(0x99000000),
+  );
+
+  static const _ModeRecipe _light = _ModeRecipe(
+    strong: 0.07,
+    line: 0.11,
+    muted: 0.30,
+    accentSoft: 0.12,
+    dangerSoft: 0.10,
+    onAccent: Color(0xFFFFFFFF),
+    scrim: Color(0x660A0B0E),
+    shadow: Color(0x240A0B0E),
+  );
+
+  /// Surface mixed toward text for selected and disabled fills.
+  final double strong;
+
+  /// Surface mixed toward text for hairline dividers and borders.
+  final double line;
+
+  /// The furthest text may be mixed toward the surface for secondary text.
+  final double muted;
+
+  /// Surface mixed toward an accent for tinted fills.
+  final double accentSoft;
+
+  /// Surface mixed toward danger for error fills.
+  final double dangerSoft;
+
+  /// The preferred foreground on accent and danger fills.
+  final Color onAccent;
+  final Color scrim;
+  final Color shadow;
 }

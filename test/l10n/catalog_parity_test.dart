@@ -75,21 +75,30 @@ void main() {
     );
   });
 
-  test('uses the accepted compatibility theme display names', () {
+  test('displays only original theme names', () {
+    const List<String> inheritedNames = <String>[
+      'Tokyo Night',
+      'One Dark Pro',
+      'Catppuccin',
+      'Nord',
+      'Dracula',
+      'Gruvbox',
+      'Monokai',
+      'Night Owl',
+      'Synthwave',
+      'Ayu',
+    ];
     for (final ArbCatalog catalog in <ArbCatalog>[
       englishCatalog,
       koreanCatalog,
     ]) {
-      expect(catalog['themeDraculaName'], 'Dracula');
-      expect(catalog['themeNeonDuskName'], 'Neon Dusk');
-      expect(
-        catalog.values.whereType<String>(),
-        isNot(contains('Dracula Official')),
-      );
-      expect(
-        catalog.values.whereType<String>(),
-        isNot(contains('Monokai Pro')),
-      );
+      expect(catalog['themeGraphiteName'], 'Graphite');
+      expect(catalog['themeAuroraName'], 'Aurora');
+      for (final String value in catalog.values.whereType<String>()) {
+        for (final String inherited in inheritedNames) {
+          expect(value, isNot(contains(inherited)));
+        }
+      }
     }
   });
 

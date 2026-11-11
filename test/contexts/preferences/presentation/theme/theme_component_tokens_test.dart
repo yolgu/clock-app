@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('builds Apple-style Windows typography and component geometry', () {
+  test('builds minimal dark Windows typography and component geometry', () {
     final ThemeData theme = ClockRhythmTheme.build(
       ThemeCatalog.definitions.first,
       platform: TargetPlatform.windows,
@@ -55,7 +55,7 @@ void main() {
                 as RoundedRectangleBorder)
             .borderRadius,
       ),
-      ClockRhythmRadius.pill,
+      ClockRhythmRadius.control,
     );
     expect(
       theme.iconButtonTheme.style?.minimumSize?.resolve(const <WidgetState>{}),
@@ -76,7 +76,7 @@ void main() {
                 as RoundedRectangleBorder)
             .borderRadius,
       ),
-      ClockRhythmRadius.pill,
+      ClockRhythmRadius.control,
     );
     expect(
       theme.navigationBarTheme.height,
@@ -95,10 +95,13 @@ void main() {
 
       expect(theme.platform, TargetPlatform.android);
       expect(theme.textTheme.bodyLarge?.fontFamily, 'Roboto');
-      expect(theme.scaffoldBackgroundColor, definition.background.color);
-      expect(theme.colorScheme.surface, definition.surface.color);
-      expect(theme.colorScheme.primary, definition.accentPrimary.color);
-      expect(theme.colorScheme.secondary, definition.accentSecondary.color);
+      expect(theme.scaffoldBackgroundColor, definition.dark.background.color);
+      expect(theme.colorScheme.surface, definition.dark.surface.color);
+      expect(theme.colorScheme.primary, definition.dark.accentPrimary.color);
+      expect(
+        theme.colorScheme.secondary,
+        definition.dark.accentSecondary.color,
+      );
     },
   );
 }

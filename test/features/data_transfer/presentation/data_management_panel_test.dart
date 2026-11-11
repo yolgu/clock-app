@@ -20,7 +20,7 @@ void main() {
         find.byKey(const ValueKey<String>('data-management-panel')),
         findsOneWidget,
       );
-      expect(find.text('Data management'), findsOneWidget);
+      expect(find.text('Portable Backup'), findsOneWidget);
       expect(
         find.byKey(const ValueKey<String>('export-backup')),
         findsOneWidget,

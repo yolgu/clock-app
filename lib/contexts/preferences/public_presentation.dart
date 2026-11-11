@@ -53,5 +53,5 @@ export 'presentation/theme/clock_rhythm_theme.dart' show ClockRhythmTheme;
 export 'presentation/theme/clock_rhythm_theme_extension.dart'
     show ClockRhythmThemeExtension;
 export 'presentation/theme/theme_catalog.dart'
-    show ColorToken, ThemeCatalog, ThemeDefinition;
+    show ColorToken, ThemeCatalog, ThemeDefinition, ThemeSeeds;
 export 'presentation/theme/theme_page.dart' show ThemePage;

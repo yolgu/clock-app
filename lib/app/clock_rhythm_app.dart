@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../contexts/preferences/public_model.dart' show ThemePreference;
+import '../contexts/preferences/public_model.dart'
+    show AppearancePreference, ThemePreference;
 import '../contexts/preferences/public_presentation.dart'
     show ClockRhythmTheme, ThemeCatalog;
 import '../shared/i18n/public.dart' show AppLocalizations, LanguageLocaleMapper;
@@ -11,6 +12,7 @@ final class ClockRhythmApp extends StatelessWidget {
     required this.router,
     this.locale = LanguageLocaleMapper.koreanLocale,
     this.theme = ThemePreference.current,
+    this.appearance = AppearancePreference.standard,
     this.mutationsSuspended = false,
     super.key,
   });
@@ -18,6 +20,7 @@ final class ClockRhythmApp extends StatelessWidget {
   final GoRouter router;
   final Locale locale;
   final ThemePreference theme;
+  final AppearancePreference appearance;
   final bool mutationsSuspended;
 
   @override
@@ -31,7 +34,19 @@ final class ClockRhythmApp extends StatelessWidget {
       locale: locale,
       supportedLocales: LanguageLocaleMapper.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      theme: ClockRhythmTheme.build(ThemeCatalog.resolve(theme)),
+      theme: ClockRhythmTheme.build(
+        ThemeCatalog.resolve(theme),
+        brightness: Brightness.light,
+      ),
+      darkTheme: ClockRhythmTheme.build(
+        ThemeCatalog.resolve(theme),
+        brightness: Brightness.dark,
+      ),
+      themeMode: switch (appearance) {
+        AppearancePreference.system => ThemeMode.system,
+        AppearancePreference.light => ThemeMode.light,
+        AppearancePreference.dark => ThemeMode.dark,
+      },
       builder: (BuildContext context, Widget? child) {
         return AbsorbPointer(
           absorbing: mutationsSuspended,

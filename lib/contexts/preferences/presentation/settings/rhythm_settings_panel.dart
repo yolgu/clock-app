@@ -7,7 +7,9 @@ import '../../../../shared/ui/public.dart'
         ClockRhythmCard,
         ClockRhythmLayout,
         ClockRhythmRadius,
-        ClockRhythmSpace;
+        ClockRhythmSpace,
+        LineGlyph,
+        LineIcon;
 import '../../../rhythm/public_model.dart';
 import '../../application/preferences_command_result.dart';
 import '../../domain/language_preference.dart';
@@ -154,21 +156,6 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                  child: SizedBox.square(
-                    dimension: 36,
-                    child: Icon(
-                      Icons.timer_outlined,
-                      size: 22,
-                      color: theme.colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: ClockRhythmSpace.space12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,10 +182,8 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                     onPressed: () {
                       setState(() => _expanded.value = !_expanded.value);
                     },
-                    icon: Icon(
-                      showsBody
-                          ? Icons.keyboard_arrow_up_rounded
-                          : Icons.keyboard_arrow_down_rounded,
+                    icon: LineIcon(
+                      showsBody ? LineGlyph.chevronUp : LineGlyph.chevronDown,
                     ),
                   ),
               ],
@@ -285,8 +270,8 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                 ListTile(
                   key: const ValueKey<String>('deep-idle-warning'),
                   contentPadding: EdgeInsets.zero,
-                  leading: Icon(
-                    Icons.warning_amber_rounded,
+                  leading: LineIcon(
+                    LineGlyph.warning,
                     color: theme.colorScheme.error,
                   ),
                   title: Text(copy.rhythmSettingsDeepIdleWarning(9)),
@@ -298,7 +283,7 @@ final class _RhythmSettingsPanelState extends ConsumerState<RhythmSettingsPanel>
                 isExpanded: true,
                 initialValue: state.preferences.language,
                 borderRadius: BorderRadius.circular(ClockRhythmRadius.control),
-                icon: const Icon(Icons.unfold_more_rounded),
+                icon: const LineIcon(LineGlyph.unfold),
                 decoration: InputDecoration(labelText: copy.languageLabel),
                 items: <DropdownMenuItem<LanguagePreference>>[
                   DropdownMenuItem<LanguagePreference>(

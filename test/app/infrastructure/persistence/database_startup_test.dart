@@ -4,6 +4,7 @@ import 'package:clock_rhythm/app/infrastructure/persistence/clock_rhythm_databas
 import 'package:clock_rhythm/app/infrastructure/persistence/database_connection.dart';
 import 'package:clock_rhythm/app/infrastructure/persistence/database_failure.dart';
 import 'package:clock_rhythm/app/infrastructure/persistence/database_startup.dart';
+import 'package:clock_rhythm/app/infrastructure/persistence/migrations/migration_plan.dart';
 import 'package:clock_rhythm/app/infrastructure/persistence/repositories/drift_settings_repository.dart';
 import 'package:clock_rhythm/app/infrastructure/persistence/repositories/drift_todo_repository.dart';
 import 'package:clock_rhythm/contexts/preferences/public_model.dart';
@@ -104,7 +105,7 @@ void main() {
           .map((row) => row.read<int>('user_version'))
           .getSingle();
 
-      expect(schemaVersion, 1);
+      expect(schemaVersion, DatabaseSchema.currentVersion);
       expect(
         await DriftSettingsRepository(
           reopened.database,
@@ -123,7 +124,7 @@ void main() {
       );
       addTearDown(() => directory.delete(recursive: true));
       final File databaseFile = await _createHealthyDatabase(directory);
-      await _setUserVersion(databaseFile, 2);
+      await _setUserVersion(databaseFile, DatabaseSchema.currentVersion + 1);
       final List<int> originalBytes = await databaseFile.readAsBytes();
       final TrackingDatabaseConnectionFactory connectionFactory =
           TrackingDatabaseConnectionFactory(
@@ -140,7 +141,10 @@ void main() {
           state as DatabaseRecoveryRequired;
       expect(recovery.failure.kind, DatabaseFailureKind.unsupportedVersion);
       expect(connectionFactory.openCalls, 0);
-      expect(await _readUserVersion(databaseFile), 2);
+      expect(
+        await _readUserVersion(databaseFile),
+        DatabaseSchema.currentVersion + 1,
+      );
       expect(await databaseFile.readAsBytes(), originalBytes);
     },
   );
@@ -251,6 +255,87 @@ void main() {
       'theme',
     );
     expect(theme, expected.theme.id);
+  });
+
+  test(
+    'version-one database upgrades to a dark Appearance and keeps its palette',
+    () async {
+      final Directory directory = await Directory.systemTemp.createTemp(
+        'clock-rhythm-v1-db-',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final UserPreferences saved = UserPreferences.defaults().changeTheme(
+        ThemePreference.nord,
+      );
+      final File databaseFile = await _createHealthyDatabase(
+        directory,
+        preferences: saved,
+      );
+      await _downgradeToVersionOne(databaseFile);
+
+      final DatabaseStartupState state = await DatabaseStartup(
+        connectionFactory: FixedDatabaseConnectionFactory(
+          path: databaseFile.path,
+          executor: NativeDatabase(databaseFile),
+        ),
+      ).open();
+      final DatabaseReady ready = state as DatabaseReady;
+      addTearDown(ready.database.close);
+      final UserPreferences restored = await DriftSettingsRepository(
+        ready.database,
+        deviceSoundLocatorStore: MemoryDeviceSoundLocatorStore(),
+      ).load();
+
+      expect(restored.theme, ThemePreference.nord);
+      expect(restored.appearance, AppearancePreference.dark);
+      expect(restored, saved);
+    },
+  );
+
+  test('a chosen Appearance survives reopening', () async {
+    final Directory directory = await Directory.systemTemp.createTemp(
+      'clock-rhythm-appearance-db-',
+    );
+    addTearDown(() => directory.delete(recursive: true));
+    final UserPreferences saved = UserPreferences.defaults().changeAppearance(
+      AppearancePreference.light,
+    );
+    final File databaseFile = await _createHealthyDatabase(
+      directory,
+      preferences: saved,
+    );
+
+    final DatabaseStartupState state = await DatabaseStartup(
+      connectionFactory: FixedDatabaseConnectionFactory(
+        path: databaseFile.path,
+        executor: NativeDatabase(databaseFile),
+      ),
+    ).open();
+    final DatabaseReady ready = state as DatabaseReady;
+    addTearDown(ready.database.close);
+
+    expect(
+      await DriftSettingsRepository(
+        ready.database,
+        deviceSoundLocatorStore: MemoryDeviceSoundLocatorStore(),
+      ).load(),
+      saved,
+    );
+  });
+}
+
+/// Rewrites a current database into the version-one shape, which predates
+/// the Appearance column.
+Future<void> _downgradeToVersionOne(File databaseFile) {
+  return _executeWithoutMigrations(databaseFile, (
+    ClockRhythmDatabase database,
+  ) async {
+    await database.customStatement(
+      'ALTER TABLE preference_records DROP COLUMN appearance',
+    );
+    await database.customStatement(
+      'PRAGMA user_version = ${DatabaseSchema.initialVersion}',
+    );
   });
 }
 

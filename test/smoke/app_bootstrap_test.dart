@@ -10,6 +10,7 @@ void main() {
     WidgetTester tester,
   ) async {
     const AppNavigationCopy copy = AppNavigationCopy(
+      appTitle: 'Clock Rhythm',
       clockLabel: 'Clock Rhythm',
       navigationSemanticsLabel: 'App destinations',
       calendarLabel: 'Calendar',

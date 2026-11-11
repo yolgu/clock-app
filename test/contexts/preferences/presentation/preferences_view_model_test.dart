@@ -311,6 +311,16 @@ final class FakePreferencesActions implements PreferencesActions {
   }
 
   @override
+  Future<PreferencesCommandResult> changeAppearance(
+    AppearancePreference appearance,
+  ) async {
+    calls.add('theme');
+    await themeGate?.future;
+    preferences = preferences.changeAppearance(appearance);
+    return PreferencesCommandResult(preferences: preferences);
+  }
+
+  @override
   Future<PreferencesCommandResult> useBundledSound() async {
     calls.add('defaultSound');
     preferences = preferences.changeNotificationSound(

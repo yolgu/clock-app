@@ -158,6 +158,90 @@ abstract class AppLocalizations {
   /// **'Focus rhythm'**
   String get clockPageEyebrow;
 
+  /// No description provided for @clockCurrentTimeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Current time'**
+  String get clockCurrentTimeTitle;
+
+  /// No description provided for @clockSecondsWithZone.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds}s · {zone}'**
+  String clockSecondsWithZone(String seconds, String zone);
+
+  /// No description provided for @clockDailyRhythmCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s rhythm · Focus {focus} min / Rest {rest} min'**
+  String clockDailyRhythmCaption(int focus, int rest);
+
+  /// No description provided for @dataPageSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get dataPageSection;
+
+  /// No description provided for @themePageSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get themePageSection;
+
+  /// No description provided for @settingsPageSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get settingsPageSection;
+
+  /// No description provided for @themeAppliedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'In use'**
+  String get themeAppliedLabel;
+
+  /// No description provided for @themeAppearanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get themeAppearanceTitle;
+
+  /// No description provided for @themeAppearanceSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeAppearanceSystem;
+
+  /// No description provided for @themeAppearanceLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeAppearanceLight;
+
+  /// No description provided for @themeAppearanceDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeAppearanceDark;
+
+  /// No description provided for @sidebarTodayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get sidebarTodayTitle;
+
+  /// No description provided for @sidebarOpenTodos.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Todos'**
+  String get sidebarOpenTodos;
+
+  /// No description provided for @sidebarFocusWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus window'**
+  String get sidebarFocusWindow;
+
   /// No description provided for @clockSettingsShortcutHint.
   ///
   /// In en, this message translates to:
@@ -704,12 +788,6 @@ abstract class AppLocalizations {
   /// **'Notification volume set to {volume}%.'**
   String messageVolumeChanged(int volume);
 
-  /// No description provided for @todoTodayEyebrow.
-  ///
-  /// In en, this message translates to:
-  /// **'Today'**
-  String get todoTodayEyebrow;
-
   /// No description provided for @todoTodayTitle.
   ///
   /// In en, this message translates to:
@@ -749,7 +827,7 @@ abstract class AppLocalizations {
   /// No description provided for @todoActionDetails.
   ///
   /// In en, this message translates to:
-  /// **'Edit Todo details'**
+  /// **'Edit Todo'**
   String get todoActionDetails;
 
   /// No description provided for @todoInlineEditHint.
@@ -829,6 +907,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit Todo time'**
   String get todoListEditTime;
+
+  /// No description provided for @todoFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get todoFieldTitle;
+
+  /// No description provided for @todoFieldDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get todoFieldDate;
+
+  /// No description provided for @todoFieldTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get todoFieldTime;
+
+  /// No description provided for @todoDatePanelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the Todo date'**
+  String get todoDatePanelLabel;
+
+  /// No description provided for @todoTimePanelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the Todo time'**
+  String get todoTimePanelLabel;
+
+  /// No description provided for @todoTimeHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hour'**
+  String get todoTimeHours;
+
+  /// No description provided for @todoTimeMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minute'**
+  String get todoTimeMinutes;
+
+  /// No description provided for @todoTimeHourValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{hour} h'**
+  String todoTimeHourValue(String hour);
+
+  /// No description provided for @todoTimeMinuteValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{minute} min'**
+  String todoTimeMinuteValue(String minute);
 
   /// No description provided for @todoGroupIncomplete.
   ///
@@ -986,11 +1118,11 @@ abstract class AppLocalizations {
   /// **'Todo Calendar'**
   String get calendarTitle;
 
-  /// No description provided for @calendarMonthEyebrow.
+  /// No description provided for @calendarMonthSummary.
   ///
   /// In en, this message translates to:
-  /// **'Month'**
-  String get calendarMonthEyebrow;
+  /// **'This month: {total, plural, =1{1 Todo} other{{total} Todos}} · {completed} done'**
+  String calendarMonthSummary(int total, int completed);
 
   /// No description provided for @calendarSelectedEyebrow.
   ///
@@ -1091,7 +1223,7 @@ abstract class AppLocalizations {
   /// No description provided for @backupTitle.
   ///
   /// In en, this message translates to:
-  /// **'Data management'**
+  /// **'Portable Backup'**
   String get backupTitle;
 
   /// No description provided for @backupDescription.
@@ -1111,6 +1243,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Import'**
   String get backupImport;
+
+  /// No description provided for @backupExportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves your current preferences and every day\'s Todos in one file.'**
+  String get backupExportDescription;
+
+  /// No description provided for @backupImportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Replaces your current preferences and Todos with the file\'s data. Export first before importing.'**
+  String get backupImportDescription;
+
+  /// No description provided for @backupScopeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What a backup holds'**
+  String get backupScopeTitle;
+
+  /// No description provided for @backupScopeIncludedPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences (focus and rest, focus window, sound, language, theme)'**
+  String get backupScopeIncludedPreferences;
+
+  /// No description provided for @backupScopeIncludedTodos.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day\'s Todos with their time, completion and order'**
+  String get backupScopeIncludedTodos;
+
+  /// No description provided for @backupScopeExcludedRhythm.
+  ///
+  /// In en, this message translates to:
+  /// **'The current rhythm state and scheduled notifications'**
+  String get backupScopeExcludedRhythm;
+
+  /// No description provided for @backupScopeExcludedDrafts.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved settings drafts and notification permissions'**
+  String get backupScopeExcludedDrafts;
+
+  /// No description provided for @backupScopeExcludedFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom notification sound files themselves'**
+  String get backupScopeExcludedFiles;
 
   /// No description provided for @backupPreviewTitle.
   ///
@@ -1358,71 +1538,137 @@ abstract class AppLocalizations {
   /// **'Keep the design structure and change the color palette.'**
   String get themeDescription;
 
-  /// No description provided for @themeCurrentName.
+  /// No description provided for @themeGraphiteName.
   ///
   /// In en, this message translates to:
-  /// **'Current'**
-  String get themeCurrentName;
+  /// **'Graphite'**
+  String get themeGraphiteName;
 
-  /// No description provided for @themeTokyoNightName.
+  /// No description provided for @themeGraphiteDescription.
   ///
   /// In en, this message translates to:
-  /// **'Tokyo Night'**
-  String get themeTokyoNightName;
+  /// **'Neutral graphite with indigo. The default.'**
+  String get themeGraphiteDescription;
 
-  /// No description provided for @themeOneDarkProName.
+  /// No description provided for @themeMidnightName.
   ///
   /// In en, this message translates to:
-  /// **'One Dark Pro'**
-  String get themeOneDarkProName;
+  /// **'Midnight'**
+  String get themeMidnightName;
 
-  /// No description provided for @themeCatppuccinMochaName.
+  /// No description provided for @themeMidnightDescription.
   ///
   /// In en, this message translates to:
-  /// **'Catppuccin Mocha'**
-  String get themeCatppuccinMochaName;
+  /// **'Midnight navy with clear sky blue.'**
+  String get themeMidnightDescription;
 
-  /// No description provided for @themeNordName.
+  /// No description provided for @themeSlateName.
   ///
   /// In en, this message translates to:
-  /// **'Nord'**
-  String get themeNordName;
+  /// **'Slate'**
+  String get themeSlateName;
 
-  /// No description provided for @themeDraculaName.
+  /// No description provided for @themeSlateDescription.
   ///
   /// In en, this message translates to:
-  /// **'Dracula'**
-  String get themeDraculaName;
+  /// **'Blue-gray slate with calm blue and gold.'**
+  String get themeSlateDescription;
 
-  /// No description provided for @themeGruvboxName.
+  /// No description provided for @themeDuskName.
   ///
   /// In en, this message translates to:
-  /// **'Gruvbox'**
-  String get themeGruvboxName;
+  /// **'Dusk'**
+  String get themeDuskName;
 
-  /// No description provided for @themeNeonDuskName.
+  /// No description provided for @themeDuskDescription.
   ///
   /// In en, this message translates to:
-  /// **'Neon Dusk'**
-  String get themeNeonDuskName;
+  /// **'Twilight violet with lavender.'**
+  String get themeDuskDescription;
 
-  /// No description provided for @themeNightOwlName.
+  /// No description provided for @themeGlacierName.
   ///
   /// In en, this message translates to:
-  /// **'Night Owl'**
-  String get themeNightOwlName;
+  /// **'Glacier'**
+  String get themeGlacierName;
 
-  /// No description provided for @themeSynthwave84Name.
+  /// No description provided for @themeGlacierDescription.
   ///
   /// In en, this message translates to:
-  /// **'Synthwave 84'**
-  String get themeSynthwave84Name;
+  /// **'Icy blue-gray with frost cyan.'**
+  String get themeGlacierDescription;
 
-  /// No description provided for @themeAyuMirageDarkName.
+  /// No description provided for @themeOrchidName.
   ///
   /// In en, this message translates to:
-  /// **'Ayu Mirage Dark'**
-  String get themeAyuMirageDarkName;
+  /// **'Orchid'**
+  String get themeOrchidName;
+
+  /// No description provided for @themeOrchidDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Plum with orchid pink.'**
+  String get themeOrchidDescription;
+
+  /// No description provided for @themeEmberName.
+  ///
+  /// In en, this message translates to:
+  /// **'Ember'**
+  String get themeEmberName;
+
+  /// No description provided for @themeEmberDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm ash brown with amber.'**
+  String get themeEmberDescription;
+
+  /// No description provided for @themeAuroraName.
+  ///
+  /// In en, this message translates to:
+  /// **'Aurora'**
+  String get themeAuroraName;
+
+  /// No description provided for @themeAuroraDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Polar teal darkness with aurora mint.'**
+  String get themeAuroraDescription;
+
+  /// No description provided for @themeMossName.
+  ///
+  /// In en, this message translates to:
+  /// **'Moss'**
+  String get themeMossName;
+
+  /// No description provided for @themeMossDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Forest green-gray with sage.'**
+  String get themeMossDescription;
+
+  /// No description provided for @themeSunsetName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset'**
+  String get themeSunsetName;
+
+  /// No description provided for @themeSunsetDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Purple evening sky with peach.'**
+  String get themeSunsetDescription;
+
+  /// No description provided for @themeMonoName.
+  ///
+  /// In en, this message translates to:
+  /// **'Mono'**
+  String get themeMonoName;
+
+  /// No description provided for @themeMonoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Black and white, accents included.'**
+  String get themeMonoDescription;
 
   /// No description provided for @themeSelected.
   ///

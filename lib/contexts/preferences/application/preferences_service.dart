@@ -1,3 +1,4 @@
+import '../domain/appearance_preference.dart';
 import '../domain/language_preference.dart';
 import '../domain/theme_preference.dart';
 import '../domain/user_preferences.dart';
@@ -40,6 +41,29 @@ final class PreferencesService {
   Future<PreferencesCommandResult> changeTheme(ThemePreference theme) async {
     final UserPreferences saved = (await _settingsRepository.load())
         .changeTheme(theme);
+    await _settingsRepository.save(saved);
+    final Set<PreferencesRepairNeed> repairNeeds = <PreferencesRepairNeed>{};
+    try {
+      await _preferencesChanged.publish(
+        PreferencesChangedEvent(
+          preferences: saved,
+          impact: PreferencesChangeImpact.visual,
+        ),
+      );
+    } on Object {
+      repairNeeds.add(PreferencesRepairNeed.visual);
+    }
+    return PreferencesCommandResult(
+      preferences: saved,
+      repairNeeds: repairNeeds,
+    );
+  }
+
+  Future<PreferencesCommandResult> changeAppearance(
+    AppearancePreference appearance,
+  ) async {
+    final UserPreferences saved = (await _settingsRepository.load())
+        .changeAppearance(appearance);
     await _settingsRepository.save(saved);
     final Set<PreferencesRepairNeed> repairNeeds = <PreferencesRepairNeed>{};
     try {

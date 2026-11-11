@@ -10,6 +10,32 @@
   "settingsTitle": "Settings",
   "settingsDescription": "Focus window, alerts, sound and language in one place.",
   "clockPageEyebrow": "Focus rhythm",
+  "clockCurrentTimeTitle": "Current time",
+  "clockSecondsWithZone": "{seconds}s · {zone}",
+  "@clockSecondsWithZone": {
+    "placeholders": {
+      "seconds": {"type": "String"},
+      "zone": {"type": "String"}
+    }
+  },
+  "clockDailyRhythmCaption": "Today's rhythm · Focus {focus} min / Rest {rest} min",
+  "@clockDailyRhythmCaption": {
+    "placeholders": {
+      "focus": {"type": "int"},
+      "rest": {"type": "int"}
+    }
+  },
+  "dataPageSection": "Backup",
+  "themePageSection": "Appearance",
+  "settingsPageSection": "Preferences",
+  "themeAppliedLabel": "In use",
+  "themeAppearanceTitle": "Appearance",
+  "themeAppearanceSystem": "System",
+  "themeAppearanceLight": "Light",
+  "themeAppearanceDark": "Dark",
+  "sidebarTodayTitle": "Today",
+  "sidebarOpenTodos": "Open Todos",
+  "sidebarFocusWindow": "Focus window",
   "clockSettingsShortcutHint": "Change in Settings",
   "dataPageDescription": "Back up and restore your preferences and Todos.",
   "actionClose": "Close",
@@ -155,14 +181,13 @@
     }
   },
 
-  "todoTodayEyebrow": "Today",
   "todoTodayTitle": "Today",
   "todoTodayInputLabel": "Today Todo input",
   "todoTodayPlaceholder": "Write a Todo",
   "todoActionAddTime": "Add time",
   "todoActionAdd": "Add",
   "todoActionEdit": "Edit",
-  "todoActionDetails": "Edit Todo details",
+  "todoActionDetails": "Edit Todo",
   "todoInlineEditHint": "Edit title. Enter saves; Escape cancels.",
   "rhythmSettingsSummaryClean": "No unsaved changes",
   "rhythmSettingsSaving": "Saving settings…",
@@ -191,6 +216,25 @@
   "todoListEditTitle": "Edit Todo title",
   "todoListEditDate": "Edit Todo date",
   "todoListEditTime": "Edit Todo time",
+  "todoFieldTitle": "Title",
+  "todoFieldDate": "Date",
+  "todoFieldTime": "Time",
+  "todoDatePanelLabel": "Choose the Todo date",
+  "todoTimePanelLabel": "Choose the Todo time",
+  "todoTimeHours": "Hour",
+  "todoTimeMinutes": "Minute",
+  "todoTimeHourValue": "{hour} h",
+  "@todoTimeHourValue": {
+    "placeholders": {
+      "hour": {"type": "String"}
+    }
+  },
+  "todoTimeMinuteValue": "{minute} min",
+  "@todoTimeMinuteValue": {
+    "placeholders": {
+      "minute": {"type": "String"}
+    }
+  },
   "todoGroupIncomplete": "Incomplete",
   "todoGroupCompleted": "Completed",
   "todoValidationTitleRequired": "Enter a Todo.",
@@ -255,7 +299,13 @@
 
   "calendarEyebrow": "Calendar",
   "calendarTitle": "Todo Calendar",
-  "calendarMonthEyebrow": "Month",
+  "calendarMonthSummary": "This month: {total, plural, =1{1 Todo} other{{total} Todos}} · {completed} done",
+  "@calendarMonthSummary": {
+    "placeholders": {
+      "total": {"type": "int"},
+      "completed": {"type": "int"}
+    }
+  },
   "calendarSelectedEyebrow": "Selected date",
   "calendarPreviousMonth": "Previous month",
   "calendarNextMonth": "Next month",
@@ -288,10 +338,18 @@
   },
 
   "backupEyebrow": "Data",
-  "backupTitle": "Data management",
+  "backupTitle": "Portable Backup",
   "backupDescription": "Export Preferences and Todos to a Portable Backup, or replace local data from one.",
   "backupExport": "Export",
   "backupImport": "Import",
+  "backupExportDescription": "Saves your current preferences and every day's Todos in one file.",
+  "backupImportDescription": "Replaces your current preferences and Todos with the file's data. Export first before importing.",
+  "backupScopeTitle": "What a backup holds",
+  "backupScopeIncludedPreferences": "Preferences (focus and rest, focus window, sound, language, theme)",
+  "backupScopeIncludedTodos": "Every day's Todos with their time, completion and order",
+  "backupScopeExcludedRhythm": "The current rhythm state and scheduled notifications",
+  "backupScopeExcludedDrafts": "Unsaved settings drafts and notification permissions",
+  "backupScopeExcludedFiles": "Custom notification sound files themselves",
   "backupPreviewTitle": "Portable Backup preview",
   "backupImportConfirmTitle": "Import Portable Backup",
   "backupImportConfirmDescription": "Current Preferences and Todos will be fully replaced by this Portable Backup.",
@@ -379,17 +437,28 @@
   "themeEyebrow": "Theme",
   "themeTitle": "Theme",
   "themeDescription": "Keep the design structure and change the color palette.",
-  "themeCurrentName": "Current",
-  "themeTokyoNightName": "Tokyo Night",
-  "themeOneDarkProName": "One Dark Pro",
-  "themeCatppuccinMochaName": "Catppuccin Mocha",
-  "themeNordName": "Nord",
-  "themeDraculaName": "Dracula",
-  "themeGruvboxName": "Gruvbox",
-  "themeNeonDuskName": "Neon Dusk",
-  "themeNightOwlName": "Night Owl",
-  "themeSynthwave84Name": "Synthwave 84",
-  "themeAyuMirageDarkName": "Ayu Mirage Dark",
+  "themeGraphiteName": "Graphite",
+  "themeGraphiteDescription": "Neutral graphite with indigo. The default.",
+  "themeMidnightName": "Midnight",
+  "themeMidnightDescription": "Midnight navy with clear sky blue.",
+  "themeSlateName": "Slate",
+  "themeSlateDescription": "Blue-gray slate with calm blue and gold.",
+  "themeDuskName": "Dusk",
+  "themeDuskDescription": "Twilight violet with lavender.",
+  "themeGlacierName": "Glacier",
+  "themeGlacierDescription": "Icy blue-gray with frost cyan.",
+  "themeOrchidName": "Orchid",
+  "themeOrchidDescription": "Plum with orchid pink.",
+  "themeEmberName": "Ember",
+  "themeEmberDescription": "Warm ash brown with amber.",
+  "themeAuroraName": "Aurora",
+  "themeAuroraDescription": "Polar teal darkness with aurora mint.",
+  "themeMossName": "Moss",
+  "themeMossDescription": "Forest green-gray with sage.",
+  "themeSunsetName": "Sunset",
+  "themeSunsetDescription": "Purple evening sky with peach.",
+  "themeMonoName": "Mono",
+  "themeMonoDescription": "Black and white, accents included.",
   "themeSelected": "Selected",
   "themeSelect": "Select theme",
   "messageThemeChanged": "Theme changed.",

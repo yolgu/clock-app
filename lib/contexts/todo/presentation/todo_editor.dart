@@ -7,31 +7,52 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/i18n/public.dart'
     show AppLocalizations, ClockTimeFormatter, LocalDateFormatter;
 import '../../../shared/ui/public.dart'
-    show ClockRhythmSpace, StableContentSlot;
+    show ClockRhythmSpace, LineGlyph, LineIcon, StableContentSlot;
 import '../domain/local_calendar_date.dart';
 import '../domain/todo.dart';
 import '../domain/todo_time.dart';
 import '../domain/todo_title.dart';
 import 'todo_date_math.dart';
+import 'todo_date_panel.dart';
+import 'todo_picker_field.dart';
 import 'todo_providers.dart';
+import 'todo_time_panel.dart';
 import 'todo_title_feedback.dart';
 
 enum _TodoEditorVariant { today, selectedDate, edit }
 
+/// Where an edit form is shown, which sets its sizes and command layout.
+enum TodoEditSurface {
+  /// A desktop dialog: commands at the end of one line.
+  dialog,
+
+  /// A phone bottom sheet: touch-sized pickers and full-width commands.
+  sheet,
+}
+
+/// The picker an edit form has unfolded under one of its fields.
+enum _OpenPicker { none, date, time }
+
 final class TodoEditor extends ConsumerStatefulWidget {
+  /// The width from which a new Todo's field and commands share one line.
+  static const double inlineMinimumWidth = 480;
+
   const TodoEditor.today({required this.date, this.focusNode, super.key})
     : todo = null,
       onFinished = null,
+      surface = TodoEditSurface.dialog,
       _variant = _TodoEditorVariant.today;
 
   const TodoEditor.forDate({required this.date, this.focusNode, super.key})
     : todo = null,
       onFinished = null,
+      surface = TodoEditSurface.dialog,
       _variant = _TodoEditorVariant.selectedDate;
 
   TodoEditor.edit({
     required TodoSnapshot todo,
     required this.onFinished,
+    this.surface = TodoEditSurface.dialog,
     this.focusNode,
     super.key,
   }) : todo = todo,
@@ -42,11 +63,20 @@ final class TodoEditor extends ConsumerStatefulWidget {
   final TodoSnapshot? todo;
   final VoidCallback? onFinished;
   final FocusNode? focusNode;
+
+  final TodoEditSurface surface;
   final _TodoEditorVariant _variant;
 
   @override
   ConsumerState<TodoEditor> createState() => _TodoEditorState();
 }
+
+/// The width from which an edit form sets its date and time side by side;
+/// below it the full date would be cut off.
+const double _dateAndTimeRowMinimumWidth = 380;
+
+/// Fits a 24-hour time or the add-time prompt with its clear or picker cue.
+const double _timeFieldWidth = 136;
 
 final class _TodoEditorState extends ConsumerState<TodoEditor> {
   late final TextEditingController _titleController;
@@ -58,6 +88,7 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
   String? _time;
   bool _hasInteractedWithTitle = false;
   bool _isSubmitting = false;
+  _OpenPicker _openPicker = _OpenPicker.none;
 
   bool get _isEditing => widget.todo != null;
 
@@ -98,71 +129,48 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
       todoDataControllerProvider,
     );
     final bool commandInFlight = asyncState.value?.isMutating ?? false;
+    final bool editable = !commandInFlight && !_isSubmitting;
     final TodoTitleFeedback feedback = _titleFeedback(localizations);
+    final bool canSubmit = feedback.isValid && editable;
     final String titleLabel = switch (widget._variant) {
       _TodoEditorVariant.today => localizations.todoTodayInputLabel,
       _TodoEditorVariant.selectedDate => localizations.todoTodayPlaceholder,
       _TodoEditorVariant.edit => localizations.todoListEditTitle,
     };
-    final List<Widget> controls = <Widget>[
-      if (_isEditing)
-        _buildDateControl(
-          context,
-          localizations,
-          !commandInFlight && !_isSubmitting,
+    // The field shows its placeholder or a separate visible label; this
+    // label stays available to assistive technology.
+    final Widget title = Semantics(
+      label: titleLabel,
+      child: TextField(
+        key: ValueKey<String>(
+          _isEditing ? 'todo-edit-title' : 'todo-create-title',
         ),
-      _buildTimeControl(localizations, !commandInFlight && !_isSubmitting),
-      FilledButton.icon(
-        key: ValueKey<String>(_isEditing ? 'todo-save' : 'todo-add'),
-        onPressed: feedback.isValid && !commandInFlight && !_isSubmitting
-            ? () {
-                unawaited(_submit());
-              }
-            : null,
-        icon: Icon(_isEditing ? Icons.check_rounded : Icons.add_rounded),
-        label: Text(
-          _isEditing
-              ? localizations.todoActionSave
-              : localizations.todoActionAdd,
-        ),
-      ),
-      if (_isEditing)
-        OutlinedButton.icon(
-          key: const ValueKey<String>('todo-cancel'),
-          onPressed: commandInFlight || _isSubmitting
+        controller: _titleController,
+        focusNode: _titleFocusNode,
+        autofocus: _isEditing,
+        enabled: !commandInFlight || _isSubmitting,
+        readOnly: _isSubmitting,
+        maxLines: 1,
+        textInputAction: TextInputAction.done,
+        decoration: InputDecoration(
+          hintText: localizations.todoTodayPlaceholder,
+          prefixIcon: _isEditing
               ? null
-              : widget.onFinished,
-          icon: const Icon(Icons.close),
-          label: Text(localizations.todoActionCancel),
+              : const LineIcon(LineGlyph.plus, size: 18),
+          errorText: _hasInteractedWithTitle ? feedback.error : null,
         ),
-    ];
-    final Widget field = TextField(
-      key: ValueKey<String>(
-        _isEditing ? 'todo-edit-title' : 'todo-create-title',
+        onChanged: (String value) {
+          setState(() {
+            _hasInteractedWithTitle = true;
+          });
+        },
+        onEditingComplete: () {},
+        onSubmitted: (String value) {
+          if (feedback.isValid && !commandInFlight && !_isComposing) {
+            unawaited(_submit());
+          }
+        },
       ),
-      controller: _titleController,
-      focusNode: _titleFocusNode,
-      autofocus: _isEditing,
-      enabled: !commandInFlight || _isSubmitting,
-      readOnly: _isSubmitting,
-      maxLines: 1,
-      textInputAction: TextInputAction.done,
-      decoration: InputDecoration(
-        labelText: titleLabel,
-        hintText: localizations.todoTodayPlaceholder,
-        errorText: _hasInteractedWithTitle ? feedback.error : null,
-      ),
-      onChanged: (String value) {
-        setState(() {
-          _hasInteractedWithTitle = true;
-        });
-      },
-      onEditingComplete: () {},
-      onSubmitted: (String value) {
-        if (feedback.isValid && !commandInFlight && !_isComposing) {
-          unawaited(_submit());
-        }
-      },
     );
     final Widget? counter = feedback.shouldShowCounter
         ? Align(
@@ -181,24 +189,85 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
           )
         : null;
 
-    return Focus(
-      onKeyEvent: (FocusNode node, KeyEvent event) {
-        if (!_isEditing ||
-            event is! KeyDownEvent ||
-            event.logicalKey != LogicalKeyboardKey.escape) {
-          return KeyEventResult.ignored;
+    if (_isEditing) {
+      return Focus(
+        onKeyEvent: (FocusNode node, KeyEvent event) {
+          if (event is! KeyDownEvent ||
+              event.logicalKey != LogicalKeyboardKey.escape) {
+            return KeyEventResult.ignored;
+          }
+          if (editable) {
+            widget.onFinished?.call();
+          }
+          return KeyEventResult.handled;
+        },
+        child: _buildEditForm(
+          context,
+          localizations,
+          title: title,
+          counter: counter,
+          editable: editable,
+          canSubmit: canSubmit,
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: ClockRhythmSpace.space8),
+      child: _buildComposer(
+        localizations,
+        title: title,
+        counter: counter,
+        editable: editable,
+        canSubmit: canSubmit,
+      ),
+    );
+  }
+
+  /// A new Todo: one field with its time and add commands, on one line when
+  /// there is room.
+  Widget _buildComposer(
+    AppLocalizations localizations, {
+    required Widget title,
+    required Widget? counter,
+    required bool editable,
+    required bool canSubmit,
+  }) {
+    final List<Widget> controls = <Widget>[
+      _buildTimeControl(localizations, editable),
+      FilledButton.icon(
+        key: const ValueKey<String>('todo-add'),
+        onPressed: canSubmit ? () => unawaited(_submit()) : null,
+        icon: const LineIcon(LineGlyph.plus),
+        label: Text(localizations.todoActionAdd),
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final bool inline =
+            constraints.maxWidth >= TodoEditor.inlineMinimumWidth &&
+            MediaQuery.textScalerOf(context).scale(16) <= 20;
+        if (inline) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(child: title),
+                  for (final Widget control in controls) ...<Widget>[
+                    const SizedBox(width: ClockRhythmSpace.space8),
+                    control,
+                  ],
+                ],
+              ),
+              ?counter,
+            ],
+          );
         }
-        if (!commandInFlight && !_isSubmitting) {
-          widget.onFinished?.call();
-        }
-        return KeyEventResult.handled;
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: ClockRhythmSpace.space8),
-        child: Column(
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            field,
+            title,
             ?counter,
             const SizedBox(height: ClockRhythmSpace.space8),
             Wrap(
@@ -209,46 +278,166 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
               children: controls,
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildDateControl(
+  /// An existing Todo: labelled title, date and time fields over the
+  /// form's commands.
+  Widget _buildEditForm(
     BuildContext context,
-    AppLocalizations localizations,
-    bool enabled,
-  ) {
-    final LocalDateFormatter formatter = LocalDateFormatter(
+    AppLocalizations localizations, {
+    required Widget title,
+    required Widget? counter,
+    required bool editable,
+    required bool canSubmit,
+  }) {
+    final String date = LocalDateFormatter(
       Localizations.localeOf(context),
-    );
-    final String formattedDate = formatter.formatCompactDate(
-      TodoDateMath.toLocalDateTime(_date),
-    );
-    final String semanticLabel = <String>[
-      localizations.todoListEditDate,
-      formattedDate,
-    ].join(', ');
-    return Semantics(
-      label: semanticLabel,
-      button: true,
-      enabled: enabled,
-      onTap: enabled
-          ? () {
-              unawaited(_selectDate());
-            }
-          : null,
-      excludeSemantics: true,
-      child: OutlinedButton.icon(
+    ).formatFullDate(TodoDateMath.toLocalDateTime(_date));
+    final String? time = _time;
+    final Widget dateField = _LabeledField(
+      label: localizations.todoFieldDate,
+      child: TodoPickerField(
         key: const ValueKey<String>('todo-edit-date'),
-        onPressed: enabled
-            ? () {
-                unawaited(_selectDate());
-              }
-            : null,
-        icon: const Icon(Icons.calendar_today_outlined),
-        label: Text(formattedDate),
+        semanticLabel: <String>[
+          localizations.todoListEditDate,
+          date,
+        ].join(', '),
+        value: date,
+        placeholder: date,
+        expanded: _openPicker == _OpenPicker.date,
+        onPressed: editable ? () => _togglePicker(_OpenPicker.date) : null,
       ),
+    );
+    final Widget timeField = _LabeledField(
+      label: localizations.todoFieldTime,
+      child: TodoPickerField(
+        key: ValueKey<String>(
+          time == null ? 'todo-add-time' : 'todo-edit-time',
+        ),
+        semanticLabel: <String>[
+          localizations.todoListEditTime,
+          time ?? localizations.todoActionAddTime,
+        ].join(', '),
+        value: time,
+        placeholder: localizations.todoActionAddTime,
+        expanded: _openPicker == _OpenPicker.time,
+        onPressed: editable ? () => _togglePicker(_OpenPicker.time) : null,
+        clearAction: time == null
+            ? null
+            : IconButton(
+                key: const ValueKey<String>('todo-clear-time'),
+                onPressed: editable
+                    ? () => setState(() {
+                        _time = null;
+                      })
+                    : null,
+                tooltip: localizations.timePickerClear,
+                icon: const LineIcon(LineGlyph.close, size: 16),
+              ),
+      ),
+    );
+    final TodoDataState? data = ref.watch(todoDataControllerProvider).value;
+    final bool touchSized = widget.surface == TodoEditSurface.sheet;
+    final Widget? datePanel = _openPicker == _OpenPicker.date && data != null
+        ? TodoDatePanel(
+            selected: _date,
+            today: data.todayDate,
+            summaryForMonth: data.collection.summaryForMonth,
+            enabled: editable,
+            onSelected: _chooseDate,
+          )
+        : null;
+    final ({int hour, int minute})? timeParts = time == null
+        ? null
+        : const ClockTimeFormatter().parse(time);
+    final Widget? timePanel = _openPicker == _OpenPicker.time
+        ? TodoTimePanel(
+            hour: timeParts?.hour,
+            minute: timeParts?.minute,
+            touchSized: touchSized,
+            enabled: editable,
+            onHourSelected: _chooseHour,
+            onMinuteSelected: _chooseMinute,
+          )
+        : null;
+    final Widget save = FilledButton(
+      key: const ValueKey<String>('todo-save'),
+      onPressed: canSubmit ? () => unawaited(_submit()) : null,
+      child: Text(localizations.todoActionSave),
+    );
+    final Widget cancel = TextButton(
+      key: const ValueKey<String>('todo-cancel'),
+      style: TextButton.styleFrom(
+        foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      onPressed: editable ? widget.onFinished : null,
+      child: Text(localizations.todoActionCancel),
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _LabeledField(label: localizations.todoFieldTitle, child: title),
+        ?counter,
+        const SizedBox(height: ClockRhythmSpace.space16),
+        LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final bool sideBySide =
+                constraints.maxWidth >= _dateAndTimeRowMinimumWidth &&
+                MediaQuery.textScalerOf(context).scale(16) <= 20;
+            // An open picker unfolds right under its own field, or under
+            // the shared row when date and time sit side by side.
+            if (!sideBySide) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  dateField,
+                  ..._unfolded(datePanel),
+                  const SizedBox(height: ClockRhythmSpace.space16),
+                  timeField,
+                  ..._unfolded(timePanel),
+                ],
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Expanded(child: dateField),
+                    const SizedBox(width: ClockRhythmSpace.space12),
+                    SizedBox(width: _timeFieldWidth, child: timeField),
+                  ],
+                ),
+                ..._unfolded(datePanel ?? timePanel),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: ClockRhythmSpace.space24),
+        if (widget.surface == TodoEditSurface.sheet)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              save,
+              const SizedBox(height: ClockRhythmSpace.space8),
+              cancel,
+            ],
+          )
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              cancel,
+              const SizedBox(width: ClockRhythmSpace.space8),
+              save,
+            ],
+          ),
+      ],
     );
   }
 
@@ -277,7 +466,7 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
                     }
                   : null,
               tooltip: localizations.timePickerClear,
-              icon: const Icon(Icons.clear),
+              icon: const LineIcon(LineGlyph.close),
             ),
           ),
           Flexible(
@@ -300,7 +489,7 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
                         unawaited(_selectTime());
                       }
                     : null,
-                icon: const Icon(Icons.schedule),
+                icon: const LineIcon(LineGlyph.clock),
                 label: StableContentSlot(
                   labels: <String>[
                     localizations.todoActionAddTime,
@@ -400,20 +589,52 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
     }
   }
 
-  Future<void> _selectDate() async {
-    final DateTime? selected = await showDatePicker(
-      context: context,
-      initialDate: TodoDateMath.toLocalDateTime(_date),
-      firstDate: DateTime(1),
-      lastDate: DateTime(9999, 12, 31),
-      helpText: AppLocalizations.of(context).todoListEditDate,
-    );
-    if (selected == null || !mounted) {
-      return;
-    }
+  List<Widget> _unfolded(Widget? panel) {
+    return panel == null
+        ? const <Widget>[]
+        : <Widget>[const SizedBox(height: ClockRhythmSpace.space8), panel];
+  }
+
+  void _togglePicker(_OpenPicker picker) {
+    // The picker takes over from typing: the title gives up its ring and,
+    // on a phone, the keyboard that would cover the panel.
+    _titleFocusNode.unfocus();
     setState(() {
-      _date = TodoDateMath.fromLocalDateTime(selected);
+      _openPicker = _openPicker == picker ? _OpenPicker.none : picker;
     });
+  }
+
+  void _chooseDate(LocalCalendarDate date) {
+    setState(() {
+      _date = date;
+      _openPicker = _OpenPicker.none;
+    });
+  }
+
+  /// An hour keeps the panel open for the minute that usually follows.
+  void _chooseHour(int hour) {
+    setState(() {
+      _time = const ClockTimeFormatter().formatComponents(
+        hour: hour,
+        minute: _currentTimeParts()?.minute ?? 0,
+      );
+    });
+  }
+
+  /// A minute completes the time, so the panel folds away.
+  void _chooseMinute(int minute) {
+    setState(() {
+      _time = const ClockTimeFormatter().formatComponents(
+        hour: _currentTimeParts()?.hour ?? TimeOfDay.now().hour,
+        minute: minute,
+      );
+      _openPicker = _OpenPicker.none;
+    });
+  }
+
+  ({int hour, int minute})? _currentTimeParts() {
+    final String? time = _time;
+    return time == null ? null : const ClockTimeFormatter().parse(time);
   }
 
   Future<void> _selectTime() async {
@@ -446,5 +667,35 @@ final class _TodoEditorState extends ConsumerState<TodoEditor> {
         minute: selected.minute,
       );
     });
+  }
+}
+
+/// A form field under its visible name. The name is left to the field's
+/// own semantic label so it is not announced twice.
+final class _LabeledField extends StatelessWidget {
+  const _LabeledField({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        ExcludeSemantics(
+          child: Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        child,
+      ],
+    );
   }
 }

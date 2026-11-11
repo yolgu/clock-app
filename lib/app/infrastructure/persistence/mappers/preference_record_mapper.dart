@@ -33,6 +33,7 @@ abstract final class PreferenceRecordMapper {
         notificationSound: sound,
         language: LanguagePreference.parse(record.language),
         theme: ThemePreference.parse(record.theme),
+        appearance: AppearancePreference.parse(record.appearance),
         initialSetupCompleted: record.initialSetupCompleted,
       ),
     );
@@ -55,6 +56,7 @@ abstract final class PreferenceRecordMapper {
       mutedFromFileName: Value<String?>(sound.mutedFrom?.customFileName),
       language: snapshot.language.id,
       theme: snapshot.theme.id,
+      appearance: Value<String>(snapshot.appearance.id),
       initialSetupCompleted: snapshot.initialSetupCompleted,
     );
   }

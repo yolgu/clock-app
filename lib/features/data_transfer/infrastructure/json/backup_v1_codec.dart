@@ -117,6 +117,7 @@ final class BackupV1Codec implements PortableBackupCodec {
       },
       'language': snapshot.language.id,
       'theme': snapshot.theme.id,
+      'appearance': snapshot.appearance.id,
       'initialSetupCompleted': snapshot.initialSetupCompleted,
     };
   }

@@ -15,99 +15,104 @@ void main() {
     }
   });
 
-  test('maps the proprietary compatibility ID to Neon Dusk', () {
-    final ThemeDefinition theme = ThemeCatalog.resolve(
-      ThemePreference.monokaiPro,
-    );
-
-    expect(theme.displayName, 'Neon Dusk');
+  test('displays the original Clock Rhythm theme names in stored-ID order', () {
     expect(
-      theme.sourceSwatches.map((ColorToken token) => token.hex),
-      isNot(containsAll(<String>['#78dce8', '#ab9df2', '#ff6188'])),
+      ThemeCatalog.definitions.map(
+        (ThemeDefinition theme) => theme.displayName,
+      ),
+      <String>[
+        'Graphite',
+        'Midnight',
+        'Slate',
+        'Dusk',
+        'Glacier',
+        'Orchid',
+        'Ember',
+        'Aurora',
+        'Moss',
+        'Sunset',
+        'Mono',
+      ],
     );
   });
 
-  test('uses the Apple-inspired dark default palette', () {
-    final ThemeDefinition theme = ThemeCatalog.resolve(ThemePreference.current);
-
-    expect(theme.background.hex, '#000000');
-    expect(theme.surface.hex, '#1c1c1e');
-    expect(theme.text.hex, '#f5f5f7');
-    expect(theme.accentPrimary.hex, '#0071e3');
-    expect(theme.accentSecondary.hex, '#30d158');
-    expect(theme.danger.hex, '#ff453a');
-  });
-
-  test('preserves every non-default compatibility palette', () {
+  test('defines every palette from the original Clock Rhythm swatches', () {
     final Map<String, List<String>> expected = <String, List<String>>{
+      'current': <String>[
+        '#999ffc',
+        '#79d6aa',
+        '#e9e9ec',
+        '#141518',
+        '#f86e6f',
+      ],
       'tokyo-night': <String>[
-        '#7dcfff',
-        '#bb9af7',
-        '#c0caf5',
-        '#101322',
-        '#f7768e',
+        '#58b4e8',
+        '#c9b1f7',
+        '#e3eaf8',
+        '#0c1426',
+        '#f86e6f',
       ],
       'one-dark-pro': <String>[
-        '#61afef',
-        '#c678dd',
-        '#abb2bf',
-        '#1e222a',
-        '#e06c75',
+        '#7daceb',
+        '#e3b868',
+        '#e5eaf0',
+        '#0f161d',
+        '#f86e6f',
       ],
       'catppuccin-mocha': <String>[
-        '#89dceb',
-        '#cba6f7',
-        '#cdd6f4',
-        '#1e1e2e',
-        '#f38ba8',
+        '#b599e1',
+        '#efa7c2',
+        '#e9e7f6',
+        '#151224',
+        '#f86e6f',
       ],
-      'nord': <String>['#88c0d0', '#81a1c1', '#eceff4', '#2e3440', '#bf616a'],
+      'nord': <String>['#62b9c4', '#a3c3e5', '#e1ebf2', '#101f28', '#f86e6f'],
       'dracula-official': <String>[
-        '#8be9fd',
-        '#bd93f9',
-        '#f8f8f2',
-        '#282a36',
-        '#ff79c6',
+        '#dd89c2',
+        '#c0b3fe',
+        '#efe5f4',
+        '#1c0e22',
+        '#f86e6f',
       ],
       'gruvbox': <String>[
-        '#fabd2f',
-        '#fe8019',
-        '#ebdbb2',
-        '#282828',
-        '#fb4934',
+        '#db9b40',
+        '#adcc86',
+        '#eee8e4',
+        '#1a130d',
+        '#f86f62',
       ],
       'monokai-pro': <String>[
-        '#4de8c2',
-        '#b39dff',
-        '#f2f4ff',
-        '#1b1d2b',
-        '#ff6b8a',
+        '#4dc19b',
+        '#c0b4fb',
+        '#e0ecec',
+        '#061818',
+        '#f86e6f',
       ],
       'night-owl': <String>[
-        '#82aaff',
-        '#c792ea',
-        '#d6deeb',
-        '#011627',
-        '#ef5350',
+        '#8fb86e',
+        '#d8bc7b',
+        '#e5ebe6',
+        '#0f1711',
+        '#f86e6f',
       ],
       'synthwave-84': <String>[
-        '#36f9f6',
-        '#ff7edb',
-        '#fede5d',
-        '#241b2f',
-        '#fe4450',
+        '#e5935f',
+        '#f2a2d0',
+        '#f2e5f1',
+        '#200c1f',
+        '#f76d77',
       ],
       'ayu-mirage-dark': <String>[
-        '#73d0ff',
-        '#dfbfff',
-        '#cbccc6',
-        '#1f2430',
-        '#f28779',
+        '#dedede',
+        '#9e9e9e',
+        '#e9e9e9',
+        '#151515',
+        '#f86e6f',
       ],
     };
     final Map<String, List<String>> actual = <String, List<String>>{
-      for (final ThemeDefinition theme in ThemeCatalog.definitions.skip(1))
-        theme.id.id: theme.sourceSwatches
+      for (final ThemeDefinition theme in ThemeCatalog.definitions)
+        theme.id.id: theme.dark.sourceSwatches
             .map((ColorToken token) => token.hex)
             .toList(growable: false),
     };
@@ -115,11 +120,124 @@ void main() {
     expect(actual, expected);
   });
 
-  test('uses the redistributable Dracula display name', () {
-    expect(
-      ThemeCatalog.resolve(ThemePreference.draculaOfficial).displayName,
-      'Dracula',
-    );
+  test('transcribes the light seeds of the Clock Rhythm design system', () {
+    const Map<String, List<String>> expected = <String, List<String>>{
+      'current': <String>[
+        '#f1f2f7',
+        '#fdfdff',
+        '#1e1e20',
+        '#4e4da7',
+        '#10845b',
+        '#bc363e',
+      ],
+      'tokyo-night': <String>[
+        '#eff2fb',
+        '#fdfdff',
+        '#191e28',
+        '#01628b',
+        '#7a61a4',
+        '#bc363e',
+      ],
+      'one-dark-pro': <String>[
+        '#edf3fb',
+        '#fcfeff',
+        '#1b1e23',
+        '#2d5b97',
+        '#916800',
+        '#bc363e',
+      ],
+      'catppuccin-mocha': <String>[
+        '#f3f1fa',
+        '#fdfdff',
+        '#1e1c27',
+        '#674a8e',
+        '#9b5773',
+        '#bc363e',
+      ],
+      'nord': <String>[
+        '#ebf4fa',
+        '#fcfeff',
+        '#181f24',
+        '#056771',
+        '#547394',
+        '#bc363e',
+      ],
+      'dracula-official': <String>[
+        '#f6f0f8',
+        '#fefdff',
+        '#221b26',
+        '#883872',
+        '#7263ab',
+        '#bc363e',
+      ],
+      'gruvbox': <String>[
+        '#f8f1ea',
+        '#fffdfb',
+        '#211d1a',
+        '#7c5007',
+        '#5e7b34',
+        '#bc3730',
+      ],
+      'monokai-pro': <String>[
+        '#eaf5f5',
+        '#fbfefe',
+        '#172020',
+        '#096b51',
+        '#7164a8',
+        '#bc363e',
+      ],
+      'night-owl': <String>[
+        '#edf5ef',
+        '#fbfefc',
+        '#1b1f1c',
+        '#416818',
+        '#886c26',
+        '#bc363e',
+      ],
+      'synthwave-84': <String>[
+        '#f7f0f6',
+        '#fffcff',
+        '#241b23',
+        '#8d4303',
+        '#9e5280',
+        '#bb3546',
+      ],
+      'ayu-mirage-dark': <String>[
+        '#f2f2f2',
+        '#fdfdfd',
+        '#1e1e1e',
+        '#5b5b5b',
+        '#707070',
+        '#bc363e',
+      ],
+    };
+    final Map<String, List<String>> actual = <String, List<String>>{
+      for (final ThemeDefinition theme in ThemeCatalog.definitions)
+        theme.id.id: <ColorToken>[
+          theme.light.background,
+          theme.light.surface,
+          theme.light.text,
+          theme.light.accentPrimary,
+          theme.light.accentSecondary,
+          theme.light.danger,
+        ].map((ColorToken token) => token.hex).toList(growable: false),
+    };
+
+    expect(actual, expected);
+  });
+
+  test('keeps the hex and color of every token in agreement', () {
+    for (final ThemeDefinition theme in ThemeCatalog.definitions) {
+      for (final ThemeSeeds seeds in <ThemeSeeds>[theme.dark, theme.light]) {
+        for (final ColorToken token in <ColorToken>[
+          seeds.background,
+          ...seeds.sourceSwatches,
+        ]) {
+          final String argb = token.color.toARGB32().toRadixString(16);
+          expect('#${argb.substring(2)}', token.hex, reason: theme.displayName);
+        }
+      }
+    }
   });
 
   test('asset notices record exact source hashes and provenance risk', () {
@@ -137,6 +255,9 @@ void main() {
       ),
     );
     expect(assetNotice, contains('provenance/license'));
-    expect(File('THIRD_PARTY_NOTICES.md').readAsStringSync(), contains('MIT'));
+    expect(
+      File('THIRD_PARTY_NOTICES.md').readAsStringSync(),
+      contains('redistributes no third-party theme names or palette swatches'),
+    );
   });
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../application/ports/preferences_changed_port.dart';
 import '../application/preferences_command_result.dart';
+import '../domain/appearance_preference.dart';
 import '../domain/language_preference.dart';
 import '../domain/theme_preference.dart';
 import '../domain/user_preferences.dart';
@@ -213,6 +214,14 @@ final class PreferencesDataController
   Future<void> changeTheme(ThemePreference theme) async {
     await applyImmediate(
       () => _actions.changeTheme(theme),
+      failure: PreferencesFailure.theme,
+      resolves: const <PreferencesRepairNeed>{PreferencesRepairNeed.visual},
+    );
+  }
+
+  Future<void> changeAppearance(AppearancePreference appearance) async {
+    await applyImmediate(
+      () => _actions.changeAppearance(appearance),
       failure: PreferencesFailure.theme,
       resolves: const <PreferencesRepairNeed>{PreferencesRepairNeed.visual},
     );

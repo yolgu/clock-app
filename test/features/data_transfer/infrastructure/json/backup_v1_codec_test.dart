@@ -20,6 +20,7 @@ void main() {
 
     expect(data.preferences.language, LanguagePreference.korean);
     expect(data.preferences.theme, ThemePreference.current);
+    expect(data.preferences.appearance, AppearancePreference.dark);
     expect(
       data.preferences.notificationSound.mode,
       NotificationSoundMode.bundledDefault,
@@ -90,7 +91,8 @@ void main() {
 
       expect(neutralinoExport.last, 0x7d);
       expect(decoded.customSoundWasSanitized, isTrue);
-      expect(_semanticSnapshot(decoded), neutralinoImportedSemantics);
+      expect(decoded.preferences.appearance, AppearancePreference.dark);
+      expect(_neutralinoSemanticSnapshot(decoded), neutralinoImportedSemantics);
 
       final List<int> flutterCanonical = codec.encode(decoded);
       expect(
@@ -104,11 +106,57 @@ void main() {
         flutterCanonical,
       );
       expect(
-        _semanticSnapshot(canonicalRoundTrip),
+        canonicalRoundTrip.preferences.appearance,
+        AppearancePreference.dark,
+      );
+      expect(
+        _neutralinoSemanticSnapshot(canonicalRoundTrip),
         neutralinoImportedSemantics,
       );
     },
   );
+
+  test('round-trips a chosen Appearance next to the palette', () {
+    final PortableBackupData light = _withPreferences(
+      codec.decode(
+        File('test/fixtures/backups/neutralino-v1-full.json').readAsBytesSync(),
+      ),
+      (UserPreferences preferences) =>
+          preferences.changeAppearance(AppearancePreference.light),
+    );
+
+    final List<int> encoded = codec.encode(light);
+    final Map<String, Object?> preferences = Map<String, Object?>.from(
+      (jsonDecode(utf8.decode(encoded))
+              as Map<Object?, Object?>)['preferences']!
+          as Map<Object?, Object?>,
+    );
+    final PortableBackupData roundTrip = codec.decode(encoded);
+
+    expect(preferences['appearance'], 'light');
+    expect(preferences['theme'], 'nord');
+    expect(roundTrip.preferences.appearance, AppearancePreference.light);
+    expect(roundTrip.preferences.theme, ThemePreference.nord);
+  });
+
+  test('rejects a present unknown Appearance', () {
+    final Map<String, Object?> envelope = _fullEnvelope();
+    final Map<String, Object?> preferences = Map<String, Object?>.from(
+      envelope['preferences']! as Map<Object?, Object?>,
+    )..['appearance'] = 'sepia';
+    envelope['preferences'] = preferences;
+
+    expect(
+      () => codec.decode(utf8.encode(jsonEncode(envelope))),
+      throwsA(
+        isA<BackupFailure>().having(
+          (BackupFailure failure) => failure.key,
+          'key',
+          BackupFailureKey.invalidPreferences,
+        ),
+      ),
+    );
+  });
 
   test('rejects unknown versions without guessing', () {
     expect(
@@ -311,9 +359,24 @@ void main() {
   });
 }
 
-Map<String, Object?> _semanticSnapshot(PortableBackupData data) {
+PortableBackupData _withPreferences(
+  PortableBackupData data,
+  UserPreferences Function(UserPreferences preferences) change,
+) {
+  return PortableBackupData(
+    exportedAt: data.exportedAt,
+    preferences: change(data.preferences),
+    todos: data.todos,
+    customSoundWasSanitized: data.customSoundWasSanitized,
+  );
+}
+
+/// The semantics the Neutralino importer captured. Appearance postdates that
+/// application, so it is asserted separately instead of in the fixture.
+Map<String, Object?> _neutralinoSemanticSnapshot(PortableBackupData data) {
   return <String, Object?>{
-    'preferences': data.preferences.snapshot().toJsonLikeMap(),
+    'preferences': data.preferences.snapshot().toJsonLikeMap()
+      ..remove('appearance'),
     'todos': data.todos
         .map((Todo todo) {
           final TodoSnapshot snapshot = todo.snapshot();

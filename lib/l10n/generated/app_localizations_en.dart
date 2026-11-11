@@ -40,6 +40,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clockPageEyebrow => 'Focus rhythm';
 
   @override
+  String get clockCurrentTimeTitle => 'Current time';
+
+  @override
+  String clockSecondsWithZone(String seconds, String zone) {
+    return '${seconds}s · $zone';
+  }
+
+  @override
+  String clockDailyRhythmCaption(int focus, int rest) {
+    return 'Today\'s rhythm · Focus $focus min / Rest $rest min';
+  }
+
+  @override
+  String get dataPageSection => 'Backup';
+
+  @override
+  String get themePageSection => 'Appearance';
+
+  @override
+  String get settingsPageSection => 'Preferences';
+
+  @override
+  String get themeAppliedLabel => 'In use';
+
+  @override
+  String get themeAppearanceTitle => 'Appearance';
+
+  @override
+  String get themeAppearanceSystem => 'System';
+
+  @override
+  String get themeAppearanceLight => 'Light';
+
+  @override
+  String get themeAppearanceDark => 'Dark';
+
+  @override
+  String get sidebarTodayTitle => 'Today';
+
+  @override
+  String get sidebarOpenTodos => 'Open Todos';
+
+  @override
+  String get sidebarFocusWindow => 'Focus window';
+
+  @override
   String get clockSettingsShortcutHint => 'Change in Settings';
 
   @override
@@ -345,9 +391,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get todoTodayEyebrow => 'Today';
-
-  @override
   String get todoTodayTitle => 'Today';
 
   @override
@@ -366,7 +409,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoActionEdit => 'Edit';
 
   @override
-  String get todoActionDetails => 'Edit Todo details';
+  String get todoActionDetails => 'Edit Todo';
 
   @override
   String get todoInlineEditHint => 'Edit title. Enter saves; Escape cancels.';
@@ -412,6 +455,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todoListEditTime => 'Edit Todo time';
+
+  @override
+  String get todoFieldTitle => 'Title';
+
+  @override
+  String get todoFieldDate => 'Date';
+
+  @override
+  String get todoFieldTime => 'Time';
+
+  @override
+  String get todoDatePanelLabel => 'Choose the Todo date';
+
+  @override
+  String get todoTimePanelLabel => 'Choose the Todo time';
+
+  @override
+  String get todoTimeHours => 'Hour';
+
+  @override
+  String get todoTimeMinutes => 'Minute';
+
+  @override
+  String todoTimeHourValue(String hour) {
+    return '$hour h';
+  }
+
+  @override
+  String todoTimeMinuteValue(String minute) {
+    return '$minute min';
+  }
 
   @override
   String get todoGroupIncomplete => 'Incomplete';
@@ -522,7 +596,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarTitle => 'Todo Calendar';
 
   @override
-  String get calendarMonthEyebrow => 'Month';
+  String calendarMonthSummary(int total, int completed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total Todos',
+      one: '1 Todo',
+    );
+    return 'This month: $_temp0 · $completed done';
+  }
 
   @override
   String get calendarSelectedEyebrow => 'Selected date';
@@ -586,7 +668,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupEyebrow => 'Data';
 
   @override
-  String get backupTitle => 'Data management';
+  String get backupTitle => 'Portable Backup';
 
   @override
   String get backupDescription =>
@@ -597,6 +679,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupImport => 'Import';
+
+  @override
+  String get backupExportDescription =>
+      'Saves your current preferences and every day\'s Todos in one file.';
+
+  @override
+  String get backupImportDescription =>
+      'Replaces your current preferences and Todos with the file\'s data. Export first before importing.';
+
+  @override
+  String get backupScopeTitle => 'What a backup holds';
+
+  @override
+  String get backupScopeIncludedPreferences =>
+      'Preferences (focus and rest, focus window, sound, language, theme)';
+
+  @override
+  String get backupScopeIncludedTodos =>
+      'Every day\'s Todos with their time, completion and order';
+
+  @override
+  String get backupScopeExcludedRhythm =>
+      'The current rhythm state and scheduled notifications';
+
+  @override
+  String get backupScopeExcludedDrafts =>
+      'Unsaved settings drafts and notification permissions';
+
+  @override
+  String get backupScopeExcludedFiles =>
+      'Custom notification sound files themselves';
 
   @override
   String get backupPreviewTitle => 'Portable Backup preview';
@@ -764,37 +877,72 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keep the design structure and change the color palette.';
 
   @override
-  String get themeCurrentName => 'Current';
+  String get themeGraphiteName => 'Graphite';
 
   @override
-  String get themeTokyoNightName => 'Tokyo Night';
+  String get themeGraphiteDescription =>
+      'Neutral graphite with indigo. The default.';
 
   @override
-  String get themeOneDarkProName => 'One Dark Pro';
+  String get themeMidnightName => 'Midnight';
 
   @override
-  String get themeCatppuccinMochaName => 'Catppuccin Mocha';
+  String get themeMidnightDescription => 'Midnight navy with clear sky blue.';
 
   @override
-  String get themeNordName => 'Nord';
+  String get themeSlateName => 'Slate';
 
   @override
-  String get themeDraculaName => 'Dracula';
+  String get themeSlateDescription =>
+      'Blue-gray slate with calm blue and gold.';
 
   @override
-  String get themeGruvboxName => 'Gruvbox';
+  String get themeDuskName => 'Dusk';
 
   @override
-  String get themeNeonDuskName => 'Neon Dusk';
+  String get themeDuskDescription => 'Twilight violet with lavender.';
 
   @override
-  String get themeNightOwlName => 'Night Owl';
+  String get themeGlacierName => 'Glacier';
 
   @override
-  String get themeSynthwave84Name => 'Synthwave 84';
+  String get themeGlacierDescription => 'Icy blue-gray with frost cyan.';
 
   @override
-  String get themeAyuMirageDarkName => 'Ayu Mirage Dark';
+  String get themeOrchidName => 'Orchid';
+
+  @override
+  String get themeOrchidDescription => 'Plum with orchid pink.';
+
+  @override
+  String get themeEmberName => 'Ember';
+
+  @override
+  String get themeEmberDescription => 'Warm ash brown with amber.';
+
+  @override
+  String get themeAuroraName => 'Aurora';
+
+  @override
+  String get themeAuroraDescription => 'Polar teal darkness with aurora mint.';
+
+  @override
+  String get themeMossName => 'Moss';
+
+  @override
+  String get themeMossDescription => 'Forest green-gray with sage.';
+
+  @override
+  String get themeSunsetName => 'Sunset';
+
+  @override
+  String get themeSunsetDescription => 'Purple evening sky with peach.';
+
+  @override
+  String get themeMonoName => 'Mono';
+
+  @override
+  String get themeMonoDescription => 'Black and white, accents included.';
 
   @override
   String get themeSelected => 'Selected';

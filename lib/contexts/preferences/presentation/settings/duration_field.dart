@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../shared/i18n/public.dart';
+import '../../../../shared/ui/public.dart' show LineGlyph, LineIcon;
 
 final class DurationField extends StatelessWidget {
   const DurationField({
@@ -40,7 +41,7 @@ final class DurationField extends StatelessWidget {
           tooltip: copy.rhythmSettingsDecrease(label),
           style: stepperStyle,
           onPressed: enabled ? () => _step(-1) : null,
-          icon: const Icon(Icons.remove_rounded),
+          icon: const LineIcon(LineGlyph.minus),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -68,7 +69,7 @@ final class DurationField extends StatelessWidget {
           tooltip: copy.rhythmSettingsIncrease(label),
           style: stepperStyle,
           onPressed: enabled ? () => _step(1) : null,
-          icon: const Icon(Icons.add_rounded),
+          icon: const LineIcon(LineGlyph.plus),
         ),
       ],
     );

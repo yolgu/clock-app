@@ -11,15 +11,21 @@ one completed Todo. Its SHA-256 is
 `D102F0AEE7033D5067126B1D7C6554F8773F2BF061A7FE2E2EE1511BA2EA7DD4`.
 
 `neutralino-v1-full-flutter-canonical.json` is the exact output of decoding
-that export and encoding it with `BackupV1Codec`. Both the original export and
-the Flutter canonical bytes were then imported into separate reference
+that export and encoding it with `BackupV1Codec`. Both the original export
+and the Flutter canonical bytes were then imported into separate reference
 repositories through the actual Neutralino `ImportBackupUseCase`. Their full
 `UserPreferencesSnapshot` and `TodoItemSnapshot` arrays compared equal before
 the accepted result was captured as
 `neutralino-v1-full-imported-semantics.json`.
 
+Since ADR 0026 the canonical output also carries `"appearance": "dark"`, the
+Appearance a Neutralino export restores to. That line was added after the
+Neutralino import check above and has not been imported into the Neutralino
+reference. The imported semantics fixture is unchanged and is compared without
+the Flutter-only Appearance.
+
 The canonical fixture SHA-256 is
-`BEF9F9E263B226F505D8333AE74774DDE92F6323C0CE0A3E1A153F7BEAB7AE65`, and
+`1A338A88F720CFC83CF9CAA85FEDC31CA4A8DC27671AFEC1D03652A8638BFA52`, and
 the imported semantics fixture SHA-256 is
 `1426C41D38372E61D0710D3A29772DEDEB960887EA06A1F8B1B73BD3CB4F20DC`.
 

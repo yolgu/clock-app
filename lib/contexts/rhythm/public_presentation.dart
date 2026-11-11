@@ -1,6 +1,7 @@
 library;
 
 export 'presentation/clock/analog_clock.dart' show AnalogClock;
+export 'presentation/clock/daily_rhythm_bar.dart' show DailyRhythmBar;
 export 'presentation/clock/digital_clock.dart' show DigitalClock;
 export 'presentation/clock/visible_clock_ticker.dart'
     show VisibleClockBuilder, VisibleClockTicker;
@@ -12,7 +13,12 @@ export 'presentation/rhythm_providers.dart'
         legacyCoexistenceWarningProvider,
         rhythmActionsProvider,
         rhythmViewModelProvider;
-export 'presentation/rhythm_status_panel.dart' show RhythmStatusPanel;
+export 'presentation/rhythm_status_panel.dart'
+    show
+        RhythmScheduleNote,
+        RhythmStatusChip,
+        RhythmStatusPanel,
+        RhythmStatusText;
 export 'presentation/rhythm_view_model.dart' show RhythmViewModel;
 export 'presentation/rhythm_view_state.dart'
     show RhythmAnnouncement, RhythmOperation, RhythmViewState;

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/ui/public.dart' show LineIcon;
 import '../navigation/app_routes.dart';
 import 'app_navigation_copy.dart';
 import 'destination_icons.dart';
 
-/// An iOS-style tab bar: hairline top edge, tinted glyphs, no indicator.
-final class AndroidBottomNavigation extends StatelessWidget {
-  const AndroidBottomNavigation({
+/// The compact-layout navigation on every platform: a tab bar with a hairline
+/// top edge whose selected glyph sits in a tinted pill.
+final class BottomTabNavigation extends StatelessWidget {
+  const BottomTabNavigation({
     required this.selectedIndex,
     required this.onDestinationSelected,
     required this.copy,
@@ -27,7 +29,7 @@ final class AndroidBottomNavigation extends StatelessWidget {
           border: Border(
             top: BorderSide(
               color: Theme.of(context).colorScheme.outlineVariant,
-              width: 0.5,
+              width: 1,
             ),
           ),
         ),
@@ -37,10 +39,7 @@ final class AndroidBottomNavigation extends StatelessWidget {
           destinations: MainDestination.values
               .map(
                 (MainDestination destination) => NavigationDestination(
-                  icon: Icon(DestinationIcons.of(destination, selected: false)),
-                  selectedIcon: Icon(
-                    DestinationIcons.of(destination, selected: true),
-                  ),
+                  icon: LineIcon(DestinationIcons.of(destination)),
                   label: copy.labelFor(destination),
                 ),
               )

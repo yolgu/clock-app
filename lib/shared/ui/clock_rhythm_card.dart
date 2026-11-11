@@ -4,8 +4,8 @@ import 'design_tokens.dart';
 
 enum _ClockRhythmCardPadding { responsive, none }
 
-/// A borderless grouped surface: content is separated from the page by fill
-/// contrast alone, the way Apple's inset grouped lists are.
+/// A surface separated from the page by a hairline outline and a slightly
+/// lighter fill, the way minimal desktop tools group content.
 final class ClockRhythmCard extends StatelessWidget {
   const ClockRhythmCard.padded({
     required this.child,
@@ -31,10 +31,9 @@ final class ClockRhythmCard extends StatelessWidget {
   final Clip clipBehavior;
   final _ClockRhythmCardPadding _padding;
 
-  /// A faint light edge that lifts dark grouped surfaces off the page, like
-  /// the hairline stroke on macOS widgets.
+  /// The hairline outline every card carries when it is not selected.
   static Color highlightFor(ThemeData theme) {
-    return theme.colorScheme.onSurface.withValues(alpha: 0.07);
+    return theme.colorScheme.outlineVariant;
   }
 
   @override
@@ -61,7 +60,7 @@ final class ClockRhythmCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: borderRadius,
         side: outline == null
-            ? BorderSide(color: highlightFor(theme), width: 0.5)
+            ? BorderSide(color: highlightFor(theme))
             : BorderSide(color: outline, width: 2),
       ),
       child: content,

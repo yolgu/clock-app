@@ -5,6 +5,7 @@ import '../navigation/app_routes.dart';
 
 final class AppNavigationCopy {
   const AppNavigationCopy({
+    required this.appTitle,
     required this.clockLabel,
     required this.navigationSemanticsLabel,
     required this.calendarLabel,
@@ -17,6 +18,7 @@ final class AppNavigationCopy {
     required this.backToClockLabel,
   });
 
+  final String appTitle;
   final String clockLabel;
   final String navigationSemanticsLabel;
   final String calendarLabel;
@@ -31,6 +33,7 @@ final class AppNavigationCopy {
   factory AppNavigationCopy.fromContext(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context);
     return AppNavigationCopy(
+      appTitle: localizations.appTitle,
       clockLabel: localizations.navigationClock,
       navigationSemanticsLabel: localizations.navigationSemanticsLabel,
       calendarLabel: localizations.navigationCalendar,

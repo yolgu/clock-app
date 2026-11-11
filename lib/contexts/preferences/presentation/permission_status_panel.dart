@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/i18n/public.dart';
-import '../../../shared/ui/public.dart' show ClockRhythmCard;
+import '../../../shared/ui/public.dart'
+    show ClockRhythmCard, LineGlyph, LineIcon;
 import 'preferences_platform_capabilities.dart';
 import 'preferences_providers.dart';
 
@@ -43,21 +44,6 @@ final class _PermissionStatusPanelState
         children: <Widget>[
           Row(
             children: <Widget>[
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary,
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                child: const SizedBox.square(
-                  dimension: 36,
-                  child: Icon(
-                    Icons.notifications_active_rounded,
-                    size: 22,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   copy.permissionPanelTitle,
@@ -138,8 +124,8 @@ final class _PermissionRow extends StatelessWidget {
     final ColorScheme colors = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(
-        granted ? Icons.check_circle_rounded : Icons.error_rounded,
+      leading: LineIcon(
+        granted ? LineGlyph.checkCircle : LineGlyph.warning,
         color: granted ? colors.secondary : colors.error,
       ),
       title: Text(title),
