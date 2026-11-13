@@ -13,9 +13,9 @@ import '../../../shared/ui/public.dart'
         LineIcon,
         MinimumTapTarget;
 import '../domain/todo.dart';
-import 'todo_details_button.dart';
 import 'todo_inline_edit_session.dart';
 import 'todo_inline_title.dart';
+import 'todo_schedule_button.dart';
 
 final class TodoRow extends StatelessWidget {
   const TodoRow({
@@ -178,7 +178,7 @@ final class TodoRow extends StatelessWidget {
     return Wrap(
       spacing: ClockRhythmSpace.space4,
       children: <Widget>[
-        TodoDetailsButton(
+        TodoScheduleButton(
           todo: todo,
           enabled: enabled,
           session: editSession,

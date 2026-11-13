@@ -105,7 +105,7 @@ void main() {
     },
   );
 
-  testWidgets('Todo title and detail actions have accessible tap targets', (
+  testWidgets('Todo title and row actions have accessible tap targets', (
     WidgetTester tester,
   ) async {
     final SemanticsHandle semantics = tester.ensureSemantics();
@@ -158,7 +158,7 @@ void main() {
               const ValueKey<String>('todo-row-one'),
             );
             final Finder action = find.byKey(
-              const ValueKey<String>('todo-edit-one'),
+              const ValueKey<String>('todo-schedule-one'),
             );
             final Rect before = tester.getRect(row);
             final Rect actionBefore = tester.getRect(action);
@@ -211,21 +211,21 @@ void main() {
   );
 
   testWidgets(
-    'moving a Todo in details returns focus to the current composer',
+    'moving a Todo to another date returns focus to the current composer',
     (WidgetTester tester) async {
       final TestTodoRepository repository = TestTodoRepository(<Todo>[
         createTestTodo(id: 'one', title: 'Original'),
       ]);
       await _pumpToday(tester, repository);
-      await tester.tap(find.byKey(const ValueKey<String>('todo-edit-one')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey<String>('todo-edit-date')));
+      await tester.tap(find.byKey(const ValueKey<String>('todo-schedule-one')));
       await tester.pumpAndSettle();
       await tester.tap(
         find.byKey(const ValueKey<String>('todo-date-2026-06-03')),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey<String>('todo-save')));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('todo-schedule-confirm')),
+      );
       await tester.pumpAndSettle();
       expect(repository.todos.single.date.text, '2026-06-03');
       expect(find.byType(Dialog), findsNothing);
@@ -239,38 +239,73 @@ void main() {
     },
   );
 
-  testWidgets('details cannot close during save and remain open on failure', (
+  testWidgets(
+    'a failed reschedule keeps the Todo and is reported in its panel',
+    (WidgetTester tester) async {
+      final TestTodoRepository repository = TestTodoRepository(<Todo>[
+        createTestTodo(id: 'one', title: 'Original', time: '08:00'),
+      ])..failMutations = true;
+      await _pumpToday(tester, repository);
+      final Finder button = find.byKey(
+        const ValueKey<String>('todo-schedule-one'),
+      );
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('todo-time-hour')),
+        '21',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('todo-schedule-confirm')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsNothing);
+      expect(repository.mutateCalls, 1);
+      expect(repository.todos.single.time?.text, '08:00');
+      expect(find.text('08:00'), findsOneWidget);
+      expect(find.text(_actionFailedMessage), findsOneWidget);
+      expect(tester.widget<IconButton>(button).focusNode!.hasFocus, isTrue);
+    },
+  );
+
+  testWidgets('confirming an unchanged schedule saves nothing', (
     WidgetTester tester,
   ) async {
-    final Completer<void> gate = Completer<void>();
-    final TestTodoRepository repository =
-        TestTodoRepository(<Todo>[createTestTodo(id: 'one', title: 'Original')])
-          ..mutationGate = gate
-          ..failMutations = true;
+    final TestTodoRepository repository = TestTodoRepository(<Todo>[
+      createTestTodo(id: 'one', title: 'Original', time: '08:00'),
+    ]);
     await _pumpToday(tester, repository);
-    await tester.tap(find.byKey(const ValueKey<String>('todo-edit-one')));
+    await tester.tap(find.byKey(const ValueKey<String>('todo-schedule-one')));
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('todo-edit-title')),
-      'Retry details',
+    await tester.tap(
+      find.byKey(const ValueKey<String>('todo-schedule-confirm')),
     );
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey<String>('todo-save')));
-    await tester.pump();
-    await tester.binding.handlePopRoute();
-    await tester.pump();
-    expect(find.byType(Dialog), findsOneWidget);
-    gate.complete();
     await tester.pumpAndSettle();
-    expect(find.byType(Dialog), findsOneWidget);
+    expect(find.byType(Dialog), findsNothing);
+    expect(repository.mutateCalls, 0);
+  });
+
+  testWidgets('a Todo title says it is edited by selecting it', (
+    WidgetTester tester,
+  ) async {
+    final TestTodoRepository repository = TestTodoRepository(<Todo>[
+      createTestTodo(id: 'one', title: 'Task'),
+    ]);
+    await _pumpToday(tester, repository);
+
+    final Finder title = find.ancestor(
+      of: find.byKey(const ValueKey<String>('todo-title-one')),
+      matching: find.byTooltip('Select to edit the title'),
+    );
+    expect(title, findsOneWidget);
     expect(
-      _editable(
-        tester,
-        find.byKey(const ValueKey<String>('todo-edit-title')),
-      ).controller.text,
-      'Retry details',
+      tester
+          .widget<InkWell>(
+            find.descendant(of: title, matching: find.byType(InkWell)),
+          )
+          .mouseCursor,
+      SystemMouseCursors.text,
     );
-    expect(repository.todos.single.title.text, 'Original');
   });
 
   testWidgets(
@@ -436,7 +471,7 @@ void main() {
     TargetPlatform.android,
   ]) {
     testWidgets(
-      '$platform details preserve the background row and return focus on cancel',
+      '$platform schedule dialog preserves the background row and returns focus on cancel',
       (WidgetTester tester) async {
         final TestTodoRepository repository = TestTodoRepository(<Todo>[
           createTestTodo(id: 'one', title: 'Original'),
@@ -445,26 +480,24 @@ void main() {
         final Finder row = find.byKey(const ValueKey<String>('todo-row-one'));
         final Rect before = tester.getRect(row);
         final Finder button = find.byKey(
-          const ValueKey<String>('todo-edit-one'),
+          const ValueKey<String>('todo-schedule-one'),
         );
         await tester.tap(button);
         await tester.pumpAndSettle();
-        expect(
-          find.byType(
-            platform == TargetPlatform.windows ? Dialog : BottomSheet,
-          ),
-          findsOneWidget,
-        );
+        expect(find.byType(Dialog), findsOneWidget);
         expect(tester.getRect(row), before);
         await tester.enterText(
-          find.byKey(const ValueKey<String>('todo-edit-title')),
-          'Discarded',
+          find.byKey(const ValueKey<String>('todo-time-hour')),
+          '21',
         );
-        final Finder cancel = find.byKey(const ValueKey<String>('todo-cancel'));
+        final Finder cancel = find.byKey(
+          const ValueKey<String>('todo-schedule-cancel'),
+        );
         await tester.ensureVisible(cancel);
         await tester.tap(cancel);
         await tester.pumpAndSettle();
-        expect(repository.todos.single.title.text, 'Original');
+        expect(repository.todos.single.time, isNull);
+        expect(repository.mutateCalls, 0);
         expect(tester.widget<IconButton>(button).focusNode!.hasFocus, isTrue);
         expect(tester.getRect(row), before);
       },
@@ -619,6 +652,8 @@ void main() {
     expect(tester.getRect(row), before);
   });
 }
+
+const String _actionFailedMessage = 'The Todo action could not be completed.';
 
 EditableText _editable(WidgetTester tester, Finder field) {
   return tester.widget<EditableText>(

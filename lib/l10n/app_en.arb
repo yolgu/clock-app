@@ -187,13 +187,13 @@
   "todoActionAddTime": "Add time",
   "todoActionAdd": "Add",
   "todoActionEdit": "Edit",
-  "todoActionDetails": "Edit Todo",
   "todoInlineEditHint": "Edit title. Enter saves; Escape cancels.",
+  "todoInlineEditTooltip": "Select to edit the title",
+  "todoScheduleEdit": "Edit Todo date and time",
+  "todoScheduleClearTime": "Clear time",
   "rhythmSettingsSummaryClean": "No unsaved changes",
   "rhythmSettingsSaving": "Saving settings…",
   "todoActionDelete": "Delete",
-  "todoActionSave": "Save",
-  "todoActionCancel": "Cancel",
   "todoActionComplete": "Complete {title}",
   "@todoActionComplete": {
     "placeholders": {
@@ -213,28 +213,9 @@
     }
   },
   "todoListEmpty": "No Todos yet.",
-  "todoListEditTitle": "Edit Todo title",
-  "todoListEditDate": "Edit Todo date",
-  "todoListEditTime": "Edit Todo time",
-  "todoFieldTitle": "Title",
-  "todoFieldDate": "Date",
-  "todoFieldTime": "Time",
   "todoDatePanelLabel": "Choose the Todo date",
-  "todoTimePanelLabel": "Choose the Todo time",
   "todoTimeHours": "Hour",
   "todoTimeMinutes": "Minute",
-  "todoTimeHourValue": "{hour} h",
-  "@todoTimeHourValue": {
-    "placeholders": {
-      "hour": {"type": "String"}
-    }
-  },
-  "todoTimeMinuteValue": "{minute} min",
-  "@todoTimeMinuteValue": {
-    "placeholders": {
-      "minute": {"type": "String"}
-    }
-  },
   "todoGroupIncomplete": "Incomplete",
   "todoGroupCompleted": "Completed",
   "todoValidationTitleRequired": "Enter a Todo.",

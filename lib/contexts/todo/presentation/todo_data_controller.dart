@@ -135,20 +135,14 @@ final class TodoDataController extends AsyncNotifier<TodoDataState> {
     });
   }
 
-  Future<bool> updateTodo({
+  Future<bool> rescheduleTodo({
     required TodoSnapshot todo,
-    required String title,
     required LocalCalendarDate date,
     required String? time,
   }) {
     return _runMutation(() async {
-      await _dependencies.commands.update(
-        UpdateTodoCommand(
-          id: todo.id,
-          title: title,
-          date: date.text,
-          time: time,
-        ),
+      await _dependencies.commands.reschedule(
+        RescheduleTodoCommand(id: todo.id, date: date.text, time: time),
       );
       return TodoUiMessage.updated;
     });

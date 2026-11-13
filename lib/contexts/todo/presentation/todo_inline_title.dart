@@ -87,24 +87,32 @@ final class _TodoInlineTitleState extends State<TodoInlineTitle> {
   Widget build(BuildContext context) {
     final TodoInlineEditSession session = widget.session;
     if (session.todoId != widget.todo.id) {
+      final AppLocalizations copy = AppLocalizations.of(context);
+      // The title is the only place it can be edited, so a pointer over it
+      // shows a text cursor and says so; assistive technology gets the hint.
       return Semantics(
-        hint: AppLocalizations.of(context).todoInlineEditHint,
-        child: InkWell(
-          focusNode: _activationFocus,
-          onTap: widget.enabled ? () => unawaited(_begin()) : null,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minWidth: ClockRhythmLayout.minimumInteractiveDimension,
-              minHeight: ClockRhythmLayout.minimumInteractiveDimension,
-            ),
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              widthFactor: 1,
-              heightFactor: 1,
-              child: Text(
-                widget.todo.title,
-                key: ValueKey<String>('todo-title-${widget.todo.id}'),
-                style: widget.style,
+        hint: copy.todoInlineEditHint,
+        child: Tooltip(
+          message: copy.todoInlineEditTooltip,
+          excludeFromSemantics: true,
+          child: InkWell(
+            focusNode: _activationFocus,
+            mouseCursor: widget.enabled ? SystemMouseCursors.text : null,
+            onTap: widget.enabled ? () => unawaited(_begin()) : null,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minWidth: ClockRhythmLayout.minimumInteractiveDimension,
+                minHeight: ClockRhythmLayout.minimumInteractiveDimension,
+              ),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                widthFactor: 1,
+                heightFactor: 1,
+                child: Text(
+                  widget.todo.title,
+                  key: ValueKey<String>('todo-title-${widget.todo.id}'),
+                  style: widget.style,
+                ),
               ),
             ),
           ),

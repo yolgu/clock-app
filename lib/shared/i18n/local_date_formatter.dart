@@ -31,6 +31,12 @@ final class LocalDateFormatter {
     return DateFormat.MMMMEEEEd(_localeName).format(date);
   }
 
+  /// The day within its year, for a label that has no room for more.
+  String formatMonthDay(DateTime date) {
+    _requireLocalDate(date);
+    return DateFormat.MMMd(_localeName).format(date);
+  }
+
   String formatMonth(DateTime date) {
     _requireLocalDate(date);
     return DateFormat.yMMMM(_localeName).format(date);

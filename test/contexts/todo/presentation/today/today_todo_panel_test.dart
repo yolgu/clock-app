@@ -226,10 +226,10 @@ void main() {
   );
 
   testWidgets(
-    'LB-026 explicit Save and Cancel buttons commit or discard editor drafts',
+    'LB-026 explicit Confirm and Cancel buttons commit or discard a schedule draft',
     (WidgetTester tester) async {
       final TestTodoRepository repository = TestTodoRepository(<Todo>[
-        createTestTodo(id: 'todo-1', title: 'Before'),
+        createTestTodo(id: 'todo-1', title: 'Before', time: '08:00'),
       ]);
       final TestTodoDateClock dateClock = TestTodoDateClock(
         DateTime(2026, 6, 2),
@@ -243,46 +243,52 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey<String>('todo-edit-todo-1')));
-      await tester.pumpAndSettle();
-      final Finder title = find.byKey(
-        const ValueKey<String>('todo-edit-title'),
+      final Finder schedule = find.byKey(
+        const ValueKey<String>('todo-schedule-todo-1'),
       );
-      final Finder save = find.byKey(const ValueKey<String>('todo-save'));
-      final Finder cancel = find.byKey(const ValueKey<String>('todo-cancel'));
-      expect(save, findsOneWidget);
+      await tester.tap(schedule);
+      await tester.pumpAndSettle();
+      final Finder hour = find.byKey(const ValueKey<String>('todo-time-hour'));
+      final Finder confirm = find.byKey(
+        const ValueKey<String>('todo-schedule-confirm'),
+      );
+      final Finder cancel = find.byKey(
+        const ValueKey<String>('todo-schedule-cancel'),
+      );
+      expect(confirm, findsOneWidget);
       expect(cancel, findsOneWidget);
 
-      await tester.enterText(title, 'Discarded');
+      await tester.enterText(hour, '21');
       await tester.pump();
       await tester.ensureVisible(cancel);
       await tester.tap(cancel);
       await tester.pumpAndSettle();
-      expect(repository.todos.single.title.text, 'Before');
+      expect(repository.todos.single.time?.text, '08:00');
       expect(repository.mutateCalls, 0);
 
-      await tester.tap(find.byKey(const ValueKey<String>('todo-edit-todo-1')));
+      await tester.tap(schedule);
       await tester.pumpAndSettle();
-      await tester.enterText(title, 'After');
-      final int mutationsBeforeSave = repository.mutateCalls;
+      await tester.enterText(hour, '09');
+      final int mutationsBeforeConfirm = repository.mutateCalls;
 
       await tester.pump();
-      await tester.ensureVisible(save);
-      await tester.tap(save);
+      await tester.ensureVisible(confirm);
+      await tester.tap(confirm);
       await tester.pumpAndSettle();
 
-      expect(repository.mutateCalls - mutationsBeforeSave, 1);
-      expect(repository.todos.single.title.text, 'After');
-      expect(find.text('After'), findsOneWidget);
-      expect(title, findsNothing);
+      expect(repository.mutateCalls - mutationsBeforeConfirm, 1);
+      expect(repository.todos.single.time?.text, '09:00');
+      expect(repository.todos.single.title.text, 'Before');
+      expect(find.text('09:00'), findsOneWidget);
+      expect(hour, findsNothing);
     },
   );
 
-  testWidgets('LB-026 Escape cancels an edit without saving changes', (
+  testWidgets('LB-026 Escape cancels a schedule draft without saving it', (
     WidgetTester tester,
   ) async {
     final TestTodoRepository repository = TestTodoRepository(<Todo>[
-      createTestTodo(id: 'todo-1', title: 'Before'),
+      createTestTodo(id: 'todo-1', title: 'Before', time: '08:00'),
     ]);
     final TestTodoDateClock dateClock = TestTodoDateClock(DateTime(2026, 6, 2));
     addTearDown(dateClock.dispose);
@@ -294,18 +300,20 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey<String>('todo-edit-todo-1')));
+    await tester.tap(
+      find.byKey(const ValueKey<String>('todo-schedule-todo-1')),
+    );
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(const ValueKey<String>('todo-edit-title')),
-      'Cancelled',
+      find.byKey(const ValueKey<String>('todo-time-hour')),
+      '21',
     );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey<String>('todo-edit-title')), findsNothing);
-    expect(repository.todos.single.title.text, 'Before');
+    expect(find.byKey(const ValueKey<String>('todo-time-hour')), findsNothing);
+    expect(repository.todos.single.time?.text, '08:00');
     expect(repository.mutateCalls, 0);
   });
 
@@ -341,7 +349,9 @@ void main() {
         matches(r'^\d{2}$'),
       );
     }
-    await tester.tap(find.byKey(const ValueKey<String>('todo-time-confirm')));
+    await tester.tap(
+      find.byKey(const ValueKey<String>('todo-schedule-confirm')),
+    );
     await tester.pumpAndSettle();
 
     final Finder editTime = find.byKey(
@@ -400,25 +410,74 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.todos.single.time?.text, '14:30');
-    await tester.tap(find.byKey(const ValueKey<String>('todo-edit-created-1')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey<String>('todo-edit-time')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey<String>('todo-hour-09')));
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey<String>('todo-minute-05')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey<String>('todo-save')));
-    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('todo-schedule-created-1')),
+    );
+    await _enterPickerTime(tester, hour: '9', minute: '5');
 
     expect(repository.todos.single.time?.text, '09:05');
   });
 
-  testWidgets('LB-027 blocks an invalid edit before saving changes', (
+  testWidgets('a new Todo picked for another date says so and lands there', (
+    WidgetTester tester,
+  ) async {
+    final TestTodoRepository repository = TestTodoRepository();
+    final TestTodoDateClock dateClock = TestTodoDateClock(DateTime(2026, 6, 2));
+    addTearDown(dateClock.dispose);
+    await tester.pumpWidget(
+      buildTodoTestApp(
+        repository: repository,
+        dateClock: dateClock,
+        child: const SingleChildScrollView(child: TodayTodoPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final Finder nextDay = find.byKey(
+      const ValueKey<String>('todo-date-2026-06-03'),
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('todo-create-title')),
+      'Tomorrow',
+    );
+    await tester.tap(find.byKey(const ValueKey<String>('todo-add-time')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(nextDay);
+    await tester.tap(nextDay);
+    await _enterPickerTime(tester, hour: '14', minute: '30');
+    expect(find.text('Jun 3 14:30'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey<String>('todo-clear-time')));
+    await tester.pump();
+    expect(find.text('Add time'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey<String>('todo-add-time')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(nextDay);
+    await tester.tap(nextDay);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('todo-schedule-clear-time')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('todo-schedule-confirm')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Jun 3'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey<String>('todo-add')));
+    await tester.pumpAndSettle();
+
+    expect(repository.todos.single.date.text, '2026-06-03');
+    expect(repository.todos.single.time, isNull);
+    expect(find.text('Tomorrow'), findsNothing);
+    expect(find.text('Add time'), findsOneWidget);
+  });
+
+  testWidgets('LB-027 blocks an invalid schedule before saving changes', (
     WidgetTester tester,
   ) async {
     final TestTodoRepository repository = TestTodoRepository(<Todo>[
-      createTestTodo(id: 'todo-1', title: 'Before'),
+      createTestTodo(id: 'todo-1', title: 'Before', time: '08:00'),
     ]);
     final TestTodoDateClock dateClock = TestTodoDateClock(DateTime(2026, 6, 2));
     addTearDown(dateClock.dispose);
@@ -430,20 +489,29 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey<String>('todo-edit-todo-1')));
-    await tester.pump();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('todo-schedule-todo-1')),
+    );
+    await tester.pumpAndSettle();
 
     await tester.enterText(
-      find.byKey(const ValueKey<String>('todo-edit-title')),
-      '',
+      find.byKey(const ValueKey<String>('todo-time-hour')),
+      '24',
     );
     await tester.pump();
 
-    final Finder save = find.byKey(const ValueKey<String>('todo-save'));
-    expect(tester.widget<FilledButton>(save).onPressed, isNull);
-    expect(find.text('Enter a Todo.'), findsOneWidget);
+    final Finder confirm = find.byKey(
+      const ValueKey<String>('todo-schedule-confirm'),
+    );
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+    expect(
+      find.byKey(const ValueKey<String>('todo-time-invalid')),
+      findsOneWidget,
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
     expect(repository.mutateCalls, 0);
-    expect(repository.todos.single.title.text, 'Before');
+    expect(repository.todos.single.time?.text, '08:00');
   });
 
   testWidgets(
@@ -574,7 +642,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(
-      find.byKey(const ValueKey<String>('todo-edit-long')),
+      find.byKey(const ValueKey<String>('todo-schedule-long')),
       findsOneWidget,
     );
     expect(
@@ -604,7 +672,7 @@ Future<void> _enterPickerTime(
     find.byKey(const ValueKey<String>('todo-time-minute')),
     minute,
   );
-  await tester.tap(find.byKey(const ValueKey<String>('todo-time-confirm')));
+  await tester.tap(find.byKey(const ValueKey<String>('todo-schedule-confirm')));
   await tester.pumpAndSettle();
 }
 

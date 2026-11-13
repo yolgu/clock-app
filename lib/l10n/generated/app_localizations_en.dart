@@ -409,10 +409,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoActionEdit => 'Edit';
 
   @override
-  String get todoActionDetails => 'Edit Todo';
+  String get todoInlineEditHint => 'Edit title. Enter saves; Escape cancels.';
 
   @override
-  String get todoInlineEditHint => 'Edit title. Enter saves; Escape cancels.';
+  String get todoInlineEditTooltip => 'Select to edit the title';
+
+  @override
+  String get todoScheduleEdit => 'Edit Todo date and time';
+
+  @override
+  String get todoScheduleClearTime => 'Clear time';
 
   @override
   String get rhythmSettingsSummaryClean => 'No unsaved changes';
@@ -422,12 +428,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todoActionDelete => 'Delete';
-
-  @override
-  String get todoActionSave => 'Save';
-
-  @override
-  String get todoActionCancel => 'Cancel';
 
   @override
   String todoActionComplete(String title) {
@@ -448,44 +448,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todoListEmpty => 'No Todos yet.';
 
   @override
-  String get todoListEditTitle => 'Edit Todo title';
-
-  @override
-  String get todoListEditDate => 'Edit Todo date';
-
-  @override
-  String get todoListEditTime => 'Edit Todo time';
-
-  @override
-  String get todoFieldTitle => 'Title';
-
-  @override
-  String get todoFieldDate => 'Date';
-
-  @override
-  String get todoFieldTime => 'Time';
-
-  @override
   String get todoDatePanelLabel => 'Choose the Todo date';
-
-  @override
-  String get todoTimePanelLabel => 'Choose the Todo time';
 
   @override
   String get todoTimeHours => 'Hour';
 
   @override
   String get todoTimeMinutes => 'Minute';
-
-  @override
-  String todoTimeHourValue(String hour) {
-    return '$hour h';
-  }
-
-  @override
-  String todoTimeMinuteValue(String minute) {
-    return '$minute min';
-  }
 
   @override
   String get todoGroupIncomplete => 'Incomplete';

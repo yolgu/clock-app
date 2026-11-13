@@ -398,10 +398,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get todoActionEdit => '수정';
 
   @override
-  String get todoActionDetails => 'Todo 수정';
+  String get todoInlineEditHint => '제목 수정. Enter로 저장, Esc로 취소합니다.';
 
   @override
-  String get todoInlineEditHint => '제목 수정. Enter로 저장, Esc로 취소합니다.';
+  String get todoInlineEditTooltip => '눌러서 제목 수정';
+
+  @override
+  String get todoScheduleEdit => 'Todo 날짜와 시간 수정';
+
+  @override
+  String get todoScheduleClearTime => '시간 비우기';
 
   @override
   String get rhythmSettingsSummaryClean => '저장된 설정';
@@ -411,12 +417,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get todoActionDelete => '삭제';
-
-  @override
-  String get todoActionSave => '저장';
-
-  @override
-  String get todoActionCancel => '취소';
 
   @override
   String todoActionComplete(String title) {
@@ -437,44 +437,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get todoListEmpty => '아직 Todo가 없습니다.';
 
   @override
-  String get todoListEditTitle => 'Todo 제목 수정';
-
-  @override
-  String get todoListEditDate => 'Todo 날짜 수정';
-
-  @override
-  String get todoListEditTime => 'Todo 시간 수정';
-
-  @override
-  String get todoFieldTitle => '제목';
-
-  @override
-  String get todoFieldDate => '날짜';
-
-  @override
-  String get todoFieldTime => '시간';
-
-  @override
   String get todoDatePanelLabel => 'Todo 날짜 고르기';
-
-  @override
-  String get todoTimePanelLabel => 'Todo 시간 고르기';
 
   @override
   String get todoTimeHours => '시';
 
   @override
   String get todoTimeMinutes => '분';
-
-  @override
-  String todoTimeHourValue(String hour) {
-    return '$hour시';
-  }
-
-  @override
-  String todoTimeMinuteValue(String minute) {
-    return '$minute분';
-  }
 
   @override
   String get todoGroupIncomplete => '미완료';

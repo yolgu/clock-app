@@ -6,6 +6,9 @@ final class ClockTimeFormatter {
   /// What stands between the hour and the minute of an `HH:mm` time.
   static const String separator = ':';
 
+  /// What an hour or a minute shows while it has no value.
+  static const String unsetPart = '--';
+
   static final RegExp _exactTextPattern = RegExp(
     r'^(?<hour>[01]\d|2[0-3]):(?<minute>[0-5]\d)$',
   );

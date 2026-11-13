@@ -115,7 +115,7 @@ void main() {
   );
 
   test(
-    'edits title, date, and time with exactly one repository mutation',
+    'reschedules date and time with exactly one repository mutation',
     () async {
       final TestTodoRepository repository = TestTodoRepository(<Todo>[
         createTestTodo(id: 'editing', title: 'Before'),
@@ -144,9 +144,8 @@ void main() {
 
       final bool succeeded = await container
           .read(todoDataControllerProvider.notifier)
-          .updateTodo(
+          .rescheduleTodo(
             todo: editing,
-            title: ' After ',
             date: LocalCalendarDate.parse('2026-06-03'),
             time: '08:05',
           );
@@ -156,7 +155,7 @@ void main() {
       final Todo moved = repository.todos.singleWhere(
         (Todo todo) => todo.id.text == 'editing',
       );
-      expect(moved.title.text, 'After');
+      expect(moved.title.text, 'Before');
       expect(moved.date.text, '2026-06-03');
       expect(moved.time?.text, '08:05');
       expect(moved.displayOrder, 8);

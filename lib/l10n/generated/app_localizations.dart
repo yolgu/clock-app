@@ -824,17 +824,29 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get todoActionEdit;
 
-  /// No description provided for @todoActionDetails.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Todo'**
-  String get todoActionDetails;
-
   /// No description provided for @todoInlineEditHint.
   ///
   /// In en, this message translates to:
   /// **'Edit title. Enter saves; Escape cancels.'**
   String get todoInlineEditHint;
+
+  /// No description provided for @todoInlineEditTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Select to edit the title'**
+  String get todoInlineEditTooltip;
+
+  /// No description provided for @todoScheduleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Todo date and time'**
+  String get todoScheduleEdit;
+
+  /// No description provided for @todoScheduleClearTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear time'**
+  String get todoScheduleClearTime;
 
   /// No description provided for @rhythmSettingsSummaryClean.
   ///
@@ -853,18 +865,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete'**
   String get todoActionDelete;
-
-  /// No description provided for @todoActionSave.
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get todoActionSave;
-
-  /// No description provided for @todoActionCancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get todoActionCancel;
 
   /// No description provided for @todoActionComplete.
   ///
@@ -890,53 +890,11 @@ abstract class AppLocalizations {
   /// **'No Todos yet.'**
   String get todoListEmpty;
 
-  /// No description provided for @todoListEditTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Todo title'**
-  String get todoListEditTitle;
-
-  /// No description provided for @todoListEditDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Todo date'**
-  String get todoListEditDate;
-
-  /// No description provided for @todoListEditTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Todo time'**
-  String get todoListEditTime;
-
-  /// No description provided for @todoFieldTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Title'**
-  String get todoFieldTitle;
-
-  /// No description provided for @todoFieldDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Date'**
-  String get todoFieldDate;
-
-  /// No description provided for @todoFieldTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Time'**
-  String get todoFieldTime;
-
   /// No description provided for @todoDatePanelLabel.
   ///
   /// In en, this message translates to:
   /// **'Choose the Todo date'**
   String get todoDatePanelLabel;
-
-  /// No description provided for @todoTimePanelLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose the Todo time'**
-  String get todoTimePanelLabel;
 
   /// No description provided for @todoTimeHours.
   ///
@@ -949,18 +907,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Minute'**
   String get todoTimeMinutes;
-
-  /// No description provided for @todoTimeHourValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{hour} h'**
-  String todoTimeHourValue(String hour);
-
-  /// No description provided for @todoTimeMinuteValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{minute} min'**
-  String todoTimeMinuteValue(String minute);
 
   /// No description provided for @todoGroupIncomplete.
   ///

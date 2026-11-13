@@ -11,7 +11,7 @@ import '../domain/todo_collection.dart';
 import 'calendar/calendar_cells.dart';
 import 'todo_date_math.dart';
 
-/// The month a Todo's date is picked from, unfolded under the date field.
+/// The month a Todo's date is picked from.
 ///
 /// It reads like the app's calendar in its compact form: today's number sits
 /// in an accent circle, the chosen day is tinted, and a dot marks days that
@@ -94,114 +94,101 @@ final class _TodoDatePanelState extends State<TodoDatePanel> {
     return Semantics(
       container: true,
       label: localizations.todoDatePanelLabel,
-      child: DecoratedBox(
+      child: KeyedSubtree(
         key: const ValueKey<String>('todo-date-panel'),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(ClockRhythmRadius.card),
-          border: Border.all(color: theme.colorScheme.outlineVariant),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            ClockRhythmSpace.space16,
-            ClockRhythmSpace.space12,
-            ClockRhythmSpace.space16,
-            ClockRhythmSpace.space16,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Semantics(
-                      header: true,
-                      liveRegion: true,
-                      child: Text(
-                        monthLabel,
-                        key: const ValueKey<String>('todo-date-month'),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontFeatures: const <FontFeature>[
-                            FontFeature.tabularFigures(),
-                          ],
-                        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    liveRegion: true,
+                    child: Text(
+                      monthLabel,
+                      key: const ValueKey<String>('todo-date-month'),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontFeatures: const <FontFeature>[
+                          FontFeature.tabularFigures(),
+                        ],
                       ),
                     ),
                   ),
-                  IconButton(
-                    key: const ValueKey<String>('todo-date-previous-month'),
-                    onPressed: previousMonth == null
-                        ? null
-                        : () => _showMonth(previousMonth),
-                    tooltip: localizations.calendarPreviousMonth,
-                    icon: const LineIcon(LineGlyph.chevronLeft),
-                  ),
-                  TextButton(
-                    key: const ValueKey<String>('todo-date-today'),
-                    onPressed: () =>
-                        _showMonth(TodoDateMath.firstOfMonth(widget.today)),
-                    child: Text(localizations.calendarToday),
-                  ),
-                  IconButton(
-                    key: const ValueKey<String>('todo-date-next-month'),
-                    onPressed: nextMonth == null
-                        ? null
-                        : () => _showMonth(nextMonth),
-                    tooltip: localizations.calendarNextMonth,
-                    icon: const LineIcon(LineGlyph.chevronRight),
-                  ),
+                ),
+                IconButton(
+                  key: const ValueKey<String>('todo-date-previous-month'),
+                  onPressed: previousMonth == null
+                      ? null
+                      : () => _showMonth(previousMonth),
+                  tooltip: localizations.calendarPreviousMonth,
+                  icon: const LineIcon(LineGlyph.chevronLeft),
+                ),
+                TextButton(
+                  key: const ValueKey<String>('todo-date-today'),
+                  onPressed: () =>
+                      _showMonth(TodoDateMath.firstOfMonth(widget.today)),
+                  child: Text(localizations.calendarToday),
+                ),
+                IconButton(
+                  key: const ValueKey<String>('todo-date-next-month'),
+                  onPressed: nextMonth == null
+                      ? null
+                      : () => _showMonth(nextMonth),
+                  tooltip: localizations.calendarNextMonth,
+                  icon: const LineIcon(LineGlyph.chevronRight),
+                ),
+              ],
+            ),
+            const SizedBox(height: ClockRhythmSpace.space8),
+            ExcludeSemantics(
+              child: Row(
+                children: <Widget>[
+                  for (final String weekday in weekdays)
+                    Expanded(
+                      child: Text(
+                        weekday,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: ClockRhythmSpace.space8),
-              ExcludeSemantics(
-                child: Row(
-                  children: <Widget>[
-                    for (final String weekday in weekdays)
-                      Expanded(
-                        child: Text(
-                          weekday,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+            ),
+            const SizedBox(height: 6),
+            GridView.builder(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                crossAxisSpacing: _cellSpacing,
+                mainAxisSpacing: _cellSpacing,
+                mainAxisExtent: cellHeight,
               ),
-              const SizedBox(height: 6),
-              GridView.builder(
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  crossAxisSpacing: _cellSpacing,
-                  mainAxisSpacing: _cellSpacing,
-                  mainAxisExtent: cellHeight,
-                ),
-                itemCount: cells.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final LocalCalendarDate? date = cells[index].date;
-                  if (date == null) {
-                    return const SizedBox.shrink();
-                  }
-                  return _DateCell(
-                    date: date,
-                    label: formatter.formatFullDate(
-                      TodoDateMath.toLocalDateTime(date),
-                    ),
-                    summary: summary[date.text],
-                    isSelected: date == widget.selected,
-                    isToday: date == widget.today,
-                    onPressed: widget.enabled
-                        ? () => widget.onSelected(date)
-                        : null,
-                  );
-                },
-              ),
-            ],
-          ),
+              itemCount: cells.length,
+              itemBuilder: (BuildContext context, int index) {
+                final LocalCalendarDate? date = cells[index].date;
+                if (date == null) {
+                  return const SizedBox.shrink();
+                }
+                return _DateCell(
+                  date: date,
+                  label: formatter.formatFullDate(
+                    TodoDateMath.toLocalDateTime(date),
+                  ),
+                  summary: summary[date.text],
+                  isSelected: date == widget.selected,
+                  isToday: date == widget.today,
+                  onPressed: widget.enabled
+                      ? () => widget.onSelected(date)
+                      : null,
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
